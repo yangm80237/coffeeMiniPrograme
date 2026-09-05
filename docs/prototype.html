@@ -54,7 +54,7 @@
     width: 140px; height: 28px; background: #1A1B1C; border-radius: 0 0 18px 18px; z-index: 100;
   }
   .screen {
-    width: 100%; height: 100%; overflow-y: auto; display: none;
+    width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden; display: none;
     background: var(--paper);
   }
   .screen.active { display: block; }
@@ -290,8 +290,8 @@
   .tile-c10{background:linear-gradient(160deg,#B7AECB,#8E82AB);} /* 入库 紫灰 */
   /* 形状：全部由 border-radius / clip-path 实现 */
   .sh-cloud  { border-radius:46% 54% 55% 45%/55% 48% 52% 45%; }
-  .sh-drop   { border-radius:0 50% 50% 50%; transform:rotate(45deg); }
-  .sh-drop>* { transform:rotate(-45deg); }
+  .sh-drop   { border-radius:0 50% 50% 50%; transform:rotate(45deg); margin:14%; }
+  .sh-drop>* { transform:rotate(-45deg); width:100%; }
   .sh-bean   { border-radius:50% / 42%; position:relative; }
   .sh-bean:after { content:""; position:absolute; left:50%; top:12%; bottom:12%; width:3px;
     margin-left:-1.5px; border-radius:3px; background:rgba(255,255,255,.35); transform:rotate(18deg); }
@@ -390,6 +390,54 @@
     box-shadow:var(--shadow-card); margin:0 16px 90px; padding:14px 0; text-align:center; }
   .stats-foot b { font-size:18px; display:block; font-family:var(--font-display); }
   .stats-foot small { font-size:10px; color:var(--ink-soft); }
+
+  /* ===== 联想联动 ===== */
+  .sug-row { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:-6px 0 12px; }
+  .sug-cap { font-size:10px; color:var(--ink-soft); width:34px; }
+  .sug-pill { font-size:11px; padding:3px 10px; border-radius:999px; background:var(--card);
+    border:1px solid rgba(80,60,30,.14); color:var(--ink-soft); cursor:pointer; }
+  .sug-pill:active { background:rgba(201,111,74,.12); color:var(--accent); border-color:var(--accent); }
+
+  /* ===== 评分弹层 ===== */
+  .rate-row { display:flex; align-items:center; gap:12px; padding:10px 4px; }
+  .rate-who { font-size:13px; font-weight:600; width:36px; color:var(--ink); }
+  .rate-stars { flex:1; font-size:24px; letter-spacing:6px; color:#F59E0B; cursor:pointer; }
+  .rate-stars i { font-style:normal; }
+  .rate-stars i.off { color:rgba(80,60,30,.18); }
+  .rate-num { font-size:16px; font-family:var(--font-display); }
+
+  /* ===== 品牌国家筛选 ===== */
+  .filter-pop { position:absolute; top:96px; right:16px; width:190px; background:var(--card);
+    border-radius:14px; box-shadow:0 10px 34px rgba(40,30,10,.18); padding:12px; z-index:80; display:none; }
+  .filter-pop.show { display:block; }
+  .filter-title { font-size:11px; color:var(--ink-soft); margin-bottom:8px; }
+  .filter-item { display:flex; align-items:center; gap:8px; font-size:13px; padding:6px 2px; color:var(--ink); cursor:pointer; }
+  .filter-item input { accent-color:var(--accent); }
+  .filter-actions { margin-top:8px; text-align:right; font-size:11px; color:var(--accent); cursor:pointer; }
+
+  /* ===== 风味标签详情页 ===== */
+  .fd-hero { text-align:center; padding:8px 16px 16px; }
+  .fd-icon { width:96px; height:96px; margin:0 auto 10px; border-radius:50%; background:var(--card);
+    box-shadow:var(--shadow-card); display:flex; align-items:center; justify-content:center; font-size:44px; }
+  .fd-name { font-family:var(--font-display); font-size:20px; font-weight:700; color:var(--ink); }
+  .fd-cat { font-size:12px; color:var(--ink-soft); margin-top:4px; }
+  .compare-row { display:flex; align-items:center; justify-content:center; gap:16px; margin:14px 0 4px; }
+  .compare-box { text-align:center; }
+  .compare-box .ic { width:64px; height:64px; border-radius:50%; background:var(--card);
+    border:1px dashed rgba(80,60,30,.2); display:flex; align-items:center; justify-content:center; font-size:28px; }
+  .compare-box small { display:block; font-size:10px; color:var(--ink-soft); margin-top:6px; }
+  .compare-arrow { font-size:18px; color:var(--ink-soft); }
+
+  /* ===== 品牌详情页 ===== */
+  .bd-hero { text-align:center; padding:8px 16px 14px; }
+  .bd-logo { width:84px; height:84px; margin:0 auto 10px; border-radius:22px; display:flex; align-items:center;
+    justify-content:center; color:#fff; font-size:32px; font-weight:700; font-family:var(--font-display); }
+  .bd-name { font-family:var(--font-display); font-size:20px; font-weight:700; color:var(--ink); }
+  .bd-desc { font-size:12px; color:var(--ink-soft); margin-top:4px; }
+  .bd-stats { display:flex; justify-content:center; gap:28px; margin:12px 0 4px; }
+  .bd-stats div { text-align:center; }
+  .bd-stats b { display:block; font-size:18px; font-family:var(--font-display); }
+  .bd-stats small { font-size:10px; color:var(--ink-soft); }
 </style>
 </head>
 <body>
@@ -600,23 +648,49 @@
 
       <div class="form-row">
         <div class="form-group">
-          <div class="form-label">产区</div>
-          <input class="form-input" value="埃塞俄比亚 本萨">
+          <div class="form-label">国家</div>
+          <input class="form-input" value="埃塞俄比亚">
         </div>
         <div class="form-group">
-          <div class="form-label">豆种</div>
-          <input class="form-input" value="74158">
+          <div class="form-label">产区</div>
+          <input class="form-input" value="本萨">
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <div class="form-label">处理法</div>
-          <input class="form-input" value="水洗">
+          <div class="form-label">豆种</div>
+          <input class="form-input" id="input-variety" value="74158">
         </div>
+        <div class="form-group">
+          <div class="form-label">处理法</div>
+          <input class="form-input" id="input-process" value="水洗">
+        </div>
+      </div>
+      <div class="sug-row"><span class="sug-cap">豆种</span>
+        <span class="sug-pill" onclick="fillVal(this,'input-variety')">瑰夏</span>
+        <span class="sug-pill" onclick="fillVal(this,'input-variety')">74158</span>
+        <span class="sug-pill" onclick="fillVal(this,'input-variety')">铁皮卡</span>
+        <span class="sug-pill" onclick="fillVal(this,'input-variety')">波旁</span>
+        <span class="sug-pill" onclick="fillVal(this,'input-variety')">SL28</span>
+        <span class="sug-pill" onclick="fillVal(this,'input-variety')">卡杜拉</span>
+      </div>
+      <div class="sug-row"><span class="sug-cap">处理法</span>
+        <span class="sug-pill" onclick="fillVal(this,'input-process')">水洗</span>
+        <span class="sug-pill" onclick="fillVal(this,'input-process')">日晒</span>
+        <span class="sug-pill" onclick="fillVal(this,'input-process')">蜜处理</span>
+        <span class="sug-pill" onclick="fillVal(this,'input-process')">厌氧日晒</span>
+        <span class="sug-pill" onclick="fillVal(this,'input-process')">湿剥法</span>
+      </div>
+
+      <div class="form-row">
         <div class="form-group">
           <div class="form-label">海拔</div>
           <input class="form-input" value="2200m">
+        </div>
+        <div class="form-group">
+          <div class="form-label">克重</div>
+          <input class="form-input" value="200g">
         </div>
       </div>
 
@@ -634,16 +708,8 @@
         <div class="segment-item">通用</div>
       </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <div class="form-label">克重</div>
-          <input class="form-input" value="200g">
-        </div>
-        <div class="form-group">
-          <div class="form-label">烘焙日期</div>
-          <input class="form-input" value="2026-08-28">
-        </div>
-      </div>
+      <div class="form-label">烘焙日期</div>
+      <input class="form-input" value="2026-08-28">
 
       <div class="form-label">风味标签 <span class="ai-tag">AI映射</span></div>
       <div class="flavor-tag-list">
@@ -718,13 +784,31 @@
       <div class="tile sh-cup tile-c9"><b>手冲</b><small>冲煮</small></div>
       <div class="tile sh-clock tile-c10"><b>09.01</b><small>入库</small></div>
       <div class="tile sh-map tile-c6"><b>耶加雪菲</b><small>产区</small></div>
-      <div class="tile tile-c2"><span class="pill">草莓</span><span class="pill">橙子</span><span class="pill">奶油</span><span class="pill">白蜜</span><small>风味标签</small></div>
     </div>
 
     <div class="detail-actions">
       <button class="action-btn warn" onclick="this.textContent='已喝完 ✓'">喝完了</button>
       <button class="action-btn gray">编辑</button>
-      <button class="action-btn primary">评分</button>
+      <button class="action-btn primary" onclick="toggleRate()">评分</button>
+    </div>
+
+    <!-- 评分弹层 -->
+    <div class="add-sheet" id="rate-sheet" style="display:none;">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">给这袋豆子评分</div>
+      <div class="rate-row">
+        <span class="rate-who">我</span>
+        <span class="rate-stars" id="stars-me" onclick="setStars(event,'stars-me')"><i>★</i><i>★</i><i>★</i><i>★</i><i>☆</i></span>
+        <b class="rate-num" id="num-me">4.0</b>
+      </div>
+      <div class="rate-row">
+        <span class="rate-who">太太</span>
+        <span class="rate-stars" id="stars-wife" onclick="setStars(event,'stars-wife')"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></span>
+        <b class="rate-num" id="num-wife">5.0</b>
+      </div>
+      <div class="form-label">风味感受（可选）</div>
+      <input class="form-input" placeholder="例如：莓果酸质明亮，回甘带蜜香">
+      <button class="save-btn" style="width:100%;padding:12px;" onclick="toggleRate()">保存评分</button>
     </div>
   </div>
 
@@ -742,44 +826,44 @@
     <div class="flavor-category">
       <div class="flavor-category-title"><span class="dot" style="background:#EA6668;"></span>水果类</div>
       <div class="flavor-tag-grid">
-        <div class="flavor-tag-item"><div class="icon">🍓</div><div class="name">草莓</div></div>
-        <div class="flavor-tag-item"><div class="icon">🍊</div><div class="name">橙子</div></div>
-        <div class="flavor-tag-item"><div class="icon">🍋</div><div class="name">柠檬</div></div>
-        <div class="flavor-tag-item"><div class="icon">🫐</div><div class="name">蓝莓</div></div>
-        <div class="flavor-tag-item"><div class="icon">🍑</div><div class="name">桃子</div></div>
-        <div class="flavor-tag-item"><div class="icon">🥭</div><div class="name">芒果</div></div>
-        <div class="flavor-tag-item"><div class="icon">🍍</div><div class="name">菠萝</div></div>
-        <div class="flavor-tag-item"><div class="icon">🍇</div><div class="name">葡萄</div></div>
+        <div class="flavor-tag-item" onclick="showScreen('flavor-detail')"><div class="icon">🍓</div><div class="name">草莓</div></div>
+        <div class="flavor-tag-item" onclick="showScreen('flavor-detail')"><div class="icon">🍊</div><div class="name">橙子</div></div>
+        <div class="flavor-tag-item" onclick="showScreen('flavor-detail')"><div class="icon">🍋</div><div class="name">柠檬</div></div>
+        <div class="flavor-tag-item" onclick="showScreen('flavor-detail')"><div class="icon">🫐</div><div class="name">蓝莓</div></div>
+        <div class="flavor-tag-item" onclick="showScreen('flavor-detail')"><div class="icon">🍑</div><div class="name">桃子</div></div>
+        <div class="flavor-tag-item" onclick="showScreen('flavor-detail')"><div class="icon">🥭</div><div class="name">芒果</div></div>
+        <div class="flavor-tag-item" onclick="showScreen('flavor-detail')"><div class="icon">🍍</div><div class="name">菠萝</div></div>
+        <div class="flavor-tag-item" onclick="showScreen('flavor-detail')"><div class="icon">🍇</div><div class="name">葡萄</div></div>
       </div>
     </div>
 
     <div class="flavor-category">
       <div class="flavor-category-title"><span class="dot" style="background:#C9A7E8;"></span>花香类</div>
       <div class="flavor-tag-grid">
-        <div class="flavor-tag-item"><div class="icon">🌼</div><div class="name">茉莉</div></div>
-        <div class="flavor-tag-item"><div class="icon">🌹</div><div class="name">玫瑰</div></div>
-        <div class="flavor-tag-item"><div class="icon">🌺</div><div class="name">桂花</div></div>
-        <div class="flavor-tag-item"><div class="icon">💐</div><div class="name">洋甘菊</div></div>
+        <div class="flavor-tag-item" onclick="showScreen('flavor-detail')"><div class="icon">🌼</div><div class="name">茉莉</div></div>
+        <div class="flavor-tag-item" onclick="showScreen('flavor-detail')"><div class="icon">🌹</div><div class="name">玫瑰</div></div>
+        <div class="flavor-tag-item" onclick="showScreen('flavor-detail')"><div class="icon">🌺</div><div class="name">桂花</div></div>
+        <div class="flavor-tag-item" onclick="showScreen('flavor-detail')"><div class="icon">💐</div><div class="name">洋甘菊</div></div>
       </div>
     </div>
 
     <div class="flavor-category">
       <div class="flavor-category-title"><span class="dot" style="background:#F4D48F;"></span>甜感类</div>
       <div class="flavor-tag-grid">
-        <div class="flavor-tag-item"><div class="icon">🍯</div><div class="name">蜂蜜</div></div>
-        <div class="flavor-tag-item"><div class="icon">🍬</div><div class="name">焦糖</div></div>
-        <div class="flavor-tag-item"><div class="icon">🍦</div><div class="name">香草</div></div>
-        <div class="flavor-tag-item"><div class="icon">🍫</div><div class="name">红糖</div></div>
+        <div class="flavor-tag-item" onclick="showScreen('flavor-detail')"><div class="icon">🍯</div><div class="name">蜂蜜</div></div>
+        <div class="flavor-tag-item" onclick="showScreen('flavor-detail')"><div class="icon">🍬</div><div class="name">焦糖</div></div>
+        <div class="flavor-tag-item" onclick="showScreen('flavor-detail')"><div class="icon">🍦</div><div class="name">香草</div></div>
+        <div class="flavor-tag-item" onclick="showScreen('flavor-detail')"><div class="icon">🍫</div><div class="name">红糖</div></div>
       </div>
     </div>
 
     <div class="flavor-category">
       <div class="flavor-category-title"><span class="dot" style="background:#E1B98F;"></span>坚果可可类</div>
       <div class="flavor-tag-grid">
-        <div class="flavor-tag-item"><div class="icon">🌰</div><div class="name">榛子</div></div>
-        <div class="flavor-tag-item"><div class="icon">🥜</div><div class="name">杏仁</div></div>
-        <div class="flavor-tag-item"><div class="icon">🍫</div><div class="name">黑巧</div></div>
-        <div class="flavor-tag-item"><div class="icon">🥛</div><div class="name">牛奶巧</div></div>
+        <div class="flavor-tag-item" onclick="showScreen('flavor-detail')"><div class="icon">🌰</div><div class="name">榛子</div></div>
+        <div class="flavor-tag-item" onclick="showScreen('flavor-detail')"><div class="icon">🥜</div><div class="name">杏仁</div></div>
+        <div class="flavor-tag-item" onclick="showScreen('flavor-detail')"><div class="icon">🍫</div><div class="name">黑巧</div></div>
+        <div class="flavor-tag-item" onclick="showScreen('flavor-detail')"><div class="icon">🥛</div><div class="name">牛奶巧</div></div>
       </div>
     </div>
 
@@ -793,79 +877,196 @@
     <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
     <div class="flavor-page-header">
       <div class="page-nav-title" style="font-size:17px;font-weight:700;">品牌库</div>
+      <div class="icon-btn" onclick="toggleBrandFilter()" title="按国家筛选">🚩</div>
       <div class="icon-btn">➕</div>
     </div>
     <div style="padding:0 16px 12px;">
       <input class="form-input" placeholder="🔍 搜索品牌（中英文）..." style="margin-bottom:0;">
     </div>
+    <div class="filter-pop" id="country-pop">
+      <div class="filter-title">按国家筛选（可多选）</div>
+      <label class="filter-item"><input type="checkbox" value="美国" onchange="applyBrandFilter()">🇺🇸 美国</label>
+      <label class="filter-item"><input type="checkbox" value="中国" onchange="applyBrandFilter()">🇨🇳 中国</label>
+      <label class="filter-item"><input type="checkbox" value="巴拿马" onchange="applyBrandFilter()">🇵🇦 巴拿马</label>
+      <label class="filter-item"><input type="checkbox" value="日本" onchange="applyBrandFilter()">🇯🇵 日本</label>
+      <label class="filter-item"><input type="checkbox" value="埃塞俄比亚" onchange="applyBrandFilter()">🇪🇹 埃塞俄比亚</label>
+      <label class="filter-item"><input type="checkbox" value="肯尼亚" onchange="applyBrandFilter()">🇰🇪 肯尼亚</label>
+      <label class="filter-item"><input type="checkbox" value="哥伦比亚" onchange="applyBrandFilter()">🇨🇴 哥伦比亚</label>
+      <label class="filter-item"><input type="checkbox" value="巴西" onchange="applyBrandFilter()">🇧🇷 巴西</label>
+      <div class="filter-actions" onclick="clearBrandFilter()">清空筛选</div>
+    </div>
     <div class="brand-list">
-      <div class="brand-item">
+      <div class="brand-item" data-country="美国" onclick="showScreen('brand-detail')">
         <div class="brand-item-logo" style="background:linear-gradient(135deg,#667eea,#764ba2);">O</div>
         <div class="brand-item-info">
           <div class="brand-item-name">Onyx Coffee Lab</div>
-          <div class="brand-item-desc">美国 · 精品烘焙商</div>
+          <div class="brand-item-desc">🇺🇸 美国 · 精品烘焙商</div>
         </div>
         <div class="brand-item-count">1袋</div>
       </div>
-      <div class="brand-item">
+      <div class="brand-item" data-country="中国" onclick="showScreen('brand-detail')">
         <div class="brand-item-logo" style="background:linear-gradient(135deg,#f6d365,#fda085);">治</div>
         <div class="brand-item-info">
           <div class="brand-item-name">治光师 BEAMTIMER</div>
-          <div class="brand-item-desc">中国 · 合肥 · 精品烘焙</div>
+          <div class="brand-item-desc">🇨🇳 中国 · 合肥 · 精品烘焙</div>
         </div>
         <div class="brand-item-count">1袋</div>
       </div>
-      <div class="brand-item">
+      <div class="brand-item" data-country="巴拿马" onclick="showScreen('brand-detail')">
         <div class="brand-item-logo" style="background:linear-gradient(135deg,#11998e,#38ef7d);">翡</div>
         <div class="brand-item-info">
           <div class="brand-item-name">翡翠庄园 Hacienda La Esmeralda</div>
-          <div class="brand-item-desc">巴拿马 · 瑰夏名庄</div>
+          <div class="brand-item-desc">🇵🇦 巴拿马 · 瑰夏名庄</div>
         </div>
         <div class="brand-item-count">1袋</div>
       </div>
-      <div class="brand-item">
+      <div class="brand-item" data-country="中国" onclick="showScreen('brand-detail')">
         <div class="brand-item-logo" style="background:linear-gradient(135deg,#0f2027,#2c5364);">M</div>
         <div class="brand-item-info">
           <div class="brand-item-name">Manner Coffee</div>
-          <div class="brand-item-desc">中国 · 上海 · 连锁精品</div>
+          <div class="brand-item-desc">🇨🇳 中国 · 上海 · 连锁精品</div>
         </div>
         <div class="brand-item-count">1袋</div>
       </div>
-      <div class="brand-item">
+      <div class="brand-item" data-country="中国" onclick="showScreen('brand-detail')">
         <div class="brand-item-logo" style="background:linear-gradient(135deg,#ee9ca7,#ffdde1);">少</div>
         <div class="brand-item-info">
           <div class="brand-item-name">少数派咖啡</div>
-          <div class="brand-item-desc">中国 · 合肥 · 精品烘焙</div>
+          <div class="brand-item-desc">🇨🇳 中国 · 合肥 · 精品烘焙</div>
         </div>
         <div class="brand-item-count">1袋</div>
       </div>
-      <div class="brand-item">
+      <div class="brand-item" data-country="中国" onclick="showScreen('brand-detail')">
         <div class="brand-item-logo" style="background:linear-gradient(135deg,#606c88,#3f4c6b);">S</div>
         <div class="brand-item-info">
           <div class="brand-item-name">Seesaw Coffee</div>
-          <div class="brand-item-desc">中国 · 上海 · 连锁精品</div>
+          <div class="brand-item-desc">🇨🇳 中国 · 上海 · 连锁精品</div>
         </div>
         <div class="brand-item-count">1袋</div>
       </div>
-      <div class="brand-item">
+      <div class="brand-item" data-country="美国" onclick="showScreen('brand-detail')">
         <div class="brand-item-logo" style="background:linear-gradient(135deg,#a8c0ff,#3f2b96);">蓝</div>
         <div class="brand-item-info">
           <div class="brand-item-name">Blue Bottle 蓝瓶咖啡</div>
-          <div class="brand-item-desc">美国 · 精品咖啡品牌</div>
+          <div class="brand-item-desc">🇺🇸 美国 · 精品咖啡品牌</div>
         </div>
         <div class="brand-item-count">0袋</div>
       </div>
-      <div class="brand-item">
+      <div class="brand-item" data-country="日本" onclick="showScreen('brand-detail')">
         <div class="brand-item-logo" style="background:linear-gradient(135deg,#f7971e,#ffd200);">%</div>
         <div class="brand-item-info">
           <div class="brand-item-name">% Arabica</div>
-          <div class="brand-item-desc">日本 · 国际精品连锁</div>
+          <div class="brand-item-desc">🇯🇵 日本 · 国际精品连锁</div>
+        </div>
+        <div class="brand-item-count">0袋</div>
+      </div>
+      <div class="brand-item" data-country="埃塞俄比亚" onclick="showScreen('brand-detail')">
+        <div class="brand-item-logo" style="background:linear-gradient(135deg,#e8a87c,#c96f4a);">原</div>
+        <div class="brand-item-info">
+          <div class="brand-item-name">埃塞原生种合作社</div>
+          <div class="brand-item-desc">🇪🇹 埃塞俄比亚 · 产区直采</div>
+        </div>
+        <div class="brand-item-count">0袋</div>
+      </div>
+      <div class="brand-item" data-country="肯尼亚" onclick="showScreen('brand-detail')">
+        <div class="brand-item-logo" style="background:linear-gradient(135deg,#b74d4d,#7c2f2f);">K</div>
+        <div class="brand-item-info">
+          <div class="brand-item-name">Kenya AA 工坊</div>
+          <div class="brand-item-desc">🇰🇪 肯尼亚 · 精品处理站</div>
+        </div>
+        <div class="brand-item-count">0袋</div>
+      </div>
+      <div class="brand-item" data-country="哥伦比亚" onclick="showScreen('brand-detail')">
+        <div class="brand-item-logo" style="background:linear-gradient(135deg,#4d9e6a,#2f7c4f);">慧</div>
+        <div class="brand-item-info">
+          <div class="brand-item-name">慧兰庄园</div>
+          <div class="brand-item-desc">🇨🇴 哥伦比亚 · 庄园直供</div>
+        </div>
+        <div class="brand-item-count">0袋</div>
+      </div>
+      <div class="brand-item" data-country="巴西" onclick="showScreen('brand-detail')">
+        <div class="brand-item-logo" style="background:linear-gradient(135deg,#c9a227,#8a6d1a);">皇</div>
+        <div class="brand-item-info">
+          <div class="brand-item-name">皇后庄园 Fazenda</div>
+          <div class="brand-item-desc">🇧🇷 巴西 · 日晒名家</div>
         </div>
         <div class="brand-item-count">0袋</div>
       </div>
     </div>
     <div style="padding:10px 16px 30px;text-align:center;">
       <div style="font-size:11px;color:#9CA3AF;">内置 50+ 品牌 · 可自定义新增</div>
+    </div>
+  </div>
+
+  <!-- ===== 风味标签详情页 ===== -->
+  <div class="screen" id="screen-flavor-detail">
+    <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+    <div class="page-nav">
+      <div class="back-btn" onclick="showScreen('flavor')">‹</div>
+      <div class="page-nav-title">风味标签</div>
+      <div style="width:40px;"></div>
+    </div>
+    <div class="fd-hero">
+      <div class="fd-icon">🍓</div>
+      <div class="fd-name">草莓</div>
+      <div class="fd-cat">水果类 · 被 3 袋豆子使用</div>
+    </div>
+    <div class="form-section">
+      <div class="form-label">标签名称</div>
+      <input class="form-input" value="草莓">
+      <div class="form-label">分类</div>
+      <div class="segment">
+        <div class="segment-item active">水果类</div>
+        <div class="segment-item">花草本</div>
+        <div class="segment-item">甜点类</div>
+        <div class="segment-item">发酵类</div>
+      </div>
+      <div class="form-label">水彩风格图标 <span class="ai-tag">AI生成</span></div>
+      <div class="compare-row" id="fd-compare" style="display:none;">
+        <div class="compare-box"><div class="ic">🍓</div><small>当前图标</small></div>
+        <div class="compare-arrow">→</div>
+        <div class="compare-box"><div class="ic" style="border-style:solid;">✨</div><small>新生成</small></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="save-btn" style="flex:1;" onclick="toggleCompare()">重新生成图标</button>
+        <button class="add-option secondary" style="flex:0 0 84px;border-radius:999px;text-align:center;" onclick="showScreen('flavor')">删除标签</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="add-option secondary" style="flex:1;border-radius:999px;text-align:center;">确认替换</button>
+        <button class="add-option secondary" style="flex:1;border-radius:999px;text-align:center;">保留原图</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 品牌详情页 ===== -->
+  <div class="screen" id="screen-brand-detail">
+    <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+    <div class="page-nav">
+      <div class="back-btn" onclick="showScreen('brand')">‹</div>
+      <div class="page-nav-title">品牌详情</div>
+      <div style="width:40px;"></div>
+    </div>
+    <div class="bd-hero">
+      <div class="bd-logo" style="background:linear-gradient(135deg,#667eea,#764ba2);">O</div>
+      <div class="bd-name">Onyx Coffee Lab</div>
+      <div class="bd-desc">🇺🇸 美国 · 精品烘焙商 · 阿肯色州</div>
+      <div class="bd-stats">
+        <div><b>1</b><small>在库袋数</small></div>
+        <div><b>4.5</b><small>平均评分</small></div>
+        <div><b>2026.01</b><small>首次购入</small></div>
+      </div>
+    </div>
+    <div class="attr-section-title">该品牌豆子</div>
+    <div style="padding:0 16px;">
+      <div class="bean-card" style="margin-bottom:12px;" onclick="showScreen('detail')">
+        <div class="bean-photo">🌿</div>
+        <div class="status-badge status-drinking">在喝</div>
+        <div class="bean-info">
+          <div class="bean-brand">ONYX COFFEE LAB</div>
+          <div class="bean-name">Ethiopia Tamiru Tadesse Alo Village</div>
+          <div class="flavor-icons"><div class="flavor-icon">🍓</div><div class="flavor-icon">🍊</div><div class="flavor-icon">🍦</div></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -928,6 +1129,42 @@ function showScreen(name) {
   document.getElementById('screen-' + name).classList.add('active');
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   event && event.target && event.target.classList.add('active');
+}
+// 确认编辑页：联想联动，点击快捷标签填入输入框
+function fillVal(el, inputId) {
+  document.getElementById(inputId).value = el.textContent;
+}
+// 详情页：评分弹层
+function toggleRate() {
+  const sheet = document.getElementById('rate-sheet');
+  sheet.style.display = sheet.style.display === 'none' ? 'block' : 'none';
+}
+function setStars(e, rowId) {
+  if (e.target.tagName !== 'I') return;
+  const stars = Array.prototype.slice.call(document.getElementById(rowId).children);
+  const n = stars.indexOf(e.target) + 1;
+  stars.forEach((s, i) => s.classList.toggle('off', i >= n));
+  document.getElementById(rowId === 'stars-me' ? 'num-me' : 'num-wife').textContent = n.toFixed(1);
+}
+// 风味标签详情页：新旧图标对比
+function toggleCompare() {
+  const row = document.getElementById('fd-compare');
+  row.style.display = row.style.display === 'none' ? 'flex' : 'none';
+}
+// 品牌库：按国家多选筛选
+function toggleBrandFilter() {
+  document.getElementById('country-pop').classList.toggle('show');
+}
+function applyBrandFilter() {
+  const picked = Array.prototype.slice.call(
+    document.querySelectorAll('#country-pop input:checked')).map(c => c.value);
+  document.querySelectorAll('#screen-brand .brand-item').forEach(item => {
+    item.style.display = !picked.length || picked.includes(item.dataset.country) ? 'flex' : 'none';
+  });
+}
+function clearBrandFilter() {
+  document.querySelectorAll('#country-pop input').forEach(c => c.checked = false);
+  applyBrandFilter();
 }
 </script>
 </body>
