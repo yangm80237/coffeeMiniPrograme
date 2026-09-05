@@ -95,13 +95,15 @@
     display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px 90px;
   }
   .bean-card {
-    background: #fff; border-radius: 14px; overflow: hidden; cursor: pointer;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.05); position: relative;
+    background: var(--card); border-radius: var(--radius-lg); overflow: hidden; cursor: pointer;
+    box-shadow: var(--shadow-card); position: relative;
+    border: 1px solid rgba(80,60,30,.06);
   }
   .bean-photo {
     width: 100%; height: 130px; object-fit: cover;
     display: flex; align-items: center; justify-content: center;
     font-size: 40px;
+    background: linear-gradient(160deg,#F1E7D2,#E5D6BB);
   }
   .roast-badge {
     position: absolute; top: 8px; left: 8px; width: 22px; height: 22px;
@@ -112,19 +114,20 @@
   .roast-medium { background: #B8860B; }
   .roast-dark { background: #5D4037; }
   .status-badge {
-    position: absolute; top: 8px; right: 8px; padding: 3px 8px; border-radius: 10px;
-    font-size: 10px; font-weight: 600;
+    position: absolute; top: 8px; right: 8px; padding: 3px 8px; border-radius: 999px;
+    font-size: 10px; font-weight: 700; box-shadow: 0 1px 4px rgba(0,0,0,.15);
   }
-  .status-resting { background: rgba(250,173,20,0.9); color: #fff; }
-  .status-drinking { background: rgba(82,196,26,0.9); color: #fff; }
-  .status-finished { background: rgba(156,163,175,0.9); color: #fff; }
+  .status-resting { background: var(--status-resting); color: #fff; }
+  .status-drinking { background: var(--status-drinking); color: #fff; }
+  .status-finished { background: var(--status-finished); color: #fff; }
   .bean-info { padding: 8px 10px 10px; }
-  .bean-brand { font-size: 10px; color: #9CA3AF; margin-bottom: 2px; }
-  .bean-name { font-size: 13px; font-weight: 600; color: #1A1B1C; line-height: 1.3; margin-bottom: 6px;
+  .bean-brand { font-size: 10px; color: var(--ink-soft); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 1px; }
+  .bean-name { font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.3; margin-bottom: 6px;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .flavor-icons { display: flex; gap: 4px; }
   .flavor-icon {
-    width: 20px; height: 20px; border-radius: 50%; background: #f5f5f5;
+    width: 20px; height: 20px; border-radius: 50%; background: #FFF;
+    border: 1px solid rgba(80,60,30,.12);
     display: flex; align-items: center; justify-content: center; font-size: 11px;
   }
   .new-badge {
