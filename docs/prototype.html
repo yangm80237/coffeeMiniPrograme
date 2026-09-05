@@ -248,7 +248,7 @@
     display: flex; align-items: center; justify-content: center; font-size: 18px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   }
-  .detail-flavor-text { font-size: 13px; color: #6B7280; margin-top: 4px; }
+  .detail-flavor-text { font-family: var(--font-display); font-style: italic; font-size: 13px; color: var(--ink-soft); margin-top: 4px; letter-spacing: .5px; }
 
   /* 评分区 */
   .rating-section {
@@ -262,36 +262,51 @@
   .rating-stars { font-size: 16px; color: #F59E0B; letter-spacing: 2px; }
   .rating-score { font-size: 20px; font-weight: 700; color: #1A1B1C; margin-top: 2px; }
 
-  /* 属性磁贴 */
+  /* 属性磁贴（异形磁贴形状库） */
   .attr-section-title {
-    font-size: 12px; color: #9CA3AF; text-align: center; padding: 8px 16px;
+    font-size: 12px; color: var(--ink-soft); text-align: center; padding: 8px 16px;
     display: flex; align-items: center; gap: 10px;
   }
   .attr-section-title::before, .attr-section-title::after {
-    content: ''; flex: 1; height: 1px; background: #E5E5E5;
+    content: ''; flex: 1; height: 1px; background: rgba(80,60,30,.14);
   }
-  .attr-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 16px 20px;
-  }
-  .attr-tile {
-    aspect-ratio: 1; border-radius: 14px; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; padding: 8px; position: relative;
-    overflow: hidden;
-  }
-  .attr-tile .attr-icon { font-size: 24px; margin-bottom: 4px; }
-  .attr-tile .attr-value { font-size: 12px; font-weight: 700; color: #1A1B1C; text-align: center; line-height: 1.2; }
-  .attr-tile .attr-label { font-size: 9px; color: rgba(0,0,0,0.4); margin-top: 2px; }
-  .tile-roastdate { background: linear-gradient(135deg,#FFE4E1,#FFC0CB); }
-  .tile-flavor { background: linear-gradient(135deg,#F5F0E8,#E8DFD0); }
-  .tile-brew { background: linear-gradient(135deg,#E0F2FE,#BAE6FD); }
-  .tile-process { background: linear-gradient(135deg,#DBEAFE,#93C5FD); }
-  .tile-variety { background: linear-gradient(135deg,#D4A574,#8B6914); color: #fff; }
-  .tile-variety .attr-value, .tile-variety .attr-label { color: #fff; }
-  .tile-origin { background: linear-gradient(135deg,#A7F3D0,#6EE7B7); }
-  .tile-altitude { background: linear-gradient(135deg,#FEF3C7,#FDE68A); }
-  .tile-roast { background: linear-gradient(135deg,#FDE68A,#F59E0B); }
-  .tile-weight { background: linear-gradient(135deg,#FED7AA,#FDBA74); }
-  .tile-indate { background: linear-gradient(135deg,#E9D5FF,#D8B4FE); }
+  .tile-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:0 16px 20px; }
+  .tile { aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:4px; font-size:12px; color:#fff; text-align:center; padding:8px; position:relative;
+    box-shadow: var(--shadow-card); }
+  .tile b { font-size:12px; font-weight:700; line-height:1.25; }
+  .tile small { font-size:10px; opacity:.85; }
+  .tile .pill { display:inline-block; padding:2px 8px; border-radius:999px;
+    background:rgba(80,60,30,.08); margin:1px; font-weight:600; font-size:10px; }
+  .tile-c1{background:linear-gradient(150deg,#F6C6B4,#EE9A8B);}  /* 烘焙日期 暖粉 */
+  .tile-c2{background:#EFE9DC;color:#6B655A;}                    /* 风味 米灰 */
+  .tile-c3{background:linear-gradient(160deg,#E8C27A,#D9A648);}  /* 克重 琥珀 */
+  .tile-c4{background:linear-gradient(160deg,#8FC3E8,#5E9FD4);}  /* 处理法 蓝 */
+  .tile-c5{background:#5D4037;}                                  /* 豆种 深棕 */
+  .tile-c6{background:linear-gradient(160deg,#9CCFA3,#5FA97C);}  /* 产区 绿 */
+  .tile-c7{background:linear-gradient(160deg,#D9E29A,#A8C05E);}  /* 海拔 黄绿 */
+  .tile-c8{background:linear-gradient(160deg,#E89B9B,#C96F4A);}  /* 烘焙度 */
+  .tile-c9{background:linear-gradient(160deg,#E8B27A,#C9834A);}  /* 冲煮 橙棕 */
+  .tile-c10{background:linear-gradient(160deg,#B7AECB,#8E82AB);} /* 入库 紫灰 */
+  /* 形状：全部由 border-radius / clip-path 实现 */
+  .sh-cloud  { border-radius:46% 54% 55% 45%/55% 48% 52% 45%; }
+  .sh-drop   { border-radius:0 50% 50% 50%; transform:rotate(45deg); }
+  .sh-drop>* { transform:rotate(-45deg); }
+  .sh-bean   { border-radius:50% / 42%; position:relative; }
+  .sh-bean:after { content:""; position:absolute; left:50%; top:12%; bottom:12%; width:3px;
+    margin-left:-1.5px; border-radius:3px; background:rgba(255,255,255,.35); transform:rotate(18deg); }
+  .sh-mtn    { clip-path:polygon(50% 0,100% 78%,78% 100%,22% 100%,0 78%); }
+  .sh-bag    { border-radius:10px 10px 14px 14px; position:relative; margin-top:7px; }
+  .sh-bag:before { content:""; position:absolute; top:-7px; left:14%; right:14%; height:10px;
+    border-radius:4px 4px 0 0; background:inherit; filter:brightness(.94); }
+  .sh-round  { border-radius:50%; }
+  .sh-clock  { border-radius:50%; position:relative; }
+  .sh-clock:after { content:""; position:absolute; left:50%; top:20%; width:3px; height:30%;
+    margin-left:-1.5px; border-radius:2px; background:rgba(255,255,255,.85); transform-origin:bottom; transform:rotate(35deg); }
+  .sh-cup    { border-radius:10px 10px 16px 16px; position:relative; }
+  .sh-cup:before { content:""; position:absolute; right:-9px; top:26%; width:14px; height:14px;
+    border:3px solid rgba(255,255,255,.7); border-radius:50%; }
+  .sh-map    { border-radius:18%; }
 
   /* 底部操作 */
   .detail-actions {
@@ -668,67 +683,17 @@
     </div>
 
     <div class="attr-section-title">豆子属性</div>
-    <div class="attr-grid">
-      <div class="attr-tile tile-roastdate">
-        <div class="attr-icon">📅</div>
-        <div class="attr-value">08.28</div>
-        <div class="attr-label">烘焙日期</div>
-      </div>
-      <div class="attr-tile tile-flavor">
-        <div class="attr-icon">🏷️</div>
-        <div class="attr-value" style="font-size:10px;">草莓 橙子<br>奶油 白蜜</div>
-        <div class="attr-label">风味标签</div>
-      </div>
-      <div class="attr-tile tile-brew">
-        <div class="attr-icon">💧</div>
-        <div class="attr-value">手冲</div>
-        <div class="attr-label">冲煮方式</div>
-      </div>
-      <div class="attr-tile tile-process">
-        <div class="attr-icon" style="color:#fff;">💧</div>
-        <div class="attr-value" style="color:#fff;">水洗</div>
-        <div class="attr-label" style="color:rgba(255,255,255,0.7);">处理法</div>
-      </div>
-      <div class="attr-tile tile-variety">
-        <div class="attr-icon">🫘</div>
-        <div class="attr-value">74158</div>
-        <div class="attr-label">豆种</div>
-      </div>
-      <div class="attr-tile tile-origin">
-        <div class="attr-icon">🗺️</div>
-        <div class="attr-value" style="font-size:10px;">本萨<br>埃塞俄比亚</div>
-        <div class="attr-label">产区</div>
-      </div>
-      <div class="attr-tile tile-altitude">
-        <div class="attr-icon">⛰️</div>
-        <div class="attr-value">2200m</div>
-        <div class="attr-label">海拔</div>
-      </div>
-      <div class="attr-tile tile-roast">
-        <div class="attr-icon">🔥</div>
-        <div class="attr-value">浅烘</div>
-        <div class="attr-label">烘焙度</div>
-      </div>
-      <div class="attr-tile tile-weight">
-        <div class="attr-icon">⚖️</div>
-        <div class="attr-value">200g</div>
-        <div class="attr-label">克重</div>
-      </div>
-      <div class="attr-tile tile-indate">
-        <div class="attr-icon">📥</div>
-        <div class="attr-value">09.01</div>
-        <div class="attr-label">入库日期</div>
-      </div>
-      <div class="attr-tile" style="background:linear-gradient(135deg,#FECACA,#FCA5A5);">
-        <div class="attr-icon">☕</div>
-        <div class="attr-value">常规</div>
-        <div class="attr-label">咖啡因</div>
-      </div>
-      <div class="attr-tile" style="background:linear-gradient(135deg,#FBCFE8,#F9A8D4);">
-        <div class="attr-icon">⭐</div>
-        <div class="attr-value">微批次</div>
-        <div class="attr-label">批次</div>
-      </div>
+    <div class="tile-grid">
+      <div class="tile sh-cloud tile-c1"><b>08.28</b><small>烘焙日期</small></div>
+      <div class="tile sh-drop tile-c4"><div><b>水洗</b><small>处理法</small></div></div>
+      <div class="tile sh-bean tile-c5"><b>74158</b><small>豆种</small></div>
+      <div class="tile sh-mtn tile-c7"><b>2200m</b><small>海拔</small></div>
+      <div class="tile sh-bag tile-c3"><b>200g</b><small>克重</small></div>
+      <div class="tile sh-round tile-c8"><b>浅烘</b><small>烘焙度</small></div>
+      <div class="tile sh-cup tile-c9"><b>手冲</b><small>冲煮</small></div>
+      <div class="tile sh-clock tile-c10"><b>09.01</b><small>入库</small></div>
+      <div class="tile sh-map tile-c6"><b>耶加雪菲</b><small>产区</small></div>
+      <div class="tile tile-c2"><span class="pill">草莓</span><span class="pill">橙子</span><span class="pill">奶油</span><span class="pill">白蜜</span><small>风味标签</small></div>
     </div>
 
     <div class="detail-actions">
