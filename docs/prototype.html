@@ -155,8 +155,8 @@
     display: flex; align-items: center; gap: 12px; padding: 14px;
     border-radius: 12px; margin-bottom: 8px; cursor: pointer;
   }
-  .add-option.primary { background: #1A1B1C; color: #fff; }
-  .add-option.secondary { background: #F7F5F0; color: #1A1B1C; }
+  .add-option.primary { background: var(--ink); color: #fff; }
+  .add-option.secondary { background: var(--card); color: var(--ink); }
   .add-option-icon { font-size: 22px; }
   .add-option-text { flex: 1; }
   .add-option-text .main { font-size: 14px; font-weight: 600; }
@@ -169,25 +169,25 @@
   .back-btn { font-size: 20px; cursor: pointer; width: 32px; }
   .page-nav-title { font-size: 17px; font-weight: 700; flex: 1; font-family: var(--font-display); letter-spacing: .5px; }
   .save-btn {
-    background: #07C160; color: #fff; padding: 7px 18px; border-radius: 16px;
+    background: var(--ink); color: #fff; padding: 7px 18px; border-radius: 999px;
     font-size: 13px; font-weight: 600; cursor: pointer; border: none;
   }
   .form-section { padding: 0 16px 16px; }
   .form-label { font-size: 12px; color: #6B7280; margin-bottom: 6px; font-weight: 500; }
   .form-input {
-    width: 100%; padding: 10px 12px; border: 1px solid #E5E5E5; border-radius: 10px;
-    font-size: 14px; background: #fff; margin-bottom: 12px;
+    width: 100%; padding: 10px 12px; border: 1px solid rgba(80,60,30,.14); border-radius: var(--radius-md);
+    font-size: 13px; background: var(--card); color: var(--ink); margin-bottom: 12px;
   }
   .form-row { display: flex; gap: 10px; }
   .form-row .form-group { flex: 1; }
   .segment {
-    display: flex; background: #F0EEEA; border-radius: 10px; padding: 3px; margin-bottom: 12px;
+    display: flex; background: rgba(80,60,30,.08); border-radius: 10px; padding: 3px; margin-bottom: 12px;
   }
   .segment-item {
     flex: 1; text-align: center; padding: 7px; font-size: 12px; border-radius: 8px;
-    cursor: pointer; color: #6B7280;
+    cursor: pointer; color: var(--ink-soft);
   }
-  .segment-item.active { background: #fff; color: #1A1B1C; font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .segment-item.active { background: var(--card); color: var(--ink); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
   .brand-match {
     display: flex; align-items: center; gap: 10px; padding: 10px 12px;
     background: #F0F9FF; border-radius: 10px; margin-bottom: 12px; border: 1px solid #BAE6FD;
