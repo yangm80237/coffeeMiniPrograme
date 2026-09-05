@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>咖啡豆管理小程序 · 高保真原型</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, 'PingFang SC', 'Segoe UI', sans-serif;
+    background: #f0f0f0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+  }
+  h1 { font-size: 18px; color: #1A1B1C; margin-bottom: 6px; }
+  .subtitle { font-size: 12px; color: #6B7280; margin-bottom: 16px; }
+
+  /* 页面切换 */
+  .tab-bar {
+    display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center;
+  }
+  .tab-btn {
+    padding: 7px 14px; border-radius: 16px; border: 1px solid #ddd;
+    background: #fff; font-size: 12px; cursor: pointer; color: #6B7280;
+    transition: all .2s;
+  }
+  .tab-btn.active { background: #07C160; color: #fff; border-color: #07C160; }
+
+  /* 手机外框 */
+  .phone {
+    width: 375px; height: 720px; background: #fff; border-radius: 40px;
+    border: 8px solid #1A1B1C; overflow: hidden; position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  }
+  .phone-notch {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 140px; height: 28px; background: #1A1B1C; border-radius: 0 0 18px 18px; z-index: 100;
+  }
+  .screen {
+    width: 100%; height: 100%; overflow-y: auto; display: none;
+    background: #F7F5F0;
+  }
+  .screen.active { display: block; }
+  .screen::-webkit-scrollbar { display: none; }
+
+  /* 状态栏 */
+  .status-bar {
+    height: 44px; display: flex; align-items: flex-end; justify-content: space-between;
+    padding: 0 24px 6px; font-size: 14px; font-weight: 600; color: #1A1B1C;
+  }
+
+  /* ===== 货架页 ===== */
+  .shelf-header {
+    padding: 8px 16px 12px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .shelf-title { font-size: 20px; font-weight: 700; color: #1A1B1C; }
+  .shelf-title span { font-size: 13px; color: #6B7280; font-weight: 400; margin-left: 6px; }
+  .header-actions { display: flex; gap: 10px; }
+  .icon-btn {
+    width: 32px; height: 32px; border-radius: 50%; background: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 15px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06); cursor: pointer;
+  }
+
+  /* 状态筛选 */
+  .filter-tabs {
+    display: flex; gap: 8px; padding: 0 16px 12px; overflow-x: auto;
+  }
+  .filter-tab {
+    padding: 6px 14px; border-radius: 14px; font-size: 12px; white-space: nowrap;
+    background: #fff; color: #6B7280; cursor: pointer; border: 1px solid transparent;
+  }
+  .filter-tab.active { background: #1A1B1C; color: #fff; }
+  .filter-tab .count { font-size: 10px; opacity: 0.7; margin-left: 3px; }
+
+  /* 豆子卡片网格 */
+  .bean-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px 90px;
+  }
+  .bean-card {
+    background: #fff; border-radius: 14px; overflow: hidden; cursor: pointer;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.05); position: relative;
+  }
+  .bean-photo {
+    width: 100%; height: 130px; object-fit: cover;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px;
+  }
+  .roast-badge {
+    position: absolute; top: 8px; left: 8px; width: 22px; height: 22px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: #fff;
+  }
+  .roast-light { background: #E8C97A; }
+  .roast-medium { background: #B8860B; }
+  .roast-dark { background: #5D4037; }
+  .status-badge {
+    position: absolute; top: 8px; right: 8px; padding: 3px 8px; border-radius: 10px;
+    font-size: 10px; font-weight: 600;
+  }
+  .status-resting { background: rgba(250,173,20,0.9); color: #fff; }
+  .status-drinking { background: rgba(82,196,26,0.9); color: #fff; }
+  .status-finished { background: rgba(156,163,175,0.9); color: #fff; }
+  .bean-info { padding: 8px 10px 10px; }
+  .bean-brand { font-size: 10px; color: #9CA3AF; margin-bottom: 2px; }
+  .bean-name { font-size: 13px; font-weight: 600; color: #1A1B1C; line-height: 1.3; margin-bottom: 6px;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .flavor-icons { display: flex; gap: 4px; }
+  .flavor-icon {
+    width: 20px; height: 20px; border-radius: 50%; background: #f5f5f5;
+    display: flex; align-items: center; justify-content: center; font-size: 11px;
+  }
+  .new-badge {
+    position: absolute; bottom: 36px; right: 8px; background: #EA6668; color: #fff;
+    font-size: 9px; padding: 2px 6px; border-radius: 8px; font-weight: 600;
+  }
+
+  /* 底部添加按钮 */
+  .add-fab {
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: #1A1B1C; color: #fff; padding: 12px 28px; border-radius: 24px;
+    font-size: 14px; font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    cursor: pointer; z-index: 50; display: flex; align-items: center; gap: 6px;
+  }
+
+  /* ===== 添加弹窗 ===== */
+  .add-sheet {
+    position: absolute; bottom: 0; left: 0; right: 0; background: #fff;
+    border-radius: 20px 20px 0 0; padding: 20px 20px 30px; z-index: 60;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+  }
+  .sheet-handle { width: 36px; height: 4px; background: #ddd; border-radius: 2px; margin: 0 auto 16px; }
+  .sheet-title { font-size: 16px; font-weight: 700; text-align: center; margin-bottom: 16px; }
+  .add-option {
+    display: flex; align-items: center; gap: 12px; padding: 14px;
+    border-radius: 12px; margin-bottom: 8px; cursor: pointer;
+  }
+  .add-option.primary { background: #1A1B1C; color: #fff; }
+  .add-option.secondary { background: #F7F5F0; color: #1A1B1C; }
+  .add-option-icon { font-size: 22px; }
+  .add-option-text { flex: 1; }
+  .add-option-text .main { font-size: 14px; font-weight: 600; }
+  .add-option-text .sub { font-size: 11px; opacity: 0.6; margin-top: 2px; }
+
+  /* ===== 确认编辑页 ===== */
+  .page-nav {
+    display: flex; align-items: center; padding: 8px 16px 12px; gap: 12px;
+  }
+  .back-btn { font-size: 20px; cursor: pointer; width: 32px; }
+  .page-nav-title { font-size: 17px; font-weight: 700; flex: 1; }
+  .save-btn {
+    background: #07C160; color: #fff; padding: 7px 18px; border-radius: 16px;
+    font-size: 13px; font-weight: 600; cursor: pointer; border: none;
+  }
+  .form-section { padding: 0 16px 16px; }
+  .form-label { font-size: 12px; color: #6B7280; margin-bottom: 6px; font-weight: 500; }
+  .form-input {
+    width: 100%; padding: 10px 12px; border: 1px solid #E5E5E5; border-radius: 10px;
+    font-size: 14px; background: #fff; margin-bottom: 12px;
+  }
+  .form-row { display: flex; gap: 10px; }
+  .form-row .form-group { flex: 1; }
+  .segment {
+    display: flex; background: #F0EEEA; border-radius: 10px; padding: 3px; margin-bottom: 12px;
+  }
+  .segment-item {
+    flex: 1; text-align: center; padding: 7px; font-size: 12px; border-radius: 8px;
+    cursor: pointer; color: #6B7280;
+  }
+  .segment-item.active { background: #fff; color: #1A1B1C; font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .brand-match {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    background: #F0F9FF; border-radius: 10px; margin-bottom: 12px; border: 1px solid #BAE6FD;
+  }
+  .brand-logo {
+    width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg,#667eea,#764ba2);
+    display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; font-weight: 700;
+  }
+  .brand-match-info { flex: 1; }
+  .brand-match-name { font-size: 13px; font-weight: 600; }
+  .brand-match-desc { font-size: 10px; color: #6B7280; }
+  .ai-tag { font-size: 9px; background: #07C160; color: #fff; padding: 2px 6px; border-radius: 6px; }
+  .flavor-tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .flavor-tag {
+    display: flex; align-items: center; gap: 4px; padding: 5px 10px; background: #fff;
+    border-radius: 14px; font-size: 12px; border: 1px solid #E5E5E5;
+  }
+  .flavor-tag .icon { font-size: 13px; }
+  .flavor-tag .remove { color: #9CA3AF; cursor: pointer; font-size: 14px; margin-left: 2px; }
+  .add-flavor-btn {
+    padding: 5px 10px; background: #F7F5F0; border-radius: 14px; font-size: 12px;
+    color: #6B7280; cursor: pointer; border: 1px dashed #ddd;
+  }
+
+  /* AI识别中 */
+  .ai-processing {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 300px; gap: 16px;
+  }
+  .ai-spinner {
+    width: 48px; height: 48px; border: 3px solid #E5E5E5; border-top-color: #07C160;
+    border-radius: 50%; animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .ai-text { font-size: 14px; color: #6B7280; }
+  .ai-text strong { color: #07C160; }
+
+  /* ===== 详情页 ===== */
+  .detail-hero {
+    padding: 0 16px 12px; text-align: center;
+  }
+  .detail-photo {
+    width: 140px; height: 180px; margin: 0 auto 12px; border-radius: 12px;
+    object-fit: cover; box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    display: flex; align-items: center; justify-content: center; font-size: 50px;
+  }
+  .detail-name { font-size: 18px; font-weight: 700; color: #1A1B1C; line-height: 1.3; margin-bottom: 4px; }
+  .detail-brand { font-size: 13px; color: #6B7280; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .detail-brand .logo {
+    width: 18px; height: 18px; border-radius: 4px; background: linear-gradient(135deg,#667eea,#764ba2);
+    display: flex; align-items: center; justify-content: center; color: #fff; font-size: 9px; font-weight: 700;
+  }
+  .detail-flavor-row {
+    display: flex; align-items: center; justify-content: center; gap: 8px; margin: 12px 0;
+  }
+  .detail-flavor-icon {
+    width: 36px; height: 36px; border-radius: 50%; background: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .detail-flavor-text { font-size: 13px; color: #6B7280; margin-top: 4px; }
+
+  /* 评分区 */
+  .rating-section {
+    display: flex; gap: 10px; padding: 0 16px 16px;
+  }
+  .rating-card {
+    flex: 1; background: #fff; border-radius: 12px; padding: 12px; text-align: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .rating-label { font-size: 11px; color: #9CA3AF; margin-bottom: 4px; }
+  .rating-stars { font-size: 16px; color: #F59E0B; letter-spacing: 2px; }
+  .rating-score { font-size: 20px; font-weight: 700; color: #1A1B1C; margin-top: 2px; }
+
+  /* 属性磁贴 */
+  .attr-section-title {
+    font-size: 12px; color: #9CA3AF; text-align: center; padding: 8px 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .attr-section-title::before, .attr-section-title::after {
+    content: ''; flex: 1; height: 1px; background: #E5E5E5;
+  }
+  .attr-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 16px 20px;
+  }
+  .attr-tile {
+    aspect-ratio: 1; border-radius: 14px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 8px; position: relative;
+    overflow: hidden;
+  }
+  .attr-tile .attr-icon { font-size: 24px; margin-bottom: 4px; }
+  .attr-tile .attr-value { font-size: 12px; font-weight: 700; color: #1A1B1C; text-align: center; line-height: 1.2; }
+  .attr-tile .attr-label { font-size: 9px; color: rgba(0,0,0,0.4); margin-top: 2px; }
+  .tile-roastdate { background: linear-gradient(135deg,#FFE4E1,#FFC0CB); }
+  .tile-flavor { background: linear-gradient(135deg,#F5F0E8,#E8DFD0); }
+  .tile-brew { background: linear-gradient(135deg,#E0F2FE,#BAE6FD); }
+  .tile-process { background: linear-gradient(135deg,#DBEAFE,#93C5FD); }
+  .tile-variety { background: linear-gradient(135deg,#D4A574,#8B6914); color: #fff; }
+  .tile-variety .attr-value, .tile-variety .attr-label { color: #fff; }
+  .tile-origin { background: linear-gradient(135deg,#A7F3D0,#6EE7B7); }
+  .tile-altitude { background: linear-gradient(135deg,#FEF3C7,#FDE68A); }
+  .tile-roast { background: linear-gradient(135deg,#FDE68A,#F59E0B); }
+  .tile-weight { background: linear-gradient(135deg,#FED7AA,#FDBA74); }
+  .tile-indate { background: linear-gradient(135deg,#E9D5FF,#D8B4FE); }
+
+  /* 底部操作 */
+  .detail-actions {
+    display: flex; gap: 8px; padding: 12px 16px 24px;
+  }
+  .action-btn {
+    flex: 1; padding: 12px; border-radius: 12px; text-align: center;
+    font-size: 13px; font-weight: 600; cursor: pointer; border: none;
+  }
+  .action-btn.primary { background: #07C160; color: #fff; }
+  .action-btn.warn { background: #FEF3C7; color: #92400E; }
+  .action-btn.gray { background: #F3F4F6; color: #6B7280; }
+
+  /* ===== 风味维护页 ===== */
+  .flavor-page-header {
+    padding: 8px 16px 12px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .flavor-category {
+    padding: 0 16px 12px;
+  }
+  .flavor-category-title {
+    font-size: 13px; font-weight: 600; color: #6B7280; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .flavor-category-title .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .flavor-tag-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+  }
+  .flavor-tag-item {
+    background: #fff; border-radius: 10px; padding: 10px 4px; text-align: center;
+    cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .flavor-tag-item .icon {
+    width: 32px; height: 32px; margin: 0 auto 4px; border-radius: 50%;
+    background: #F7F5F0; display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  .flavor-tag-item .name { font-size: 10px; color: #1A1B1C; }
+
+  /* ===== 品牌页 ===== */
+  .brand-list { padding: 0 16px 20px; }
+  .brand-item {
+    display: flex; align-items: center; gap: 12px; padding: 12px;
+    background: #fff; border-radius: 12px; margin-bottom: 8px; cursor: pointer;
+  }
+  .brand-item-logo {
+    width: 40px; height: 40px; border-radius: 10px; display: flex;
+    align-items: center; justify-content: center; color: #fff; font-size: 14px; font-weight: 700;
+  }
+  .brand-item-info { flex: 1; }
+  .brand-item-name { font-size: 14px; font-weight: 600; }
+  .brand-item-desc { font-size: 11px; color: #9CA3AF; margin-top: 2px; }
+  .brand-item-count { font-size: 11px; color: #07C160; font-weight: 600; }
+
+  /* 空状态 */
+  .empty-state {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 60px 20px; text-align: center;
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+  .empty-text { font-size: 14px; color: #9CA3AF; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<h1>☕ 咖啡豆管理小程序 · 高保真原型</h1>
+<p class="subtitle">参考BeanBook风格 · 中文界面 · 点击顶部标签切换页面</p>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showScreen('shelf')">🏠 货架页</button>
+  <button class="tab-btn" onclick="showScreen('add')">➕ 添加豆子</button>
+  <button class="tab-btn" onclick="showScreen('confirm')">📝 确认编辑</button>
+  <button class="tab-btn" onclick="showScreen('detail')">📋 豆子详情</button>
+  <button class="tab-btn" onclick="showScreen('flavor')">🏷️ 风味维护</button>
+  <button class="tab-btn" onclick="showScreen('brand')">🏢 品牌库</button>
+</div>
+
+<div class="phone">
+  <div class="phone-notch"></div>
+
+  <!-- ===== 货架页 ===== -->
+  <div class="screen active" id="screen-shelf">
+    <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+    <div class="shelf-header">
+      <div class="shelf-title">我的咖啡豆 <span>6袋</span></div>
+      <div class="header-actions">
+        <div class="icon-btn">🔍</div>
+        <div class="icon-btn">☰</div>
+      </div>
+    </div>
+    <div class="filter-tabs">
+      <div class="filter-tab active">全部 <span class="count">6</span></div>
+      <div class="filter-tab">🟡 养豆中 <span class="count">2</span></div>
+      <div class="filter-tab">🟢 在喝 <span class="count">3</span></div>
+      <div class="filter-tab">⚪ 已喝完 <span class="count">1</span></div>
+    </div>
+    <div class="bean-grid">
+      <!-- 在喝 -->
+      <div class="bean-card" onclick="showScreen('detail')">
+        <div class="bean-photo" style="background:linear-gradient(135deg,#2d2d2d,#4a4a4a);">☕</div>
+        <div class="roast-badge roast-light">浅</div>
+        <div class="status-badge status-drinking">在喝</div>
+        <div class="bean-info">
+          <div class="bean-brand">Onyx Coffee Lab</div>
+          <div class="bean-name">Ethiopia Tamiru Alo Village</div>
+          <div class="flavor-icons">
+            <div class="flavor-icon">🍓</div>
+            <div class="flavor-icon">🍊</div>
+            <div class="flavor-icon">🍯</div>
+          </div>
+        </div>
+      </div>
+      <!-- 养豆中 -->
+      <div class="bean-card">
+        <div class="bean-photo" style="background:linear-gradient(135deg,#f5e6d3,#e8d4b8);">🫘</div>
+        <div class="roast-badge roast-medium">中</div>
+        <div class="status-badge status-resting">还需5天</div>
+        <div class="new-badge">NEW</div>
+        <div class="bean-info">
+          <div class="bean-brand">治光师</div>
+          <div class="bean-name">黄色潜水艇 SOE 意式拼配</div>
+          <div class="flavor-icons">
+            <div class="flavor-icon">🌰</div>
+            <div class="flavor-icon">🍫</div>
+          </div>
+        </div>
+      </div>
+      <!-- 在喝 -->
+      <div class="bean-card">
+        <div class="bean-photo" style="background:linear-gradient(135deg,#1a5c3a,#2d8a5e);">🌿</div>
+        <div class="roast-badge roast-light">浅</div>
+        <div class="status-badge status-drinking">在喝</div>
+        <div class="bean-info">
+          <div class="bean-brand">翡翠庄园</div>
+          <div class="bean-name">蓝标水洗 瑰夏</div>
+          <div class="flavor-icons">
+            <div class="flavor-icon">🌼</div>
+            <div class="flavor-icon">🍋</div>
+            <div class="flavor-icon">🍬</div>
+          </div>
+        </div>
+      </div>
+      <!-- 养豆中 -->
+      <div class="bean-card">
+        <div class="bean-photo" style="background:linear-gradient(135deg,#8B4513,#A0522D);">🔥</div>
+        <div class="roast-badge roast-dark">深</div>
+        <div class="status-badge status-resting">还需8天</div>
+        <div class="bean-info">
+          <div class="bean-brand">Manner</div>
+          <div class="bean-name">深烘意式拼配</div>
+          <div class="flavor-icons">
+            <div class="flavor-icon">🍫</div>
+            <div class="flavor-icon">🥜</div>
+          </div>
+        </div>
+      </div>
+      <!-- 在喝 -->
+      <div class="bean-card">
+        <div class="bean-photo" style="background:linear-gradient(135deg,#e8b4b8,#d4919a);">🌸</div>
+        <div class="roast-badge roast-light">浅</div>
+        <div class="status-badge status-drinking">在喝</div>
+        <div class="bean-info">
+          <div class="bean-brand">少数派</div>
+          <div class="bean-name">耶加雪菲 科契尔 水洗</div>
+          <div class="flavor-icons">
+            <div class="flavor-icon">🍊</div>
+            <div class="flavor-icon">🌼</div>
+            <div class="flavor-icon">🍯</div>
+          </div>
+        </div>
+      </div>
+      <!-- 已喝完 -->
+      <div class="bean-card" style="opacity:0.5;">
+        <div class="bean-photo" style="background:linear-gradient(135deg,#ccc,#aaa);">📦</div>
+        <div class="roast-badge roast-medium">中</div>
+        <div class="status-badge status-finished">已喝完</div>
+        <div class="bean-info">
+          <div class="bean-brand">Seesaw</div>
+          <div class="bean-name">斑马 意式拼配</div>
+          <div class="flavor-icons">
+            <div class="flavor-icon">🌰</div>
+            <div class="flavor-icon">🍬</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="add-fab" onclick="showScreen('add')">➕ 添加豆子</div>
+  </div>
+
+  <!-- ===== 添加豆子 ===== -->
+  <div class="screen" id="screen-add">
+    <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+    <div class="shelf-header">
+      <div class="shelf-title">我的咖啡豆 <span>6袋</span></div>
+      <div class="header-actions">
+        <div class="icon-btn">🔍</div>
+      </div>
+    </div>
+    <div class="filter-tabs">
+      <div class="filter-tab active">全部 <span class="count">6</span></div>
+      <div class="filter-tab">🟡 养豆中 <span class="count">2</span></div>
+      <div class="filter-tab">🟢 在喝 <span class="count">3</span></div>
+    </div>
+    <div class="bean-grid" style="opacity:0.4;">
+      <div class="bean-card"><div class="bean-photo" style="background:#333;">☕</div><div class="bean-info"><div class="bean-brand">Onyx</div><div class="bean-name">Ethiopia</div></div></div>
+      <div class="bean-card"><div class="bean-photo" style="background:#ddd;">🫘</div><div class="bean-info"><div class="bean-brand">治光师</div><div class="bean-name">黄色潜水艇</div></div></div>
+    </div>
+    <!-- 底部弹窗 -->
+    <div class="add-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">添加豆子</div>
+      <div class="add-option primary" onclick="showScreen('confirm')">
+        <div class="add-option-icon">📷</div>
+        <div class="add-option-text">
+          <div class="main">AI拍照识别</div>
+          <div class="sub" style="opacity:0.7;">拍豆袋包装，自动识别所有信息</div>
+        </div>
+        <div style="font-size:18px;">›</div>
+      </div>
+      <div class="add-option secondary" onclick="showScreen('confirm')">
+        <div class="add-option-icon">✏️</div>
+        <div class="add-option-text">
+          <div class="main">手动录入</div>
+          <div class="sub">不用AI，自己填写所有信息</div>
+        </div>
+        <div style="font-size:18px;color:#999;">›</div>
+      </div>
+      <div class="add-option secondary">
+        <div class="add-option-icon">🔗</div>
+        <div class="add-option-text">
+          <div class="main">粘贴商品链接</div>
+          <div class="sub">淘宝/微店链接，AI抓取商品信息</div>
+        </div>
+        <div style="font-size:18px;color:#999;">›</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 确认编辑页 ===== -->
+  <div class="screen" id="screen-confirm">
+    <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+    <div class="page-nav">
+      <div class="back-btn" onclick="showScreen('shelf')">‹</div>
+      <div class="page-nav-title">确认豆子信息</div>
+      <button class="save-btn" onclick="showScreen('shelf')">入库</button>
+    </div>
+    <div class="form-section">
+      <!-- AI识别提示 -->
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#F0FDF4;border-radius:10px;margin-bottom:14px;border:1px solid #BBF7D0;">
+        <span style="font-size:14px;">✨</span>
+        <span style="font-size:12px;color:#166534;">AI已识别以下信息，请核对确认</span>
+      </div>
+
+      <!-- 品牌匹配 -->
+      <div class="form-label">品牌 <span class="ai-tag">AI匹配</span></div>
+      <div class="brand-match">
+        <div class="brand-logo">O</div>
+        <div class="brand-match-info">
+          <div class="brand-match-name">Onyx Coffee Lab</div>
+          <div class="brand-match-desc">美国 · 精品烘焙商 · 已匹配内置品牌库</div>
+        </div>
+        <span style="font-size:16px;color:#999;">›</span>
+      </div>
+
+      <div class="form-label">豆名</div>
+      <input class="form-input" value="Ethiopia Tamiru Tadesse Alo Village">
+
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">产区</div>
+          <input class="form-input" value="埃塞俄比亚 本萨">
+        </div>
+        <div class="form-group">
+          <div class="form-label">豆种</div>
+          <input class="form-input" value="74158">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">处理法</div>
+          <input class="form-input" value="水洗">
+        </div>
+        <div class="form-group">
+          <div class="form-label">海拔</div>
+          <input class="form-input" value="2200m">
+        </div>
+      </div>
+
+      <div class="form-label">烘焙度</div>
+      <div class="segment">
+        <div class="segment-item active">浅烘</div>
+        <div class="segment-item">中烘</div>
+        <div class="segment-item">深烘</div>
+      </div>
+
+      <div class="form-label">冲煮方式</div>
+      <div class="segment">
+        <div class="segment-item active">手冲</div>
+        <div class="segment-item">意式</div>
+        <div class="segment-item">通用</div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">克重</div>
+          <input class="form-input" value="200g">
+        </div>
+        <div class="form-group">
+          <div class="form-label">烘焙日期</div>
+          <input class="form-input" value="2026-08-28">
+        </div>
+      </div>
+
+      <div class="form-label">风味标签 <span class="ai-tag">AI映射</span></div>
+      <div class="flavor-tag-list">
+        <div class="flavor-tag"><span class="icon">🍓</span>草莓<span class="remove">×</span></div>
+        <div class="flavor-tag"><span class="icon">🍊</span>橙子<span class="remove">×</span></div>
+        <div class="flavor-tag"><span class="icon">🍦</span>奶油<span class="remove">×</span></div>
+        <div class="flavor-tag"><span class="icon">🍯</span>白蜜<span class="remove">×</span></div>
+        <div class="add-flavor-btn">+ 添加</div>
+      </div>
+
+      <div class="form-label">烘焙商风味描述</div>
+      <input class="form-input" value="strawberry · cream · orange · white honey">
+    </div>
+  </div>
+
+  <!-- ===== 豆子详情页 ===== -->
+  <div class="screen" id="screen-detail">
+    <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+    <div class="page-nav">
+      <div class="back-btn" onclick="showScreen('shelf')">‹</div>
+      <div style="flex:1;"></div>
+      <div class="icon-btn" style="width:32px;height:32px;font-size:14px;">⤴</div>
+    </div>
+
+    <div class="detail-hero">
+      <div class="detail-photo" style="background:linear-gradient(135deg,#2d2d2d,#4a4a4a);">☕</div>
+      <div class="detail-name">Ethiopia Tamiru Tadesse<br>Alo Village</div>
+      <div class="detail-brand">
+        <span class="logo">O</span>
+        Onyx Coffee Lab
+      </div>
+      <div class="detail-flavor-row">
+        <div class="detail-flavor-icon">🍓</div>
+        <div class="detail-flavor-icon">🍊</div>
+        <div class="detail-flavor-icon">🍦</div>
+        <div class="detail-flavor-icon">🍯</div>
+      </div>
+      <div class="detail-flavor-text">草莓 · 奶油 · 橙子 · 白蜜</div>
+    </div>
+
+    <!-- 状态条 -->
+    <div style="margin:0 16px 16px;padding:10px 14px;background:#F0FDF4;border-radius:10px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="width:10px;height:10px;border-radius:50%;background:#52C41A;"></span>
+        <span style="font-size:13px;font-weight:600;color:#166534;">正在喝</span>
+      </div>
+      <span style="font-size:11px;color:#6B7280;">最佳赏味第12天</span>
+    </div>
+
+    <!-- 评分 -->
+    <div class="rating-section">
+      <div class="rating-card">
+        <div class="rating-label">我的评分</div>
+        <div class="rating-stars">★★★★☆</div>
+        <div class="rating-score">4.0</div>
+      </div>
+      <div class="rating-card">
+        <div class="rating-label">太太评分</div>
+        <div class="rating-stars">★★★★★</div>
+        <div class="rating-score">5.0</div>
+      </div>
+    </div>
+
+    <div class="attr-section-title">豆子属性</div>
+    <div class="attr-grid">
+      <div class="attr-tile tile-roastdate">
+        <div class="attr-icon">📅</div>
+        <div class="attr-value">08.28</div>
+        <div class="attr-label">烘焙日期</div>
+      </div>
+      <div class="attr-tile tile-flavor">
+        <div class="attr-icon">🏷️</div>
+        <div class="attr-value" style="font-size:10px;">草莓 橙子<br>奶油 白蜜</div>
+        <div class="attr-label">风味标签</div>
+      </div>
+      <div class="attr-tile tile-brew">
+        <div class="attr-icon">💧</div>
+        <div class="attr-value">手冲</div>
+        <div class="attr-label">冲煮方式</div>
+      </div>
+      <div class="attr-tile tile-process">
+        <div class="attr-icon" style="color:#fff;">💧</div>
+        <div class="attr-value" style="color:#fff;">水洗</div>
+        <div class="attr-label" style="color:rgba(255,255,255,0.7);">处理法</div>
+      </div>
+      <div class="attr-tile tile-variety">
+        <div class="attr-icon">🫘</div>
+        <div class="attr-value">74158</div>
+        <div class="attr-label">豆种</div>
+      </div>
+      <div class="attr-tile tile-origin">
+        <div class="attr-icon">🗺️</div>
+        <div class="attr-value" style="font-size:10px;">本萨<br>埃塞俄比亚</div>
+        <div class="attr-label">产区</div>
+      </div>
+      <div class="attr-tile tile-altitude">
+        <div class="attr-icon">⛰️</div>
+        <div class="attr-value">2200m</div>
+        <div class="attr-label">海拔</div>
+      </div>
+      <div class="attr-tile tile-roast">
+        <div class="attr-icon">🔥</div>
+        <div class="attr-value">浅烘</div>
+        <div class="attr-label">烘焙度</div>
+      </div>
+      <div class="attr-tile tile-weight">
+        <div class="attr-icon">⚖️</div>
+        <div class="attr-value">200g</div>
+        <div class="attr-label">克重</div>
+      </div>
+      <div class="attr-tile tile-indate">
+        <div class="attr-icon">📥</div>
+        <div class="attr-value">09.01</div>
+        <div class="attr-label">入库日期</div>
+      </div>
+      <div class="attr-tile" style="background:linear-gradient(135deg,#FECACA,#FCA5A5);">
+        <div class="attr-icon">☕</div>
+        <div class="attr-value">常规</div>
+        <div class="attr-label">咖啡因</div>
+      </div>
+      <div class="attr-tile" style="background:linear-gradient(135deg,#FBCFE8,#F9A8D4);">
+        <div class="attr-icon">⭐</div>
+        <div class="attr-value">微批次</div>
+        <div class="attr-label">批次</div>
+      </div>
+    </div>
+
+    <div class="detail-actions">
+      <button class="action-btn warn" onclick="this.textContent='已喝完 ✓'">喝完了</button>
+      <button class="action-btn gray">编辑</button>
+      <button class="action-btn primary">评分</button>
+    </div>
+  </div>
+
+  <!-- ===== 风味维护页 ===== -->
+  <div class="screen" id="screen-flavor">
+    <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+    <div class="flavor-page-header">
+      <div class="page-nav-title" style="font-size:17px;font-weight:700;">风味标签维护</div>
+      <div class="icon-btn">➕</div>
+    </div>
+    <div style="padding:0 16px 12px;">
+      <input class="form-input" placeholder="🔍 搜索风味标签..." style="margin-bottom:0;">
+    </div>
+
+    <div class="flavor-category">
+      <div class="flavor-category-title"><span class="dot" style="background:#EA6668;"></span>水果类</div>
+      <div class="flavor-tag-grid">
+        <div class="flavor-tag-item"><div class="icon">🍓</div><div class="name">草莓</div></div>
+        <div class="flavor-tag-item"><div class="icon">🍊</div><div class="name">橙子</div></div>
+        <div class="flavor-tag-item"><div class="icon">🍋</div><div class="name">柠檬</div></div>
+        <div class="flavor-tag-item"><div class="icon">🫐</div><div class="name">蓝莓</div></div>
+        <div class="flavor-tag-item"><div class="icon">🍑</div><div class="name">桃子</div></div>
+        <div class="flavor-tag-item"><div class="icon">🥭</div><div class="name">芒果</div></div>
+        <div class="flavor-tag-item"><div class="icon">🍍</div><div class="name">菠萝</div></div>
+        <div class="flavor-tag-item"><div class="icon">🍇</div><div class="name">葡萄</div></div>
+      </div>
+    </div>
+
+    <div class="flavor-category">
+      <div class="flavor-category-title"><span class="dot" style="background:#C9A7E8;"></span>花香类</div>
+      <div class="flavor-tag-grid">
+        <div class="flavor-tag-item"><div class="icon">🌼</div><div class="name">茉莉</div></div>
+        <div class="flavor-tag-item"><div class="icon">🌹</div><div class="name">玫瑰</div></div>
+        <div class="flavor-tag-item"><div class="icon">🌺</div><div class="name">桂花</div></div>
+        <div class="flavor-tag-item"><div class="icon">💐</div><div class="name">洋甘菊</div></div>
+      </div>
+    </div>
+
+    <div class="flavor-category">
+      <div class="flavor-category-title"><span class="dot" style="background:#F4D48F;"></span>甜感类</div>
+      <div class="flavor-tag-grid">
+        <div class="flavor-tag-item"><div class="icon">🍯</div><div class="name">蜂蜜</div></div>
+        <div class="flavor-tag-item"><div class="icon">🍬</div><div class="name">焦糖</div></div>
+        <div class="flavor-tag-item"><div class="icon">🍦</div><div class="name">香草</div></div>
+        <div class="flavor-tag-item"><div class="icon">🍫</div><div class="name">红糖</div></div>
+      </div>
+    </div>
+
+    <div class="flavor-category">
+      <div class="flavor-category-title"><span class="dot" style="background:#E1B98F;"></span>坚果可可类</div>
+      <div class="flavor-tag-grid">
+        <div class="flavor-tag-item"><div class="icon">🌰</div><div class="name">榛子</div></div>
+        <div class="flavor-tag-item"><div class="icon">🥜</div><div class="name">杏仁</div></div>
+        <div class="flavor-tag-item"><div class="icon">🍫</div><div class="name">黑巧</div></div>
+        <div class="flavor-tag-item"><div class="icon">🥛</div><div class="name">牛奶巧</div></div>
+      </div>
+    </div>
+
+    <div style="padding:20px;text-align:center;">
+      <div style="font-size:11px;color:#9CA3AF;">共 40+ 风味标签 · 点击可重新生成图标</div>
+    </div>
+  </div>
+
+  <!-- ===== 品牌页 ===== -->
+  <div class="screen" id="screen-brand">
+    <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+    <div class="flavor-page-header">
+      <div class="page-nav-title" style="font-size:17px;font-weight:700;">品牌库</div>
+      <div class="icon-btn">➕</div>
+    </div>
+    <div style="padding:0 16px 12px;">
+      <input class="form-input" placeholder="🔍 搜索品牌（中英文）..." style="margin-bottom:0;">
+    </div>
+    <div class="brand-list">
+      <div class="brand-item">
+        <div class="brand-item-logo" style="background:linear-gradient(135deg,#667eea,#764ba2);">O</div>
+        <div class="brand-item-info">
+          <div class="brand-item-name">Onyx Coffee Lab</div>
+          <div class="brand-item-desc">美国 · 精品烘焙商</div>
+        </div>
+        <div class="brand-item-count">1袋</div>
+      </div>
+      <div class="brand-item">
+        <div class="brand-item-logo" style="background:linear-gradient(135deg,#f6d365,#fda085);">治</div>
+        <div class="brand-item-info">
+          <div class="brand-item-name">治光师 BEAMTIMER</div>
+          <div class="brand-item-desc">中国 · 合肥 · 精品烘焙</div>
+        </div>
+        <div class="brand-item-count">1袋</div>
+      </div>
+      <div class="brand-item">
+        <div class="brand-item-logo" style="background:linear-gradient(135deg,#11998e,#38ef7d);">翡</div>
+        <div class="brand-item-info">
+          <div class="brand-item-name">翡翠庄园 Hacienda La Esmeralda</div>
+          <div class="brand-item-desc">巴拿马 · 瑰夏名庄</div>
+        </div>
+        <div class="brand-item-count">1袋</div>
+      </div>
+      <div class="brand-item">
+        <div class="brand-item-logo" style="background:linear-gradient(135deg,#0f2027,#2c5364);">M</div>
+        <div class="brand-item-info">
+          <div class="brand-item-name">Manner Coffee</div>
+          <div class="brand-item-desc">中国 · 上海 · 连锁精品</div>
+        </div>
+        <div class="brand-item-count">1袋</div>
+      </div>
+      <div class="brand-item">
+        <div class="brand-item-logo" style="background:linear-gradient(135deg,#ee9ca7,#ffdde1);">少</div>
+        <div class="brand-item-info">
+          <div class="brand-item-name">少数派咖啡</div>
+          <div class="brand-item-desc">中国 · 合肥 · 精品烘焙</div>
+        </div>
+        <div class="brand-item-count">1袋</div>
+      </div>
+      <div class="brand-item">
+        <div class="brand-item-logo" style="background:linear-gradient(135deg,#606c88,#3f4c6b);">S</div>
+        <div class="brand-item-info">
+          <div class="brand-item-name">Seesaw Coffee</div>
+          <div class="brand-item-desc">中国 · 上海 · 连锁精品</div>
+        </div>
+        <div class="brand-item-count">1袋</div>
+      </div>
+      <div class="brand-item">
+        <div class="brand-item-logo" style="background:linear-gradient(135deg,#a8c0ff,#3f2b96);">蓝</div>
+        <div class="brand-item-info">
+          <div class="brand-item-name">Blue Bottle 蓝瓶咖啡</div>
+          <div class="brand-item-desc">美国 · 精品咖啡品牌</div>
+        </div>
+        <div class="brand-item-count">0袋</div>
+      </div>
+      <div class="brand-item">
+        <div class="brand-item-logo" style="background:linear-gradient(135deg,#f7971e,#ffd200);">%</div>
+        <div class="brand-item-info">
+          <div class="brand-item-name">% Arabica</div>
+          <div class="brand-item-desc">日本 · 国际精品连锁</div>
+        </div>
+        <div class="brand-item-count">0袋</div>
+      </div>
+    </div>
+    <div style="padding:10px 16px 30px;text-align:center;">
+      <div style="font-size:11px;color:#9CA3AF;">内置 50+ 品牌 · 可自定义新增</div>
+    </div>
+  </div>
+
+</div>
+
+<p style="margin-top:16px;font-size:11px;color:#9CA3AF;">* 原型中风味图标使用emoji占位，实际使用Seedream AI生成统一水彩风格插画</p>
+
+<script>
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  event && event.target && event.target.classList.add('active');
+}
+</script>
+</body>
+</html>
