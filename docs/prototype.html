@@ -633,10 +633,10 @@
       </div>
     </div>
     <div class="filter-tabs">
-      <div class="filter-tab active">全部 <span class="count">6</span></div>
-      <div class="filter-tab">🟡 养豆中 <span class="count">2</span></div>
-      <div class="filter-tab">🟢 在喝 <span class="count">3</span></div>
-      <div class="filter-tab">⚪ 已喝完 <span class="count">1</span></div>
+      <div class="filter-tab active" onclick="filterShelf(this,'all')">全部 <span class="count">6</span></div>
+      <div class="filter-tab" onclick="filterShelf(this,'resting')">🟡 养豆中 <span class="count">2</span></div>
+      <div class="filter-tab" onclick="filterShelf(this,'drinking')">🟢 在喝 <span class="count">3</span></div>
+      <div class="filter-tab" onclick="filterShelf(this,'finished')">⚪ 已喝完 <span class="count">1</span></div>
     </div>
     <div class="bean-grid">
       <!-- 在喝 -->
@@ -655,7 +655,7 @@
         </div>
       </div>
       <!-- 养豆中 -->
-      <div class="bean-card">
+      <div class="bean-card" onclick="showScreen('detail')">
         <div class="bean-photo" style="background:linear-gradient(135deg,#f5e6d3,#e8d4b8);">🫘</div>
         <div class="roast-badge roast-medium">中</div>
         <div class="status-badge status-resting">还需5天</div>
@@ -670,7 +670,7 @@
         </div>
       </div>
       <!-- 在喝 -->
-      <div class="bean-card">
+      <div class="bean-card" onclick="showScreen('detail')">
         <div class="bean-photo" style="background:linear-gradient(135deg,#1a5c3a,#2d8a5e);">🌿</div>
         <div class="roast-badge roast-light">浅</div>
         <div class="status-badge status-drinking">在喝</div>
@@ -685,7 +685,7 @@
         </div>
       </div>
       <!-- 养豆中 -->
-      <div class="bean-card">
+      <div class="bean-card" onclick="showScreen('detail')">
         <div class="bean-photo" style="background:linear-gradient(135deg,#8B4513,#A0522D);">🔥</div>
         <div class="roast-badge roast-dark">深</div>
         <div class="status-badge status-resting">还需8天</div>
@@ -699,7 +699,7 @@
         </div>
       </div>
       <!-- 在喝 -->
-      <div class="bean-card">
+      <div class="bean-card" onclick="showScreen('detail')">
         <div class="bean-photo" style="background:linear-gradient(135deg,#e8b4b8,#d4919a);">🌸</div>
         <div class="roast-badge roast-light">浅</div>
         <div class="status-badge status-drinking">在喝</div>
@@ -714,7 +714,7 @@
         </div>
       </div>
       <!-- 已喝完 -->
-      <div class="bean-card" style="opacity:0.5;">
+      <div class="bean-card" style="opacity:0.5;" onclick="showScreen('detail')">
         <div class="bean-photo" style="background:linear-gradient(135deg,#ccc,#aaa);">📦</div>
         <div class="roast-badge roast-medium">中</div>
         <div class="status-badge status-finished">已喝完</div>
@@ -777,7 +777,7 @@
         </div>
         <div style="font-size:18px;color:#999;">›</div>
       </div>
-      <div class="add-option secondary">
+      <div class="add-option secondary" onclick="showScreen('processing')">
         <div class="add-option-icon">🔗</div>
         <div class="add-option-text">
           <div class="main">粘贴商品链接</div>
@@ -1076,7 +1076,7 @@
     <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
     <div class="flavor-page-header">
       <div class="page-nav-title" style="font-size:17px;font-weight:700;">风味标签维护</div>
-      <div class="icon-btn">➕</div>
+      <div class="icon-btn" onclick="showScreen('flavor-detail')" title="新增风味标签">➕</div>
     </div>
     <div style="padding:0 16px 12px;">
       <input class="form-input" placeholder="🔍 搜索风味标签..." style="margin-bottom:0;">
@@ -1490,6 +1490,16 @@ function applyBrandFilter() {
 function clearBrandFilter() {
   document.querySelectorAll('#country-pop input').forEach(c => c.checked = false);
   applyBrandFilter();
+}
+// 货架：状态筛选
+function filterShelf(el, key) {
+  document.querySelectorAll('#screen-shelf .filter-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('#screen-shelf .bean-grid .bean-card').forEach(c => {
+    const badge = c.querySelector('.status-badge');
+    const cls = badge ? badge.className : '';
+    c.style.display = (key === 'all' || cls.includes('status-' + key)) ? '' : 'none';
+  });
 }
 // AI处理中：提示文案轮播
 const procHints = ['正在识别品牌…','正在提取豆名与豆种…','正在识别产区与处理法…','正在匹配风味标签…','整理识别结果，即将完成…'];
