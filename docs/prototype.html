@@ -79,16 +79,18 @@
     box-shadow: 0 1px 4px rgba(0,0,0,0.06); cursor: pointer;
   }
 
-  /* 状态筛选 */
+  /* 状态筛选（4个tab正好放下，不滚动） */
   .filter-tabs {
-    display: flex; gap: 8px; padding: 0 16px 12px; overflow-x: auto;
+    display: flex; gap: 6px; padding: 0 16px 12px; overflow: hidden;
   }
   .filter-tab {
-    padding: 6px 14px; border-radius: 14px; font-size: 12px; white-space: nowrap;
+    flex: 1; padding: 6px 4px; border-radius: 14px; font-size: 11.5px; white-space: nowrap; text-align: center;
     background: #fff; color: #6B7280; cursor: pointer; border: 1px solid transparent;
   }
   .filter-tab.active { background: #1A1B1C; color: #fff; }
   .filter-tab .count { font-size: 10px; opacity: 0.7; margin-left: 3px; }
+  .menu-item { padding: 11px 12px; border-radius: 10px; font-size: 13px; color: var(--ink); cursor: pointer; }
+  .menu-item:hover { background: rgba(80,60,30,.06); }
 
   /* 豆子卡片网格 */
   .bean-grid {
@@ -627,10 +629,23 @@
     <div class="shelf-header">
       <div class="shelf-title">我的咖啡豆 <span>6袋</span></div>
       <div class="header-actions">
-        <div class="icon-btn">🔍</div>
+        <div class="icon-btn" onclick="toggleShelfSearch()" title="搜索豆子">🔍</div>
         <div class="icon-btn" onclick="showScreen('stats')" title="统计">📊</div>
-        <div class="icon-btn">☰</div>
+        <div class="icon-btn" onclick="toggleMainMenu()" title="菜单">☰</div>
       </div>
+    </div>
+    <!-- 搜索条（🔍 展开） -->
+    <div id="shelf-search" style="display:none;padding:0 16px 10px;">
+      <input id="shelf-search-input" class="form-input" placeholder="搜索豆名 / 品牌 / 产区 / 豆种…" style="margin-bottom:0;" oninput="doShelfSearch(this.value)">
+    </div>
+    <!-- 主菜单（☰ 弹出） -->
+    <div id="main-menu-mask" onclick="toggleMainMenu()" style="display:none;position:absolute;inset:0;z-index:40;background:rgba(26,27,28,.35);"></div>
+    <div id="main-menu" style="display:none;position:absolute;top:0;right:0;z-index:41;width:200px;background:#FFFDF8;border-radius:0 0 16px 16px;box-shadow:0 8px 24px rgba(0,0,0,.14);padding:8px;">
+      <div class="menu-item" onclick="toggleMainMenu();showScreen('flavor')">🏷️ 风味标签维护</div>
+      <div class="menu-item" onclick="toggleMainMenu();showScreen('brand')">🏢 品牌库</div>
+      <div class="menu-item" onclick="toggleMainMenu();showScreen('stats')">📊 豆子统计</div>
+      <div class="menu-item" onclick="toggleMainMenu()" style="color:#9CA3AF;">⚙️ 设置（待开发）</div>
+      <div class="menu-item" onclick="toggleMainMenu()" style="color:#9CA3AF;">👤 关于（待开发）</div>
     </div>
     <div class="filter-tabs">
       <div class="filter-tab active" onclick="filterShelf(this,'all')">全部 <span class="count">6</span></div>
@@ -1509,14 +1524,40 @@ function cycleBeanStatus() {
   renderBeanStatus();
 }
 renderBeanStatus();
-// 货架：状态筛选
+// 货架：搜索条展开/收起 + 实时过滤（豆名/品牌/产区/豆种）
+function toggleShelfSearch() {
+  const box = document.getElementById('shelf-search');
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+  if (box.style.display === 'none') { document.getElementById('shelf-search-input').value = ''; doShelfSearch(''); }
+  else document.getElementById('shelf-search-input').focus();
+}
+function doShelfSearch(q) {
+  const active = document.querySelector('#screen-shelf .filter-tab.active');
+  const key = active ? [...document.querySelectorAll('#screen-shelf .filter-tab')].indexOf(active) : 0;
+  const statusKey = ['all','resting','drinking','finished'][key] || 'all';
+  applyShelfFilters(statusKey);
+}
+// 货架：☰ 主菜单开/关
+function toggleMainMenu() {
+  const m = document.getElementById('main-menu'), k = document.getElementById('main-menu-mask');
+  const show = m.style.display === 'none';
+  m.style.display = show ? 'block' : 'none';
+  k.style.display = show ? 'block' : 'none';
+}
+// 货架：状态筛选（与搜索条件叠加过滤）
 function filterShelf(el, key) {
   document.querySelectorAll('#screen-shelf .filter-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
+  applyShelfFilters(key);
+}
+function applyShelfFilters(statusKey) {
+  const q = (document.getElementById('shelf-search-input')?.value || '').trim().toLowerCase();
   document.querySelectorAll('#screen-shelf .bean-grid .bean-card').forEach(c => {
     const badge = c.querySelector('.status-badge');
     const cls = badge ? badge.className : '';
-    c.style.display = (key === 'all' || cls.includes('status-' + key)) ? '' : 'none';
+    const okStatus = (statusKey || 'all') === 'all' || cls.includes('status-' + statusKey);
+    const okSearch = !q || c.textContent.toLowerCase().includes(q);
+    c.style.display = (okStatus && okSearch) ? '' : 'none';
   });
 }
 // AI处理中：提示文案轮播
