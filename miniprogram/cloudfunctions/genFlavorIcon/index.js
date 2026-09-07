@@ -1,13 +1,16 @@
-// genFlavorIcon 云函数——Seedream 生成水彩风味图标 → 云存储 → 写回 flavor_tags.iconUrl
-// 用法（DevTools 云端测试）：{"names":["草莓","茉莉","黑巧"]}
+// genFlavorIcon 云函数——Seedream v4 提示词生成 → jimp 抠图透明底 → 云存储 → 写回 flavor_tags.iconUrl
+// 用法（DevTools 云端测试）：{"names":["草莓","茉莉","黑巧"]}  单次最多 5 个
 // 环境变量：ARK_API_KEY（必填）、ARK_MODEL_IMAGE（可选，默认 doubao-seedream-5-0-260128）
-// 单次最多 5 个（每张约 10-20s，请把函数超时调到 120s）；重复运行=重新生成覆盖
+// 提示词定稿 v5（2026-09-08）：浓郁插画图标，无任何描边，白底生成 + 程序抠图透明
 const cloud = require('wx-server-sdk');
 const https = require('https');
+const Jimp = require('jimp');
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
 
-const SIZE = '2048x2048'; // Seedream 5.0 最低 368 万像素
+const SIZE = '2048x2048';          // Seedream 5.0 最低 368 万像素
+const PROC_SIZE = 1024;            // 处理与存储分辨率（展示最大 288px，3 倍冗余）
+const BG_DIFF_TOTAL = 35;          // floodfill 背景判定：与纯白的通道差和 ≤ 35（与本地 PIL thresh=35 一致）
 
 // 45 个内置风味的英文提示词映射（缺省回落中文名）
 const EN = {
@@ -29,7 +32,8 @@ const EN = {
 };
 
 const buildPrompt = (name) =>
-  `watercolor illustration of ${EN[name] || name} (${name}), single object, white background, soft warm colors, hand painted style, minimal, centered, no text`;
+  `vibrant illustration icon of ${EN[name] || name} (${name}), rich highly saturated colors, ` +
+  `intricate details, single object centered, isolated on pure white background, no text`;
 
 function postJson(key, body) {
   return new Promise((resolve, reject) => {
@@ -72,6 +76,40 @@ function fetchBuffer(url) {
   });
 }
 
+// 抠图：从四角洪泛填充近白背景 → 背景透明（扫描线实现，等价 PIL floodfill thresh）
+async function cutout(pngBuf) {
+  const img = await Jimp.read(pngBuf);
+  img.resize(PROC_SIZE, PROC_SIZE);
+  const { width: w, height: h, data } = img.bitmap;
+  const diffFromWhite = (x, y) => {
+    const i = (y * w + x) * 4;
+    return Math.abs(data[i] - 255) + Math.abs(data[i + 1] - 255) + Math.abs(data[i + 2] - 255);
+  };
+  const corners = [[0, 0], [w - 1, 0], [0, h - 1], [w - 1, h - 1]];
+  const visited = new Uint8Array(w * h);
+  const stack = [];
+  for (const [sx, sy] of corners) {
+    if (diffFromWhite(sx, sy) <= BG_DIFF_TOTAL) {
+      visited[sy * w + sx] = 1;
+      stack.push(sy * w + sx);
+    }
+  }
+  while (stack.length) {
+    const p = stack.pop();
+    const x = p % w, y = (p / w) | 0;
+    const nb = [x > 0 ? p - 1 : -1, x < w - 1 ? p + 1 : -1, y > 0 ? p - w : -1, y < h - 1 ? p + w : -1];
+    for (const q of nb) {
+      if (q >= 0 && !visited[q]) {
+        if (diffFromWhite(q % w, (q / w) | 0) <= BG_DIFF_TOTAL) { visited[q] = 1; stack.push(q); }
+      }
+    }
+  }
+  for (let p = 0; p < w * h; p++) {
+    if (visited[p]) data[p * 4 + 3] = 0; // 背景 → 透明
+  }
+  return img.getBufferAsync(Jimp.MIME_PNG);
+}
+
 exports.main = async (event) => {
   const key = process.env.ARK_API_KEY;
   if (!key) throw new Error('NO_ARK_KEY: 请在函数配置里设置环境变量 ARK_API_KEY');
@@ -83,11 +121,12 @@ exports.main = async (event) => {
   const results = [];
   for (const name of names) {
     const prompt = buildPrompt(name);
-    const j = await postJson(key, { model, prompt, size: SIZE, response_format: 'url', watermark: false });
+    const j = await postJson(key, { model, prompt, size: SIZE, output_format: 'png', response_format: 'url', watermark: false });
     const url = j && j.data && j.data[0] && j.data[0].url;
     if (!url) throw new Error(`NO_URL: ${name}`);
-    const buf = await fetchBuffer(url);
-    const up = await cloud.uploadFile({ cloudPath: `flavors/${name}.png`, fileContent: buf });
+    const raw = await fetchBuffer(url);
+    const png = await cutout(raw);
+    const up = await cloud.uploadFile({ cloudPath: `flavors/${name}.png`, fileContent: png });
     const q = await db.collection('flavor_tags')
       .where({ name, isBuiltin: true })
       .update({ data: { iconUrl: up.fileID, iconPrompt: prompt, updateTime: db.serverDate() } });
