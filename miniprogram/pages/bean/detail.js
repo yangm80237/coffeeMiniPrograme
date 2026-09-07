@@ -5,8 +5,7 @@ const MAIN_BTN = { resting: { text: '开喝', cls: 'btn-primary' }, drinking: { 
 Page({
   data: { bean: {}, first: '', mainBtn: {}, moreOpen: false, ratingOpen: false, draft: 0, notes: '' },
   onLoad(options) { this.id = options.id; },
-  onShow() { beanApi.getBean(this.id).then((b) =>
-    this.setData({ bean: b, mainBtn: MAIN_BTN[b.statusInfo.status] })); },
+  onShow() { this.load(); },
   goBrand() { wx.navigateTo({ url: '/pages/brand/detail?id=' + this.data.bean.brandId }); },
   goEdit() { this.setData({ moreOpen: false });
     wx.navigateTo({ url: '/pages/add/confirm/confirm?mode=edit&id=' + this.id }); },
