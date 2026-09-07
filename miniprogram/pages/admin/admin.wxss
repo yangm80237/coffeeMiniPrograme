@@ -1,0 +1,26 @@
+/* 管理页（新增页无原型，沿用 tokens 与卡片+btn 模式） */
+
+.admin { min-height: 100vh; padding: 24rpx 32rpx 60rpx; box-sizing: border-box; }
+.panel { padding: 32rpx; }
+
+.panel-title {
+  font-size: 30rpx; font-weight: 700; color: var(--ink); margin-bottom: 28rpx;
+  display: flex; align-items: center; gap: 16rpx;
+}
+.source-tag {
+  font-size: 20rpx; font-weight: 400; color: var(--accent);
+  background: rgba(201, 111, 74, .12); border-radius: 999rpx; padding: 4rpx 16rpx;
+}
+
+.form-label { font-size: 24rpx; color: var(--ink-2); margin-bottom: 12rpx; font-weight: 500; }
+.form-input {
+  width: 100%; padding: 20rpx 24rpx; box-sizing: border-box;
+  border: 2rpx solid rgba(80, 60, 30, .14); border-radius: 16rpx;
+  font-size: 26rpx; background: #fff; color: var(--ink); margin-bottom: 24rpx;
+}
+
+.btn-row { display: flex; gap: 16rpx; margin-top: 8rpx; }
+.flex1 { flex: 1; }
+.test { flex: 0 0 200rpx; }
+.btn-ink { background: var(--ink); color: #fff; }
+.note { font-size: 22rpx; color: var(--ink-3); margin-top: 24rpx; line-height: 1.6; }

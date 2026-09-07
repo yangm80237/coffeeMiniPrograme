@@ -1,0 +1,42 @@
+<!-- 我的页（新增页无原型，沿用 tokens 与卡片+btn 模式） -->
+<view class="mine" wx:if="{{loaded && user}}">
+  <!-- 头像昵称填写区 -->
+  <view class="card profile">
+    <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+      <image wx:if="{{avatarUrl}}" src="{{avatarUrl}}" class="avatar-img" mode="aspectFill" />
+      <view wx:else class="avatar-fb">☕</view>
+      <view class="avatar-edit">换</view>
+    </button>
+    <view class="profile-main">
+      <input class="nickname-input" type="nickname" placeholder="点击填写昵称"
+        value="{{nickname}}" bindblur="onNickname" bindchange="onNickname" />
+      <view class="role-tag">{{user.role === 'owner' ? '家庭创建者' : '家庭成员'}}</view>
+    </view>
+    <view class="save-mini" bindtap="saveProfile">保存</view>
+  </view>
+
+  <!-- 家庭卡 -->
+  <view class="card family-card" wx:if="{{family}}">
+    <view class="fc-label">家庭邀请码</view>
+    <view class="code-row">
+      <text class="code">{{family.inviteCode}}</text>
+      <view class="copy-btn" bindtap="copyCode">复制</view>
+    </view>
+    <view class="fc-row">
+      <text class="fc-txt">邀请码启用</text>
+      <switch checked="{{family.inviteEnabled}}" color="#07C160" bindchange="toggleInvite" />
+    </view>
+    <view class="fc-row">
+      <text class="fc-txt">重新生成邀请码</text>
+      <view class="regen-btn" bindtap="regenCode">重新生成</view>
+    </view>
+  </view>
+
+  <!-- 入口列表 -->
+  <view class="card entries">
+    <view class="entry" bindtap="goStats"><text class="ic">📊</text><text class="lb">豆子统计</text><text class="ar">›</text></view>
+    <view class="entry" bindtap="goBrand"><text class="ic">🏷️</text><text class="lb">品牌库</text><text class="ar">›</text></view>
+    <view class="entry" bindtap="goFlavor"><text class="ic">🍓</text><text class="lb">风味标签</text><text class="ar">›</text></view>
+    <view class="entry" wx:if="{{user.role === 'owner'}}" bindtap="goAdmin"><text class="ic">⚙️</text><text class="lb">模型管理</text><text class="ar">›</text></view>
+  </view>
+</view>

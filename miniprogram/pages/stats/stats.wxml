@@ -1,0 +1,71 @@
+<!-- 统计页——五段布局（原型 screen-stats 1401–1471 搬运） -->
+<view class="stats">
+  <!-- ① 深色汇总头 -->
+  <view class="stats-head">
+    <view class="stats-title">BeanStats<text class="yr"> 2026</text></view>
+    <view class="stats-sum">
+      <view class="sum-item"><text class="b">{{headWeight}}</text><text class="small">总克重 g</text></view>
+      <view class="sum-item"><text class="b">{{drinkingCount}}</text><text class="small">在喝中</text></view>
+      <view class="sum-item"><text class="b">{{bagCount}}</text><text class="small">总袋数</text></view>
+    </view>
+  </view>
+
+  <!-- ② 库存状态：三色占比条（drinking 段内嵌橙色 hurry 子段） -->
+  <view class="stats-card">
+    <view class="card-h">库存状态</view>
+    <view class="dist">
+      <view class="seg" style="width:{{segDrinking.pct}}%;">
+        <view class="part" style="width:{{segDrinking.greenW}}%;background:var(--status-drinking);"></view>
+        <view class="part" style="width:{{segDrinking.hurryW}}%;background:var(--status-hurry);"></view>
+      </view>
+      <view class="seg" style="width:{{segResting.pct}}%;background:var(--status-resting);"></view>
+      <view class="seg" style="width:{{segFinished.pct}}%;background:var(--status-finished);"></view>
+    </view>
+    <view class="dist-legend">
+      <text wx:for="{{legend}}" wx:key="label">{{item.label}} {{item.count}}</text>
+    </view>
+  </view>
+
+  <!-- ③ 处理法计数行 -->
+  <view class="stats-card">
+    <view class="card-h">处理法</view>
+    <view class="proc-row">{{processText || '—'}}</view>
+  </view>
+
+  <!-- ④ 国家横条图 -->
+  <view class="stats-card">
+    <view class="card-h">国家分布</view>
+    <view wx:for="{{countryDist}}" wx:key="name" class="country-row">
+      <text class="cname">{{item.flag}} {{item.name}}</text>
+      <view class="cbar"><view class="cbar-i" style="width:{{item.width}}%;"></view></view>
+      <text class="cnum">{{item.count}}</text>
+    </view>
+    <view wx:if="{{!countryDist.length}}" class="card-empty">暂无数据</view>
+  </view>
+
+  <!-- ⑤ 豆种横条图 -->
+  <view class="stats-card">
+    <view class="card-h">豆种分布</view>
+    <view wx:for="{{varietyDist}}" wx:key="name" class="country-row">
+      <text class="cname">🫘 {{item.name}}</text>
+      <view class="cbar"><view class="cbar-i" style="width:{{item.width}}%;"></view></view>
+      <text class="cnum">{{item.count}}</text>
+    </view>
+    <view wx:if="{{!varietyDist.length}}" class="card-empty">暂无数据</view>
+  </view>
+
+  <!-- ⑥ canvas 2D 点阵地图 -->
+  <view class="stats-card">
+    <view class="card-h">产区地图</view>
+    <canvas type="2d" id="map" class="dot-map"></canvas>
+    <view class="map-note">{{countryCount}} 个国家 · 共 {{bagCount}} 袋 · 产区点位示意</view>
+  </view>
+
+  <!-- ⑦ 底部四指标 -->
+  <view class="stats-foot">
+    <view class="foot-item"><text class="b">{{brandCount}}</text><text class="small">烘焙商</text></view>
+    <view class="foot-item"><text class="b">{{bagCount}}</text><text class="small">袋</text></view>
+    <view class="foot-item"><text class="b">{{countryCount}}</text><text class="small">产区</text></view>
+    <view class="foot-item"><text class="b">{{varietyCount}}</text><text class="small">豆种</text></view>
+  </view>
+</view>

@@ -1,0 +1,41 @@
+/* 风味标签维护——样式从 docs/prototype.html screen-flavor 段搬运 ×2 换算 rpx */
+
+/* 搜索 + ➕ */
+.search-row { padding: 8rpx 32rpx 24rpx; display: flex; align-items: center; gap: 16rpx; }
+.search-input {
+  flex: 1; padding: 20rpx 24rpx;
+  border: 2rpx solid rgba(80, 60, 30, .14); border-radius: 24rpx;
+  font-size: 26rpx; background: var(--card); color: var(--ink); box-sizing: border-box;
+}
+.icon-btn {
+  width: 64rpx; height: 64rpx; flex: 0 0 auto; border-radius: 50%; background: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30rpx; box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, .06); box-sizing: border-box;
+}
+
+/* 分组 */
+.flavor-category { padding: 0 32rpx 24rpx; }
+.flavor-category-title {
+  font-size: 26rpx; font-weight: 600; color: var(--ink-2); margin-bottom: 16rpx;
+  display: flex; align-items: center; gap: 12rpx;
+}
+.flavor-category-title .dot { width: 16rpx; height: 16rpx; border-radius: 50%; }
+
+/* 图标网格 */
+.flavor-tag-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16rpx; }
+.flavor-tag-item {
+  background: #fff; border-radius: 20rpx; padding: 20rpx 8rpx; text-align: center;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, .04);
+}
+.flavor-tag-item .icon {
+  width: 64rpx; height: 64rpx; margin: 0 auto 8rpx; border-radius: 50%;
+  background: #F7F5F0; display: flex; align-items: center; justify-content: center;
+  font-size: 32rpx;
+}
+.flavor-tag-item .name { font-size: 20rpx; color: var(--ink); }
+
+/* 空态 / 底注 */
+.empty { display: flex; flex-direction: column; align-items: center; padding: 100rpx 40rpx; }
+.empty-icon { font-size: 96rpx; margin-bottom: 24rpx; opacity: .5; }
+.empty-text { font-size: 28rpx; color: var(--ink-3); }
+.foot-note { font-size: 22rpx; color: var(--ink-3); text-align: center; padding: 20rpx 0 60rpx; }

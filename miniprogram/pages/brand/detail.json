@@ -1,1 +1,1 @@
-{ "usingComponents": {} }
+{ "usingComponents": { "bean-card": "../../components/bean-card/bean-card" }, "navigationBarTitleText": "品牌详情" }

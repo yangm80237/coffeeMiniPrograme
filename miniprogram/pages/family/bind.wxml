@@ -1,0 +1,20 @@
+<!-- 家庭绑定页（新增页无原型，沿用 tokens 与卡片+btn 模式） -->
+<view class="bind">
+  <view wx:if="{{mode === 'loading'}}" class="loading">☕ 正在进入…</view>
+
+  <block wx:if="{{mode === 'choose'}}">
+    <view class="hero">
+      <view class="hero-icon">🫘</view>
+      <view class="hero-title">我的咖啡豆</view>
+      <view class="hero-desc">与家人共建一个咖啡豆货架，一起记录每一袋</view>
+    </view>
+
+    <view class="card panel">
+      <view class="btn btn-primary w" bindtap="createFamily">🏠 创建家庭货架</view>
+      <view class="divider"><text>或</text></view>
+      <input class="code-input" placeholder="输入 6 位邀请码" maxlength="6"
+        value="{{code}}" bindinput="onCode" />
+      <view class="btn btn-ink w join" bindtap="join">加入家庭货架</view>
+    </view>
+  </block>
+</view>

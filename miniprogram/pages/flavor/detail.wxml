@@ -1,0 +1,34 @@
+<!-- 风味标签详情（原型 screen-flavor-detail 1329–1368 搬运；mode=new 为新增形态） -->
+<view class="fd-hero">
+  <view class="fd-icon">
+    <image wx:if="{{iconUrl}}" src="{{iconUrl}}" mode="aspectFill" class="fd-img" />
+    <text wx:else>{{mode === 'new' ? '✨' : (emoji || '🏷️')}}</text>
+  </view>
+  <view class="fd-name">{{mode === 'new' ? '新增风味标签' : name}}</view>
+  <view class="fd-cat" wx:if="{{mode !== 'new'}}">{{categories[catIndex]}} · 被 {{usage}} 袋豆子使用</view>
+</view>
+
+<view class="form-section">
+  <view class="form-label">标签名称</view>
+  <input class="form-input" placeholder="如：草莓" value="{{name}}" bindinput="onName" />
+
+  <view class="form-label">分类</view>
+  <picker range="{{categories}}" value="{{catIndex}}" bindchange="onCategory">
+    <view class="form-input picker">{{categories[catIndex]}} <text class="caret">▾</text></view>
+  </picker>
+
+  <block wx:if="{{mode !== 'new'}}">
+    <view class="form-label">水彩风格图标 <text class="ai-tag">AI生成</text></view>
+    <view class="btn-row">
+      <view class="btn btn-ink flex1" bindtap="save">保存</view>
+    </view>
+    <view class="btn-row gap">
+      <view class="pill dark flex1" bindtap="regenIcon">重新生成图标</view>
+      <view class="pill light del" bindtap="remove">删除标签</view>
+    </view>
+  </block>
+
+  <view wx:else class="btn-row">
+    <view class="btn btn-ink w" bindtap="save">创建标签</view>
+  </view>
+</view>

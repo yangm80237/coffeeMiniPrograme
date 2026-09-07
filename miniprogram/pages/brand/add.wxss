@@ -1,0 +1,34 @@
+/* 新增品牌——样式从 docs/prototype.html screen-brand-add 段搬运 ×2 换算 rpx */
+
+.form-section { padding: 16rpx 32rpx 32rpx; }
+.form-label { font-size: 24rpx; color: var(--ink-2); margin-bottom: 12rpx; font-weight: 500; }
+.form-input {
+  width: 100%; padding: 20rpx 24rpx; box-sizing: border-box;
+  border: 2rpx solid rgba(80, 60, 30, .14); border-radius: 16rpx;
+  font-size: 26rpx; background: var(--card); color: var(--ink); margin-bottom: 24rpx;
+}
+.form-input.ta { height: 160rpx; padding-top: 16rpx; }
+
+/* Logo 虚线占位 */
+.logo-up {
+  width: 192rpx; height: 192rpx; border-radius: 40rpx;
+  border: 4rpx dashed rgba(80, 60, 30, .22);
+  background: var(--card); margin-bottom: 24rpx; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8rpx;
+}
+.logo-up.has-img { border-style: solid; border-color: rgba(80, 60, 30, .1); }
+.logo-img { width: 100%; height: 100%; }
+.logo-ic { font-size: 48rpx; }
+.logo-txt { font-size: 20rpx; color: var(--ink-3); }
+
+/* 国家快捷 chips */
+.sug-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12rpx; margin: -12rpx 0 24rpx; }
+.sug-pill {
+  font-size: 22rpx; padding: 6rpx 20rpx; border-radius: 999rpx; background: var(--card);
+  border: 2rpx solid rgba(80, 60, 30, .14); color: var(--ink-2);
+}
+.sug-pill:active { background: rgba(201, 111, 74, .12); color: var(--accent); border-color: var(--accent); }
+
+/* 保存 */
+.btn-ink { background: var(--ink); color: #fff; }
+.save { margin-top: 8rpx; }

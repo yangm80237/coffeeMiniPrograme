@@ -1,0 +1,24 @@
+<!-- 新增品牌（原型 screen-brand-add 1298–1328 搬运） -->
+<view class="form-section">
+  <view class="form-label">品牌 Logo</view>
+  <view class="logo-up {{logo ? 'has-img' : ''}}" bindtap="chooseLogo">
+    <image wx:if="{{logo}}" src="{{logo}}" mode="aspectFill" class="logo-img" />
+    <block wx:else><text class="logo-ic">🖼️</text><text class="logo-txt">上传 Logo</text></block>
+  </view>
+
+  <view class="form-label">品牌名称</view>
+  <input class="form-input" placeholder="如：治光师 BEAMTIMER" value="{{name}}" bindinput="onName" />
+
+  <view class="form-label">国家 / 地区</view>
+  <input class="form-input" placeholder="点击下方快捷标签填入" value="{{country}}" bindinput="onCountry" />
+  <view class="sug-row">
+    <view wx:for="{{chips}}" wx:key="name" class="sug-pill"
+      data-v="{{item.v}}" bindtap="pickChip">{{item.v}}</view>
+  </view>
+
+  <view class="form-label">品牌介绍</view>
+  <textarea class="form-input ta" rows="3" placeholder="产地、风格、代表作等（选填）"
+    value="{{description}}" bindinput="onDesc" />
+
+  <view class="btn btn-ink w save" bindtap="save">保存品牌</view>
+</view>

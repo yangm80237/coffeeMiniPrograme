@@ -1,0 +1,62 @@
+/* 我的页（新增页无原型，沿用 tokens 与卡片+btn 模式） */
+
+.mine { min-height: 100vh; padding: 24rpx 32rpx 60rpx; box-sizing: border-box; }
+.card {
+  background: var(--card); border-radius: 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(80, 60, 30, .06);
+}
+
+/* 头像昵称填写区 */
+.profile { display: flex; align-items: center; gap: 24rpx; padding: 32rpx; margin-bottom: 24rpx; }
+.avatar-btn {
+  position: relative; width: 120rpx; height: 120rpx; padding: 0; margin: 0;
+  border-radius: 50%; background: #F1E7D2; overflow: hidden; flex: 0 0 auto;
+}
+.avatar-btn::after { border: none; }
+.avatar-img { width: 100%; height: 100%; display: block; }
+.avatar-fb { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 56rpx; }
+.avatar-edit {
+  position: absolute; right: 0; bottom: 0; width: 40rpx; height: 40rpx;
+  background: var(--accent); color: #fff; font-size: 20rpx;
+  display: flex; align-items: center; justify-content: center; border-radius: 50%;
+}
+.profile-main { flex: 1; min-width: 0; }
+.nickname-input {
+  font-size: 32rpx; font-weight: 600; color: var(--ink);
+  border-bottom: 2rpx solid rgba(80, 60, 30, .14); padding: 8rpx 0;
+}
+.role-tag { display: inline-block; font-size: 20rpx; color: var(--accent); background: rgba(201, 111, 74, .12); border-radius: 999rpx; padding: 4rpx 16rpx; margin-top: 12rpx; }
+.save-mini {
+  flex: 0 0 auto; font-size: 24rpx; color: #fff; background: var(--ink);
+  border-radius: 999rpx; padding: 12rpx 28rpx;
+}
+
+/* 家庭卡 */
+.family-card { padding: 32rpx; margin-bottom: 24rpx; }
+.fc-label { font-size: 24rpx; color: var(--ink-2); margin-bottom: 12rpx; }
+.code-row { display: flex; align-items: center; gap: 24rpx; margin-bottom: 24rpx; }
+.code {
+  font-family: var(--font-display); font-size: 56rpx; font-weight: 700;
+  letter-spacing: 12rpx; color: var(--ink);
+}
+.copy-btn {
+  font-size: 22rpx; color: var(--accent); background: rgba(201, 111, 74, .12);
+  border-radius: 999rpx; padding: 8rpx 24rpx;
+}
+.fc-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16rpx 0; border-top: 2rpx solid var(--line);
+}
+.fc-txt { font-size: 26rpx; color: var(--ink); }
+.regen-btn { font-size: 24rpx; color: var(--ink-2); background: #EFEAE0; border-radius: 999rpx; padding: 8rpx 24rpx; }
+
+/* 入口列表 */
+.entries { padding: 8rpx 32rpx; }
+.entry {
+  display: flex; align-items: center; gap: 20rpx;
+  padding: 28rpx 0; border-bottom: 2rpx solid var(--line);
+}
+.entry:last-child { border-bottom: none; }
+.entry .ic { font-size: 32rpx; }
+.entry .lb { flex: 1; font-size: 28rpx; color: var(--ink); }
+.entry .ar { color: var(--ink-3); font-size: 32rpx; }

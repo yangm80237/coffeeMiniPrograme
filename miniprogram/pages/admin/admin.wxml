@@ -1,0 +1,18 @@
+<!-- 管理页（新增页无原型，沿用 tokens 与卡片+btn 模式；规格书 3.9） -->
+<view class="admin">
+  <view class="card panel">
+    <view class="panel-title">AI 模型配置 <text class="source-tag">{{sourceLabel}}</text></view>
+
+    <view class="form-label">视觉识别模型 ID</view>
+    <input class="form-input" placeholder="如：ep-vision-xxx" value="{{modelVision}}" bindinput="onVision" />
+
+    <view class="form-label">生图模型 ID</view>
+    <input class="form-input" placeholder="如：ep-image-xxx" value="{{modelImage}}" bindinput="onImage" />
+
+    <view class="btn-row">
+      <view class="btn btn-ink flex1" bindtap="save">保存</view>
+      <view class="btn btn-gray test" bindtap="testConn">测试连接</view>
+    </view>
+    <view class="note">仅家庭创建者可修改；修改后影响 AI 识别与风味图标生成</view>
+  </view>
+</view>

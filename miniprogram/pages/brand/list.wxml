@@ -1,0 +1,48 @@
+<!-- 品牌库列表（原型 screen-brand 1166–1297 搬运） -->
+<view class="brand-page">
+  <!-- 搜索 + 🚩 筛选 / ➕ 新增 -->
+  <view class="header-row">
+    <input class="search-input" placeholder="🔍 搜索品牌（中英文）..."
+      value="{{keyword}}" bindinput="onKeyword" confirm-type="search" />
+    <view class="icon-btn" bindtap="toggleFilter">🚩</view>
+    <view class="icon-btn" bindtap="goAdd">➕</view>
+  </view>
+
+  <!-- 国家多选下拉 -->
+  <view wx:if="{{filterOpen}}" class="mask" bindtap="toggleFilter"></view>
+  <view wx:if="{{filterOpen}}" class="filter-pop">
+    <view class="filter-title">按国家筛选（可多选）</view>
+    <view wx:for="{{countries}}" wx:key="*this" class="filter-item"
+      data-c="{{item}}" bindtap="toggleCountry">
+      <view class="cbx {{picked[item] ? 'on' : ''}}">{{picked[item] ? '✓' : ''}}</view>
+      <text>{{flags[item]}} {{item}}</text>
+    </view>
+    <view class="filter-actions" bindtap="clearFilter">清空筛选</view>
+  </view>
+
+  <!-- 品牌列表 -->
+  <view class="brand-list">
+    <view wx:for="{{brands}}" wx:key="_id" class="brand-item"
+      data-id="{{item._id}}" bindtap="goDetail">
+      <image wx:if="{{item.logo}}" class="brand-item-logo img" src="{{item.logo}}" mode="aspectFill" />
+      <view wx:else class="brand-item-logo" style="background:{{item.grad}};">{{item.first}}</view>
+      <view class="brand-item-info">
+        <view class="brand-item-name">{{item.name}}</view>
+        <view class="brand-item-desc">{{item.flag}} {{item.country}}<text wx:if="{{item.description}}"> · {{item.description}}</text></view>
+      </view>
+      <view class="brand-item-count">{{item.beanCount}}袋</view>
+    </view>
+  </view>
+
+  <!-- 空态 -->
+  <view class="empty" wx:if="{{!brands.length}}">
+    <view class="empty-icon">🏷️</view>
+    <view class="empty-text">没有符合条件的品牌</view>
+  </view>
+
+  <!-- 底部新增入口 -->
+  <view class="bottom">
+    <view class="btn btn-ink w" bindtap="goAdd">＋ 新增品牌</view>
+    <view class="tip">内置 50+ 品牌 · 可自定义新增</view>
+  </view>
+</view>

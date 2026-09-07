@@ -1,0 +1,35 @@
+/* 品牌详情——样式从 docs/prototype.html screen-brand-detail 段搬运 ×2 换算 rpx */
+
+/* 头部 */
+.bd-hero { text-align: center; padding: 16rpx 32rpx 28rpx; }
+.bd-logo {
+  width: 168rpx; height: 168rpx; margin: 0 auto 20rpx; border-radius: 44rpx;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 64rpx; font-weight: 700; font-family: var(--font-display);
+  background: linear-gradient(135deg, #667eea, #764ba2);
+}
+.bd-logo.img { display: block; }
+.bd-name { font-family: var(--font-display); font-size: 40rpx; font-weight: 700; color: var(--ink); }
+.bd-desc {
+  font-size: 24rpx; color: var(--ink-2); margin-top: 8rpx;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.bd-stats { display: flex; justify-content: center; gap: 56rpx; margin: 24rpx 0 8rpx; }
+.bd-stats view { display: flex; flex-direction: column; text-align: center; }
+.bd-stats .b { font-size: 36rpx; font-family: var(--font-display); }
+.bd-stats .small { font-size: 20rpx; color: var(--ink-2); }
+
+/* 该品牌豆子 */
+.attr-section-title {
+  font-size: 26rpx; font-weight: 700; color: var(--ink);
+  padding: 8rpx 32rpx 16rpx; display: flex; align-items: center; gap: 16rpx;
+}
+.attr-section-title::before, .attr-section-title::after {
+  content: ""; height: 2rpx; background: rgba(80, 60, 30, .12); flex: 1;
+}
+.bean-wrap { padding: 0 32rpx 60rpx; }
+
+/* 空态 */
+.empty { display: flex; flex-direction: column; align-items: center; padding: 80rpx 40rpx 120rpx; }
+.empty-icon { font-size: 96rpx; margin-bottom: 24rpx; opacity: .5; }
+.empty-text { font-size: 28rpx; color: var(--ink-3); }

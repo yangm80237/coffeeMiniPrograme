@@ -1,0 +1,30 @@
+<!-- 风味标签维护（原型 screen-flavor 1103–1165 搬运） -->
+<view class="flavor-page">
+  <!-- 搜索 + 右上 ➕ -->
+  <view class="search-row">
+    <input class="search-input" placeholder="🔍 搜索风味标签..."
+      value="{{keyword}}" bindinput="onKeyword" confirm-type="search" />
+    <view class="icon-btn" bindtap="goNew">➕</view>
+  </view>
+
+  <!-- 分组渲染 -->
+  <view wx:for="{{groups}}" wx:key="category" class="flavor-category">
+    <view class="flavor-category-title">
+      <view class="dot" style="background:{{item.dot}};"></view>{{item.category}}
+    </view>
+    <view class="flavor-tag-grid">
+      <view wx:for="{{item.items}}" wx:for-item="f" wx:key="_id"
+        class="flavor-tag-item" data-id="{{f._id}}" bindtap="goDetail">
+        <view class="icon">{{f.emoji || '🏷️'}}</view>
+        <view class="name">{{f.name}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空态 / 底注 -->
+  <view class="empty" wx:if="{{!groups.length}}">
+    <view class="empty-icon">🍓</view>
+    <view class="empty-text">没有匹配的风味标签</view>
+  </view>
+  <view wx:if="{{groups.length}}" class="foot-note">共 {{total}} 个风味标签 · 点击可重新生成图标</view>
+</view>
