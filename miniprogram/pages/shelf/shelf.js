@@ -9,10 +9,11 @@ Page({
   onShow() { this.refresh(); },
   refresh() {
     const { filter, keyword } = this.data;
-    return beanApi.listBeans({ status: filter, keyword }).then((beans) => {
+    return beanApi.listBeans({ status: 'all', keyword }).then((beans) => {
       const counts = { all: beans.length, resting: 0, drinking: 0, hurry: 0, finished: 0 };
       beans.forEach((b) => counts[b.statusInfo.status]++);
-      this.setData({ beans, loaded: true,
+      const shown = filter === 'all' ? beans : beans.filter((b) => b.statusInfo.status === filter);
+      this.setData({ beans: shown, loaded: true,
         filters: FILTERS.map((f) => ({ ...f, count: counts[f.key] })),
         filterLabel: FILTERS.find((f) => f.key === filter).label });
     });
