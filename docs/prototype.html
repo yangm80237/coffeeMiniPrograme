@@ -241,13 +241,14 @@
     display: flex; align-items: center; justify-content: center; color: #fff; font-size: 9px; font-weight: 700;
   }
   .detail-flavor-row {
-    display: flex; align-items: center; justify-content: center; gap: 12px; margin: 14px 0;
+    display: flex; align-items: center; justify-content: center; gap: 0; margin: 12px 0 10px;
   }
   .detail-flavor-icon {
-    width: 52px; height: 52px; border-radius: 50%; background: #fff;
-    display: flex; align-items: center; justify-content: center; font-size: 26px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    font-size: 48px; line-height: 1.15; margin: 0 -12px;
+    filter: drop-shadow(0 3px 6px rgba(60, 40, 20, .16));
   }
+  .detail-flavor-icon:first-child { margin-left: 0; }
+  .detail-flavor-icon:last-child { margin-right: 0; }
   .detail-flavor-text { font-family: var(--font-display); font-style: italic; font-size: 13px; color: var(--ink-soft); margin-top: 4px; letter-spacing: .5px; }
 
   /* 评分区 */
@@ -1010,13 +1011,13 @@
       <div class="detail-flavor-text">草莓 · 奶油 · 橙子 · 白蜜</div>
     </div>
 
-    <!-- 状态条 -->
-    <div style="margin:0 16px 16px;padding:10px 14px;background:#F0FDF4;border-radius:10px;display:flex;align-items:center;justify-content:space-between;">
+    <!-- 状态条：随底部按钮循环 养豆中→在喝→已喝完；养豆期规则：烘焙月份5-10月=20天，其他=25天（本豆08.28烘焙→20天） -->
+    <div id="dsb" style="margin:0 16px 16px;padding:10px 14px;background:#F0FDF4;border-radius:10px;display:flex;align-items:center;justify-content:space-between;transition:background .25s;">
       <div style="display:flex;align-items:center;gap:8px;">
-        <span style="width:10px;height:10px;border-radius:50%;background:#52C41A;"></span>
-        <span style="font-size:13px;font-weight:600;color:#166534;">正在喝</span>
+        <span id="dsb-dot" style="width:10px;height:10px;border-radius:50%;background:#52C41A;transition:background .25s;"></span>
+        <span id="dsb-label" style="font-size:13px;font-weight:600;color:#166534;transition:color .25s;">正在喝</span>
       </div>
-      <span style="font-size:11px;color:#6B7280;">200g · 最佳赏味第12天</span>
+      <span id="dsb-right" style="font-size:11px;color:#6B7280;">200g · 最佳赏味第12天</span>
     </div>
 
     <!-- 评分 -->
@@ -1027,7 +1028,7 @@
         <div class="rating-score">4.0</div>
       </div>
       <div class="rating-card">
-        <div class="rating-label">太太评分</div>
+        <div class="rating-label">毛小毛评分</div>
         <div class="rating-stars">★★★★★</div>
         <div class="rating-score">5.0</div>
       </div>
@@ -1047,7 +1048,7 @@
     </div>
 
     <div class="detail-actions">
-      <button class="action-btn warn" onclick="this.textContent='已喝完 ✓'">喝完了</button>
+      <button class="action-btn warn" id="btn-status" onclick="cycleBeanStatus()">喝完了</button>
       <button class="action-btn gray" onclick="showScreen('confirm')">编辑</button>
       <button class="action-btn primary" onclick="toggleRate()">评分</button>
     </div>
@@ -1061,11 +1062,7 @@
         <span class="rate-stars" id="stars-me" onclick="setStars(event,'stars-me')"><i>★</i><i>★</i><i>★</i><i>★</i><i>☆</i></span>
         <b class="rate-num" id="num-me">4.0</b>
       </div>
-      <div class="rate-row">
-        <span class="rate-who">太太</span>
-        <span class="rate-stars" id="stars-wife" onclick="setStars(event,'stars-wife')"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></span>
-        <b class="rate-num" id="num-wife">5.0</b>
-      </div>
+      <div style="font-size:10.5px;color:#9CA3AF;margin:2px 0 4px;">每人只能修改自己的评分 · 毛小毛的评分由她自己打</div>
       <div class="form-label">风味感受（可选）</div>
       <input class="form-input" placeholder="例如：莓果酸质明亮，回甘带蜜香">
       <button class="save-btn" style="width:100%;padding:12px;" onclick="toggleRate()">保存评分</button>
@@ -1492,6 +1489,28 @@ function clearBrandFilter() {
   document.querySelectorAll('#country-pop input').forEach(c => c.checked = false);
   applyBrandFilter();
 }
+// 详情页状态循环：养豆中 → 在喝 → 已喝完 → 养豆中（点按钮切换，状态条同步变化）
+// 养豆期默认规则：烘焙月份 5-10 月 = 20 天，其他月份 = 25 天（本豆 08.28 烘焙 → 20 天）
+const REST_DAYS = (8 >= 5 && 8 <= 10) ? 20 : 25;
+const BEAN_ST = {
+  resting:  { dot:'#FAAD14', bar:'#FFF8E6', txt:'#B45309', label:'养豆中', right:`还需10天 · 养豆期${REST_DAYS}天`, btn:'开喝',   cls:'primary' },
+  drinking: { dot:'#52C41A', bar:'#F0FDF4', txt:'#166534', label:'正在喝', right:'200g · 最佳赏味第12天',        btn:'喝完了', cls:'warn' },
+  finished: { dot:'#9CA3AF', bar:'#F3F4F6', txt:'#4B5563', label:'已喝完', right:'200g · 本袋已喝完',            btn:'重新养豆', cls:'gray' },
+};
+let beanStatus = 'drinking';
+function renderBeanStatus() {
+  const m = BEAN_ST[beanStatus];
+  document.getElementById('dsb').style.background = m.bar;
+  const dot = document.getElementById('dsb-dot'); dot.style.background = m.dot;
+  const lb = document.getElementById('dsb-label'); lb.textContent = m.label; lb.style.color = m.txt;
+  document.getElementById('dsb-right').textContent = m.right;
+  const btn = document.getElementById('btn-status'); btn.textContent = m.btn; btn.className = 'action-btn ' + m.cls;
+}
+function cycleBeanStatus() {
+  beanStatus = { resting:'drinking', drinking:'finished', finished:'resting' }[beanStatus];
+  renderBeanStatus();
+}
+renderBeanStatus();
 // 货架：状态筛选
 function filterShelf(el, key) {
   document.querySelectorAll('#screen-shelf .filter-tab').forEach(t => t.classList.remove('active'));
