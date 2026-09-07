@@ -12,16 +12,19 @@ const BUILTIN_FLAVORS = require('./seed/flavors');
 const stripFlag = ({ flag, ...rest }) => rest;
 
 async function seedBuiltins(collection, docs) {
-  let inserted = 0;
-  for (const raw of docs) {
-    const doc = stripFlag(raw);
-    const hit = await db.collection(collection)
-      .where({ name: doc.name, isBuiltin: true }).count();
-    if (hit.total > 0) continue; // 按 name+isBuiltin 查重，幂等
-    await db.collection(collection).add({ data: { ...doc, isBuiltin: true, familyId: null } });
-    inserted++;
-  }
-  return inserted;
+  // 一次查全量内置名 → 过滤 → 一次批量插入（服务端 add 支持数组）
+  // 旧版逐条 await 在 3s 默认超时内必然超时（57条×2往返），此为超时修复
+  const exist = await db.collection(collection)
+    .where({ isBuiltin: true })
+    .field({ name: true })
+    .limit(1000)
+    .get();
+  const names = new Set(exist.data.map((d) => d.name));
+  const fresh = docs
+    .filter((raw) => !names.has(raw.name))
+    .map((raw) => ({ ...stripFlag(raw), isBuiltin: true, familyId: null }));
+  if (fresh.length) await db.collection(collection).add({ data: fresh });
+  return fresh.length;
 }
 
 exports.main = async (event) => {
