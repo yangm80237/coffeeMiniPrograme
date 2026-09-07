@@ -1,16 +1,19 @@
 // genFlavorIcon 云函数——Seedream v4 提示词生成 → jimp 抠图透明底 → 云存储 → 写回 flavor_tags.iconUrl
-// 用法（DevTools 云端测试）：{"names":["草莓","茉莉","黑巧"]}  单次最多 5 个
+// 断点续跑模式（平台超时上限 60s）：每次调用自动挑选「还没有 iconUrl」的内置风味生成，
+// 45 秒预算到点即返回进度；在测试面板重复点「测试」（入参 {}）直到 remaining=0。
+// 重生成单个：{"names":["黑巧"],"force":true}
 // 环境变量：ARK_API_KEY（必填）、ARK_MODEL_IMAGE（可选，默认 doubao-seedream-5-0-260128）
-// 提示词定稿 v5（2026-09-08）：浓郁插画图标，无任何描边，白底生成 + 程序抠图透明
 const cloud = require('wx-server-sdk');
 const https = require('https');
 const Jimp = require('jimp');
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
+const _ = db.command;
 
 const SIZE = '2048x2048';          // Seedream 5.0 最低 368 万像素
 const PROC_SIZE = 1024;            // 处理与存储分辨率（展示最大 288px，3 倍冗余）
 const BG_DIFF_TOTAL = 35;          // floodfill 背景判定：与纯白的通道差和 ≤ 35（与本地 PIL thresh=35 一致）
+const TIME_BUDGET_MS = 45000;      // 单次调用时间预算（60s 上限留 15s 余量）
 
 // 45 个内置风味的英文提示词映射（缺省回落中文名）
 const EN = {
@@ -114,23 +117,41 @@ exports.main = async (event) => {
   const key = process.env.ARK_API_KEY;
   if (!key) throw new Error('NO_ARK_KEY: 请在函数配置里设置环境变量 ARK_API_KEY');
   const model = event.model || process.env.ARK_MODEL_IMAGE || 'doubao-seedream-5-0-260128';
-  const names = event.names;
-  if (!Array.isArray(names) || !names.length || names.length > 5) {
-    throw new Error('NAMES_REQUIRED: names 数组必填，单次最多 5 个');
+  const started = Date.now();
+
+  // 待生成名单：force+names 指定重生；否则自动挑「isBuiltin 且无 iconUrl」的
+  let queue;
+  if (event.names && event.names.length) {
+    queue = event.names;
+  } else {
+    const pend = await db.collection('flavor_tags')
+      .where({ isBuiltin: true, iconUrl: _.exists(false) })
+      .limit(100)
+      .get();
+    queue = pend.data.map((f) => f.name);
   }
-  const results = [];
-  for (const name of names) {
-    const prompt = buildPrompt(name);
-    const j = await postJson(key, { model, prompt, size: SIZE, output_format: 'png', response_format: 'url', watermark: false });
-    const url = j && j.data && j.data[0] && j.data[0].url;
-    if (!url) throw new Error(`NO_URL: ${name}`);
-    const raw = await fetchBuffer(url);
-    const png = await cutout(raw);
-    const up = await cloud.uploadFile({ cloudPath: `flavors/${name}.png`, fileContent: png });
-    const q = await db.collection('flavor_tags')
-      .where({ name, isBuiltin: true })
-      .update({ data: { iconUrl: up.fileID, iconPrompt: prompt, updateTime: db.serverDate() } });
-    results.push({ name, fileID: up.fileID, updated: q.stats && q.stats.updated });
+
+  const results = [], errors = [];
+  for (const name of queue) {
+    if (Date.now() - started > TIME_BUDGET_MS) break; // 预算到点，断点续跑
+    try {
+      const prompt = buildPrompt(name);
+      const j = await postJson(key, { model, prompt, size: SIZE, output_format: 'png', response_format: 'url', watermark: false });
+      const url = j && j.data && j.data[0] && j.data[0].url;
+      if (!url) throw new Error('NO_URL');
+      const raw = await fetchBuffer(url);
+      const png = await cutout(raw);
+      const up = await cloud.uploadFile({ cloudPath: `flavors/${name}.png`, fileContent: png });
+      const q = await db.collection('flavor_tags')
+        .where({ name, isBuiltin: true })
+        .update({ data: { iconUrl: up.fileID, iconPrompt: prompt, updateTime: db.serverDate() } });
+      results.push({ name, fileID: up.fileID, updated: q.stats && q.stats.updated });
+    } catch (e) {
+      errors.push({ name, error: String(e.message || e).slice(0, 200) });
+    }
   }
-  return { results };
+
+  const left = await db.collection('flavor_tags')
+    .where({ isBuiltin: true, iconUrl: _.exists(false) }).count();
+  return { processed: results, errors, remaining: left.total, elapsedMs: Date.now() - started };
 };
