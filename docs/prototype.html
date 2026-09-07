@@ -270,43 +270,22 @@
   .attr-section-title::before, .attr-section-title::after {
     content: ''; flex: 1; height: 1px; background: rgba(80,60,30,.14);
   }
-  .tile-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:0 16px 20px; }
-  .tile { aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:3px; font-size:12px; text-align:center; padding:8px; position:relative; }
-  .tile .tile-icon { font-size:17px; line-height:1; margin-bottom:1px; }
-  .tile b { font-size:12.5px; font-weight:700; line-height:1.25; color:#2A2622; }
-  .tile small { font-size:9.5px; color:#6B655A; opacity:.72; }
-  /* 马卡龙浅色板（参考 BeanBook：浅底深字，靠色相区分） */
-  .tile-c1{background:#FFE5DB;}   /* 烘焙日期 浅桃 */
-  .tile-c4{background:#D7EBF7;}   /* 处理法 浅天蓝 */
-  .tile-c5{background:#6B4A3A;}   /* 豆种 深棕（深底浅字） */
-  .tile-c6{background:#DCEEDA;}   /* 产区 浅绿 */
-  .tile-c7{background:#F0F3CF;}   /* 海拔 浅黄绿 */
-  .tile-c8{background:#FFE9BC;}   /* 烘焙度 浅金 */
-  .tile-c9{background:#FBE4D2;}   /* 冲煮 浅琥珀 */
-  .tile-c10{background:#E7E2F1;}  /* 入库 浅紫灰 */
-  .tile-c5 b { color:#FFF6EC; }
-  .tile-c5 small { color:rgba(255,246,236,.75); }
-  .tile .t-country { font-size:9px; color:#3E6B4F; opacity:.9; line-height:1.1; }
-  /* 形状：全部由 border-radius / clip-path 实现 */
-  .sh-cloud  { border-radius:46% 54% 55% 45%/55% 48% 52% 45%; }
-  .sh-drop   { border-radius:0 50% 50% 50%; transform:rotate(45deg); margin:14%; }
-  .sh-drop>* { transform:rotate(-45deg); width:100%; display:flex; flex-direction:column; align-items:center; gap:3px; }
-  .sh-bean   { border-radius:50% / 42%; position:relative; }
-  .sh-bean:after { content:""; position:absolute; left:50%; top:12%; bottom:12%; width:3px;
-    margin-left:-1.5px; border-radius:3px; background:rgba(255,246,236,.35); transform:rotate(18deg); }
-  .sh-mtn    { clip-path:polygon(50% 0,100% 78%,78% 100%,22% 100%,0 78%); }
-  .sh-bag    { border-radius:10px 10px 14px 14px; position:relative; margin-top:7px; }
-  .sh-bag:before { content:""; position:absolute; top:-7px; left:14%; right:14%; height:10px;
-    border-radius:4px 4px 0 0; background:inherit; filter:brightness(.94); }
-  .sh-round  { border-radius:50%; }
-  .sh-clock  { border-radius:50%; position:relative; }
-  .sh-clock:after { content:""; position:absolute; left:50%; top:20%; width:3px; height:30%;
-    margin-left:-1.5px; border-radius:2px; background:rgba(107,101,90,.55); transform-origin:bottom; transform:rotate(35deg); }
-  .sh-cup    { border-radius:10px 10px 16px 16px; position:relative; }
-  .sh-cup:before { content:""; position:absolute; right:-9px; top:26%; width:14px; height:14px;
-    border:3px solid rgba(42,38,34,.28); border-radius:50%; }
-  .sh-map    { border-radius:18%; }
+  /* 豆子属性：图标条（emoji 占位，后续替换为 PNG 图标） */
+  .at-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px 8px; padding:6px 16px 22px; align-items:start; }
+  .at-item { display:flex; flex-direction:column; align-items:center; text-align:center; gap:3px; }
+  .at-icon { width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center;
+    font-size:23px; box-shadow:var(--shadow-card); }
+  .at-sub { font-size:9px; color:var(--ink-soft); line-height:1; }
+  .at-value { font-size:12px; font-weight:700; color:var(--ink); line-height:1.25; }
+  .at-label { font-size:9.5px; color:var(--ink-soft); line-height:1; }
+  .at-c1{background:#FFE5DB;}   /* 烘焙日期 */
+  .at-c4{background:#D7EBF7;}   /* 处理法 */
+  .at-c5{background:#F0E4DA;}   /* 豆种 */
+  .at-c6{background:#DCEEDA;}   /* 产区 */
+  .at-c7{background:#F0F3CF;}   /* 海拔 */
+  .at-c8{background:#FFE9BC;}   /* 烘焙度 */
+  .at-c9{background:#FBE4D2;}   /* 冲煮 */
+  .at-c10{background:#E7E2F1;}  /* 入库 */
 
   /* 底部操作 */
   .detail-actions {
@@ -499,6 +478,127 @@
   .country-row .cbar { flex:1; height:8px; border-radius:4px; background:rgba(80,60,30,.08); overflow:hidden; }
   .country-row .cbar i { display:block; height:100%; border-radius:4px; background:linear-gradient(90deg,#C96F4A,#E09B6F); }
   .country-row .cnum { font-size:11px; color:var(--ink-soft); width:22px; text-align:right; font-family:var(--font-display); }
+
+  /* ===== AI 处理中（冲煮动画，10s 循环） ===== */
+  #screen-processing { background:#1C1712; color:#fff; }
+  .proc-hint { text-align:center; font-size:12px; color:rgba(255,255,255,.68); margin-top:10px; min-height:16px; }
+  .proc-dots { display:flex; gap:5px; justify-content:center; margin-top:8px; }
+  .proc-dots i { width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,.4); animation:dotBlink 1.4s infinite; }
+  .proc-dots i:nth-child(2) { animation-delay:.2s; }
+  .proc-dots i:nth-child(3) { animation-delay:.4s; }
+  @keyframes dotBlink { 0%,100%{opacity:.25;transform:translateY(0)} 40%{opacity:1;transform:translateY(-3px)} }
+  .proc-skip { display:block; margin:20px 16px 34px; width:calc(100% - 32px); padding:12px; border-radius:999px;
+    background:rgba(255,255,255,.1); color:rgba(255,255,255,.85); border:1px solid rgba(255,255,255,.22); font-size:12px; cursor:pointer; }
+  .brew-stage { position:relative; width:250px; height:316px; margin:8px auto 0; }
+  .brew-scene { position:absolute; inset:0; animation:sceneFade 10s linear infinite; }
+  @keyframes sceneFade { 0%,86%{opacity:1} 93%,100%{opacity:0} }
+  /* 咖啡豆 */
+  .pbean { position:absolute; width:26px; height:19px; border-radius:50%/44%; background:#7A5542; opacity:0;
+    animation:beanAnim 10s infinite; --r:0deg; }
+  .pbean:after { content:""; position:absolute; left:50%; top:14%; bottom:14%; width:2.5px; margin-left:-1.25px;
+    border-radius:2px; background:rgba(255,246,236,.4); transform:rotate(14deg); }
+  .pbean.b1 { left:92px; top:8px; }
+  .pbean.b2 { left:120px; top:2px; --r:16deg; }
+  .pbean.b3 { left:146px; top:10px; --r:-12deg; }
+  @keyframes beanAnim {
+    0% { opacity:0; transform:translateY(-6px) rotate(var(--r)); }
+    3% { opacity:1; }
+    6% { transform:translateY(0) rotate(calc(var(--r) + 7deg)); }
+    10% { transform:translateY(0) rotate(calc(var(--r) - 7deg)); }
+    13% { opacity:1; transform:translateY(0) rotate(calc(var(--r) + 4deg)); }
+    16%,100% { opacity:0; transform:translateY(16px) rotate(var(--r)) scale(.5); }
+  }
+  /* 粉末颗粒 */
+  .pp { position:absolute; top:28px; width:5px; height:5px; border-radius:50%; background:#9C7A64; opacity:0;
+    animation:ppAnim 10s infinite; }
+  @keyframes ppAnim {
+    0%,15% { opacity:0; transform:translate(0,0); }
+    17% { opacity:1; }
+    30% { opacity:1; transform:translate(var(--dx,0px),88px) scale(.9); }
+    33%,100% { opacity:0; transform:translate(var(--dx,0px),88px) scale(.9); }
+  }
+  /* V60 滤杯 */
+  .v60 { position:absolute; left:50%; top:112px; width:104px; height:54px; margin-left:-52px;
+    background:linear-gradient(180deg,rgba(255,255,255,.30),rgba(255,255,255,.12));
+    clip-path:polygon(0 0,100% 0,60% 100%,40% 100%); }
+  .v60:before { content:""; position:absolute; inset:0;
+    background:repeating-linear-gradient(90deg,transparent 0 12px,rgba(255,255,255,.22) 12px 14px); }
+  /* 细口壶 */
+  .kettle { position:absolute; left:133px; top:34px; width:70px; height:50px; opacity:0;
+    animation:kettleAnim 10s infinite; transform-origin:12% 80%; }
+  .kettle .body { position:absolute; left:30px; bottom:0; width:38px; height:30px; background:#4A413A; border-radius:7px 7px 11px 11px; }
+  .kettle .lid { position:absolute; left:42px; bottom:30px; width:16px; height:5px; background:#4A413A; border-radius:3px 3px 0 0; }
+  .kettle .spout { position:absolute; left:-6px; bottom:16px; width:38px; height:5px; background:#4A413A; border-radius:3px; transform:rotate(-8deg); }
+  .kettle .handle { position:absolute; right:4px; bottom:28px; width:20px; height:13px;
+    border:4px solid #4A413A; border-bottom:none; border-radius:10px 10px 0 0; }
+  @keyframes kettleAnim {
+    0%,24% { opacity:0; transform:translateX(44px) rotate(0); }
+    30% { opacity:1; transform:translateX(0) rotate(0); }
+    36% { transform:translateX(0) rotate(-12deg); }
+    56% { transform:translateX(0) rotate(-12deg); }
+    62% { transform:translateX(0) rotate(0); }
+    68% { opacity:1; transform:translateX(0) rotate(0); }
+    75%,100% { opacity:0; transform:translateX(44px) rotate(0); }
+  }
+  /* 水流 */
+  .wstream { position:absolute; left:121px; top:63px; width:5px; height:0; border-radius:3px;
+    background:linear-gradient(180deg,rgba(196,230,255,.95),rgba(140,200,240,.85));
+    animation:streamAnim 10s infinite; }
+  @keyframes streamAnim {
+    0%,38% { height:0; opacity:0; }
+    42% { height:49px; opacity:1; }
+    56% { height:49px; opacity:1; }
+    60%,100% { height:0; opacity:0; }
+  }
+  /* 咖啡滴落 */
+  .drip { position:absolute; left:122px; top:166px; width:6px; height:9px; border-radius:50% 50% 60% 60%;
+    background:linear-gradient(180deg,#C9A063,#8B5A2B); opacity:0; }
+  .drip.d1 { animation:dripA 10s infinite; }
+  .drip.d2 { animation:dripB 10s infinite; }
+  .drip.d3 { animation:dripC 10s infinite; }
+  @keyframes dripA {
+    0%,45% { opacity:0; transform:translateY(0); }
+    46% { opacity:1; }
+    49% { opacity:1; transform:translateY(82px); }
+    50%,66% { opacity:0; transform:translateY(82px); }
+    67% { opacity:1; transform:translateY(0); }
+    70% { opacity:1; transform:translateY(82px); }
+    71%,100% { opacity:0; transform:translateY(82px); }
+  }
+  @keyframes dripB {
+    0%,52% { opacity:0; transform:translateY(0); }
+    53% { opacity:1; }
+    56% { opacity:1; transform:translateY(82px); }
+    57%,74% { opacity:0; transform:translateY(82px); }
+    75% { opacity:1; transform:translateY(0); }
+    78% { opacity:1; transform:translateY(82px); }
+    79%,100% { opacity:0; transform:translateY(82px); }
+  }
+  @keyframes dripC {
+    0%,59% { opacity:0; transform:translateY(0); }
+    60% { opacity:1; }
+    63% { opacity:1; transform:translateY(82px); }
+    64%,80% { opacity:0; transform:translateY(82px); }
+    81% { opacity:1; transform:translateY(0); }
+    84% { opacity:1; transform:translateY(82px); }
+    85%,100% { opacity:0; transform:translateY(82px); }
+  }
+  /* 玻璃分享壶 */
+  .carafe { position:absolute; left:81px; top:208px; width:88px; height:92px; overflow:hidden;
+    border:3px solid rgba(255,255,255,.42); border-top:none; border-radius:0 0 26px 26px/0 0 30px 30px;
+    background:rgba(255,255,255,.05); }
+  .cliquid { position:absolute; left:0; right:0; bottom:0; height:0;
+    background:linear-gradient(180deg,#B98A54,#7A4E26); animation:liquidAnim 10s infinite; }
+  @keyframes liquidAnim {
+    0%,46% { height:0; }
+    86% { height:52px; }
+    94%,100% { height:52px; }
+  }
+
+  /* ===== 新增品牌 ===== */
+  .logo-up { width:96px; height:96px; border-radius:20px; border:2px dashed rgba(80,60,30,.22);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+    font-size:28px; color:var(--ink-soft); cursor:pointer; }
 </style>
 </head>
 <body>
@@ -510,6 +610,7 @@
   <button class="tab-btn active" onclick="showScreen('shelf')">🏠 货架页</button>
   <button class="tab-btn" onclick="showScreen('add')">➕ 添加豆子</button>
   <button class="tab-btn" onclick="showScreen('camera')">📷 拍照</button>
+  <button class="tab-btn" onclick="showScreen('processing')">✨ 识别中</button>
   <button class="tab-btn" onclick="showScreen('confirm')">📝 确认编辑</button>
   <button class="tab-btn" onclick="showScreen('detail')">📋 豆子详情</button>
   <button class="tab-btn" onclick="showScreen('stats')">📊 统计</button>
@@ -713,9 +814,9 @@
     <div class="page-nav">
       <div class="back-btn" onclick="showScreen('camera')">‹</div>
       <div class="page-nav-title">确认照片</div>
-      <button class="save-btn" onclick="showScreen('confirm')">开始识别</button>
+      <button class="save-btn" onclick="showScreen('processing')">开始识别</button>
     </div>
-    <div class="steps">① 拍照 <i>→</i> <b>② 确认上传</b> <i>→</i> ③ 核对入库</div>
+    <div class="steps">① 拍照 <i>→</i> <b>② 确认上传</b> <i>→</i> ③ AI 识别 <i>→</i> ④ 核对入库</div>
     <div class="upload-preview">🫘</div>
     <div class="photo-strip" style="margin:0 16px 14px;">
       <div class="photo-thumb sel" onclick="pickCover(this)">🫘<span class="cover-tag">识别主图</span><span class="pick"></span></div>
@@ -726,8 +827,44 @@
     <div class="upload-tip"><span>✨</span>AI 将识别品牌、豆名、产区、处理法等信息，完成后进入核对</div>
     <div style="display:flex;gap:10px;padding:0 16px 30px;">
       <button class="add-option secondary" style="flex:1;border-radius:999px;text-align:center;padding:11px;" onclick="showScreen('camera')">重新拍摄</button>
-      <button class="save-btn" style="flex:1.4;padding:11px;" onclick="showScreen('confirm')">✨ 开始 AI 识别</button>
+      <button class="save-btn" style="flex:1.4;padding:11px;" onclick="showScreen('processing')">✨ 开始 AI 识别</button>
     </div>
+  </div>
+
+  <!-- ===== AI 处理中页（冲煮动画，10s 循环） ===== -->
+  <div class="screen" id="screen-processing">
+    <div class="status-bar" style="color:#fff;"><span>9:41</span><span>🔋 100%</span></div>
+    <div class="page-nav">
+      <div class="back-btn" style="color:#fff;" onclick="showScreen('upload')">‹</div>
+      <div class="page-nav-title" style="color:#fff;">AI 识别中</div>
+      <div style="width:40px;"></div>
+    </div>
+    <div class="steps" style="color:rgba(255,255,255,.5);">① 拍照 <i style="color:rgba(255,255,255,.26);">→</i> ② 确认上传 <i style="color:rgba(255,255,255,.26);">→</i> <b style="color:#E89B6F;">③ AI 识别</b> <i style="color:rgba(255,255,255,.26);">→</i> ④ 核对入库</div>
+    <div class="brew-stage">
+      <div class="brew-scene">
+        <div class="pbean b1"></div>
+        <div class="pbean b2"></div>
+        <div class="pbean b3"></div>
+        <i class="pp" style="left:102px;--dx:-8px;"></i>
+        <i class="pp" style="left:112px;--dx:-4px;"></i>
+        <i class="pp" style="left:122px;--dx:0px;"></i>
+        <i class="pp" style="left:132px;--dx:3px;"></i>
+        <i class="pp" style="left:142px;--dx:6px;"></i>
+        <i class="pp" style="left:150px;--dx:9px;"></i>
+        <i class="pp" style="left:108px;--dx:-6px;"></i>
+        <i class="pp" style="left:138px;--dx:5px;"></i>
+        <div class="kettle"><i class="spout"></i><i class="body"></i><i class="lid"></i><i class="handle"></i></div>
+        <div class="wstream"></div>
+        <div class="v60"></div>
+        <i class="drip d1"></i>
+        <i class="drip d2"></i>
+        <i class="drip d3"></i>
+        <div class="carafe"><div class="cliquid"></div></div>
+      </div>
+    </div>
+    <div class="proc-hint" id="proc-hint">正在识别品牌…</div>
+    <div class="proc-dots"><i></i><i></i><i></i></div>
+    <button class="proc-skip" onclick="showScreen('confirm')">识别完成后自动进入 · 点此直接查看结果</button>
   </div>
 
   <!-- ===== 确认编辑页 ===== -->
@@ -738,7 +875,7 @@
       <div class="page-nav-title">确认豆子信息</div>
       <button class="save-btn" onclick="showScreen('shelf')">入库</button>
     </div>
-    <div class="steps">① 拍照 <i>→</i> ② 确认上传 <i>→</i> <b>③ 核对入库</b></div>
+    <div class="steps">① 拍照 <i>→</i> ② 确认上传 <i>→</i> ③ AI 识别 <i>→</i> <b>④ 核对入库</b></div>
     <div class="form-section">
       <!-- 本次拍摄的照片 -->
       <div class="form-label">本次照片 <span class="ai-tag">点选封面</span></div>
@@ -896,20 +1033,21 @@
     </div>
 
     <div class="attr-section-title">豆子属性</div>
-    <div class="tile-grid">
-      <div class="tile sh-cloud tile-c1"><span class="tile-icon">📅</span><b>08.28</b><small>烘焙日期</small></div>
-      <div class="tile sh-bean tile-c5"><span class="tile-icon">🫘</span><b>74158</b><small>豆种</small></div>
-      <div class="tile sh-drop tile-c4"><div><span class="tile-icon">💧</span><b>水洗</b><small>处理法</small></div></div>
-      <div class="tile sh-map tile-c6"><span class="tile-icon">📍</span><small class="t-country">埃塞俄比亚</small><b>耶加雪菲</b><small>产区</small></div>
-      <div class="tile sh-mtn tile-c7"><span class="tile-icon">⛰️</span><b>2200m</b><small>海拔</small></div>
-      <div class="tile sh-round tile-c8"><span class="tile-icon">🔥</span><b>浅烘</b><small>烘焙度</small></div>
-      <div class="tile sh-cup tile-c9"><span class="tile-icon">☕</span><b>手冲</b><small>冲煮方式</small></div>
-      <div class="tile sh-clock tile-c10"><span class="tile-icon">📥</span><b>09.01</b><small>入库日期</small></div>
+    <!-- 图标暂用 emoji 占位，后续替换为 PNG 图标；冲煮方式：🫖手冲 / ☕意式 / 🥣通用 -->
+    <div class="at-grid">
+      <div class="at-item"><div class="at-icon at-c1">📅</div><div class="at-value">08.28</div><div class="at-label">烘焙日期</div></div>
+      <div class="at-item"><div class="at-icon at-c5">🫘</div><div class="at-value">74158</div><div class="at-label">豆种</div></div>
+      <div class="at-item"><div class="at-icon at-c4">💧</div><div class="at-value">水洗</div><div class="at-label">处理法</div></div>
+      <div class="at-item"><div class="at-icon at-c6">📍</div><div class="at-sub">埃塞俄比亚</div><div class="at-value">耶加雪菲</div><div class="at-label">产区</div></div>
+      <div class="at-item"><div class="at-icon at-c7">⛰️</div><div class="at-value">2200m</div><div class="at-label">海拔</div></div>
+      <div class="at-item"><div class="at-icon at-c8">🔥</div><div class="at-value">浅烘</div><div class="at-label">烘焙度</div></div>
+      <div class="at-item"><div class="at-icon at-c9">🫖</div><div class="at-value">手冲</div><div class="at-label">冲煮方式</div></div>
+      <div class="at-item"><div class="at-icon at-c10">📥</div><div class="at-value">09.01</div><div class="at-label">入库日期</div></div>
     </div>
 
     <div class="detail-actions">
       <button class="action-btn warn" onclick="this.textContent='已喝完 ✓'">喝完了</button>
-      <button class="action-btn gray">编辑</button>
+      <button class="action-btn gray" onclick="showScreen('confirm')">编辑</button>
       <button class="action-btn primary" onclick="toggleRate()">评分</button>
     </div>
 
@@ -999,7 +1137,7 @@
     <div class="flavor-page-header">
       <div class="page-nav-title" style="font-size:17px;font-weight:700;">品牌库</div>
       <div class="icon-btn" onclick="toggleBrandFilter()" title="按国家筛选">🚩</div>
-      <div class="icon-btn">➕</div>
+      <div class="icon-btn" onclick="showScreen('brand-add')" title="新增品牌">➕</div>
     </div>
     <div style="padding:0 16px 12px;">
       <input class="form-input" placeholder="🔍 搜索品牌（中英文）..." style="margin-bottom:0;">
@@ -1114,8 +1252,40 @@
         <div class="brand-item-count">0袋</div>
       </div>
     </div>
-    <div style="padding:10px 16px 30px;text-align:center;">
-      <div style="font-size:11px;color:#9CA3AF;">内置 50+ 品牌 · 可自定义新增</div>
+    <div style="padding:14px 16px 30px;">
+      <button class="save-btn" style="width:100%;padding:12px;" onclick="showScreen('brand-add')">＋ 新增品牌</button>
+      <div style="font-size:11px;color:#9CA3AF;text-align:center;margin-top:10px;">内置 50+ 品牌 · 可自定义新增</div>
+    </div>
+  </div>
+
+  <!-- ===== 新增品牌页 ===== -->
+  <div class="screen" id="screen-brand-add">
+    <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+    <div class="page-nav">
+      <div class="back-btn" onclick="showScreen('brand')">‹</div>
+      <div class="page-nav-title">新增品牌</div>
+      <button class="save-btn" onclick="showScreen('brand')">保存</button>
+    </div>
+    <div class="form-section">
+      <div class="form-label">品牌 Logo</div>
+      <div class="logo-up">🖼️<small>上传 Logo</small></div>
+      <div class="form-label">品牌名称</div>
+      <input class="form-input" placeholder="如：治光师 BEAMTIMER">
+      <div class="form-label">国家 / 地区</div>
+      <input class="form-input" id="input-brand-country" placeholder="点击下方快捷标签填入">
+      <div class="sug-row">
+        <span class="sug-pill" onclick="fillVal(this,'input-brand-country')">🇨🇳 中国</span>
+        <span class="sug-pill" onclick="fillVal(this,'input-brand-country')">🇺🇸 美国</span>
+        <span class="sug-pill" onclick="fillVal(this,'input-brand-country')">🇯🇵 日本</span>
+        <span class="sug-pill" onclick="fillVal(this,'input-brand-country')">🇵🇦 巴拿马</span>
+        <span class="sug-pill" onclick="fillVal(this,'input-brand-country')">🇪🇹 埃塞俄比亚</span>
+        <span class="sug-pill" onclick="fillVal(this,'input-brand-country')">🇨🇴 哥伦比亚</span>
+        <span class="sug-pill" onclick="fillVal(this,'input-brand-country')">🇧🇷 巴西</span>
+        <span class="sug-pill" onclick="fillVal(this,'input-brand-country')">🇰🇪 肯尼亚</span>
+      </div>
+      <div class="form-label">品牌介绍</div>
+      <textarea class="form-input" rows="3" placeholder="产地、风格、代表作等（选填）"></textarea>
+      <button class="save-btn" style="width:100%;padding:12px;margin-top:4px;" onclick="showScreen('brand')">保存品牌</button>
     </div>
   </div>
 
@@ -1230,6 +1400,14 @@
       <div class="country-row"><span class="cname">🇬🇹 危地马拉</span><div class="cbar"><i style="width:33%"></i></div><span class="cnum">1</span></div>
     </div>
     <div class="stats-card">
+      <h3>豆种分布</h3>
+      <div class="country-row"><span class="cname">🫘 瑰夏</span><div class="cbar"><i style="width:100%"></i></div><span class="cnum">3</span></div>
+      <div class="country-row"><span class="cname">🫘 74158</span><div class="cbar"><i style="width:100%"></i></div><span class="cnum">3</span></div>
+      <div class="country-row"><span class="cname">🫘 铁皮卡</span><div class="cbar"><i style="width:66%"></i></div><span class="cnum">2</span></div>
+      <div class="country-row"><span class="cname">🫘 波旁</span><div class="cbar"><i style="width:66%"></i></div><span class="cnum">2</span></div>
+      <div class="country-row"><span class="cname">🫘 SL28</span><div class="cbar"><i style="width:33%"></i></div><span class="cnum">1</span></div>
+    </div>
+    <div class="stats-card">
       <h3>产区地图</h3>
       <div class="dot-map">
         <i class="pin" style="left:56%;top:38%" title="耶加雪菲"></i>
@@ -1313,6 +1491,13 @@ function clearBrandFilter() {
   document.querySelectorAll('#country-pop input').forEach(c => c.checked = false);
   applyBrandFilter();
 }
+// AI处理中：提示文案轮播
+const procHints = ['正在识别品牌…','正在提取豆名与豆种…','正在识别产区与处理法…','正在匹配风味标签…','整理识别结果，即将完成…'];
+let phi = 0;
+setInterval(() => {
+  const el = document.getElementById('proc-hint');
+  if (el) el.textContent = procHints[phi = (phi + 1) % procHints.length];
+}, 1800);
 </script>
 </body>
 </html>
