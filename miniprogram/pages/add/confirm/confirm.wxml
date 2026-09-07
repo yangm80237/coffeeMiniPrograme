@@ -1,0 +1,157 @@
+<view class="confirm">
+  <!-- 自定义导航：‹ + 标题随形态 + 右上主按钮 -->
+  <view class="page-nav">
+    <view class="back-btn" bindtap="onBack">‹</view>
+    <view class="page-nav-title">{{isEdit ? '编辑豆子' : '确认豆子信息'}}</view>
+    <view class="save-btn" bindtap="onSubmit">{{isEdit ? '保存' : '入库'}}</view>
+  </view>
+
+  <!-- 步骤条：仅入库形态，④ 高亮 -->
+  <view wx:if="{{!isEdit}}" class="steps">
+    <text>① 拍照</text><text class="arr">→</text>
+    <text>② 确认上传</text><text class="arr">→</text>
+    <text>③ AI 识别</text><text class="arr">→</text>
+    <text class="cur">④ 核对入库</text>
+  </view>
+
+  <view class="form-section">
+    <!-- 本次照片选封面：仅入库形态 -->
+    <block wx:if="{{!isEdit}}">
+      <view class="form-label">本次照片 <text class="ai-tag">点选封面</text></view>
+      <view class="strip-wrap">
+        <photo-strip photos="{{photos}}" current="{{coverIndex}}" bind:select="pickCover" />
+      </view>
+    </block>
+
+    <!-- AI 提示条：仅 ai 模式 -->
+    <view wx:if="{{mode === 'ai'}}" class="ai-hint">
+      <text class="ai-hint-icon">✨</text>
+      <text class="ai-hint-text">AI已识别以下信息，请核对确认</text>
+    </view>
+
+    <view class="form-label">品牌 <text wx:if="{{mode === 'ai'}}" class="ai-tag">AI匹配</text></view>
+    <input class="form-input" value="{{form.brandName}}" data-f="brandName" bindinput="onInput" placeholder="品牌名称" />
+
+    <view class="form-label">豆名</view>
+    <input class="form-input" value="{{form.name}}" data-f="name" bindinput="onInput" placeholder="例如：Ethiopia Tamiru Tadesse Alo Village" />
+
+    <view class="form-row">
+      <view class="form-group">
+        <view class="form-label">国家</view>
+        <input class="form-input" value="{{form.country}}" data-f="country" bindinput="onInput" />
+      </view>
+      <view class="form-group">
+        <view class="form-label">产区</view>
+        <input class="form-input" value="{{form.origin}}" data-f="origin" bindinput="onInput" />
+      </view>
+    </view>
+
+    <view class="form-row">
+      <view class="form-group">
+        <view class="form-label">豆种</view>
+        <input class="form-input" value="{{form.variety}}" data-f="variety" bindinput="onInput" />
+      </view>
+      <view class="form-group">
+        <view class="form-label">处理法</view>
+        <input class="form-input" value="{{form.process}}" data-f="process" bindinput="onInput" />
+      </view>
+    </view>
+
+    <!-- 联想 chips -->
+    <view class="sug-row"><text class="sug-cap">国家</text>
+      <text wx:for="{{countryChips}}" wx:key="v" class="sug-pill" data-v="{{item.v}}" bindtap="pickFlag">{{item.flag}} {{item.v}}</text>
+    </view>
+    <view class="sug-row"><text class="sug-cap">豆种</text>
+      <text wx:for="{{varietyChips}}" wx:key="*this" class="sug-pill" data-f="variety" data-v="{{item}}" bindtap="pickChip">{{item}}</text>
+    </view>
+    <view class="sug-row"><text class="sug-cap">处理法</text>
+      <text wx:for="{{processChips}}" wx:key="*this" class="sug-pill" data-f="process" data-v="{{item}}" bindtap="pickChip">{{item}}</text>
+    </view>
+
+    <view class="form-row">
+      <view class="form-group">
+        <view class="form-label">海拔</view>
+        <input class="form-input" value="{{form.altitude}}" data-f="altitude" bindinput="onInput" />
+      </view>
+      <view class="form-group">
+        <view class="form-label">克重</view>
+        <input class="form-input" type="digit" value="{{form.weight}}" data-f="weight" bindinput="onInput" />
+      </view>
+    </view>
+
+    <view class="form-label">烘焙度</view>
+    <view class="segment">
+      <view wx:for="{{roastLevels}}" wx:key="*this"
+        class="segment-item {{form.roastLevel === item ? 'active' : ''}}"
+        data-f="roastLevel" data-v="{{item}}" bindtap="onSegment">{{item}}</view>
+    </view>
+
+    <view class="form-label">冲煮方式</view>
+    <view class="segment">
+      <view wx:for="{{brewMethods}}" wx:key="*this"
+        class="segment-item {{form.brewMethod === item ? 'active' : ''}}"
+        data-f="brewMethod" data-v="{{item}}" bindtap="onSegment">{{item}}</view>
+    </view>
+
+    <view class="form-label">烘焙日期</view>
+    <picker mode="date" value="{{form.roastDate}}" bindchange="onRoastDate">
+      <view class="form-input {{form.roastDate ? '' : 'is-placeholder'}}">{{form.roastDate || '选择烘焙日期'}}</view>
+    </picker>
+
+    <view class="form-label">风味标签 <text wx:if="{{mode === 'ai'}}" class="ai-tag">AI映射</text></view>
+    <view class="flavor-tag-list">
+      <view wx:for="{{pickedFlavors}}" wx:key="_id" class="flavor-tag" data-id="{{item._id}}" bindtap="toggleFlavor">
+        <image wx:if="{{item.iconUrl}}" src="{{item.iconUrl}}" class="icon-img" />
+        <text wx:else class="icon">{{item.emoji}}</text>
+        <text>{{item.name}}</text>
+        <text class="remove">×</text>
+      </view>
+      <view class="add-flavor-btn" bindtap="openFlavorPicker">+ 添加</view>
+    </view>
+
+    <view class="form-label">烘焙商风味描述</view>
+    <textarea class="form-textarea" value="{{form.flavorDesc}}" data-f="flavorDesc" bindinput="onInput"
+      placeholder="例如：strawberry · cream · orange · white honey" />
+  </view>
+
+  <!-- footer 主按钮 -->
+  <view class="footer-bar">
+    <view class="btn w btn-primary" bindtap="onSubmit">{{isEdit ? '保存' : '入库'}}</view>
+  </view>
+</view>
+
+<!-- 保存确认对话框（编辑返回且有变更时） -->
+<view wx:if="{{dialogOpen}}" class="dialog-mask">
+  <view class="dialog">
+    <view class="dialog-title">是否保存修改？</view>
+    <view class="dialog-desc">你对豆子信息做了修改，返回前请选择</view>
+    <view class="dialog-actions">
+      <view class="btn w btn-primary" bindtap="dialogSave">保存</view>
+      <view class="btn w btn-gray" bindtap="dialogDiscard">不保存</view>
+      <view class="dialog-cancel" bindtap="dialogCancel">取消</view>
+    </view>
+  </view>
+</view>
+
+<!-- 风味标签浮层：分类分组多选 -->
+<view wx:if="{{flavorPickerOpen}}" class="picker-mask" bindtap="closeFlavorPicker">
+  <view class="flavor-sheet" catchtap="noop">
+    <view class="sheet-handle"></view>
+    <view class="sheet-title">选择风味标签</view>
+    <scroll-view scroll-y class="flavor-scroll">
+      <view wx:for="{{flavorGroups}}" wx:key="category" wx:for-item="group" class="flavor-group">
+        <view class="flavor-group-title">{{group.category}}</view>
+        <view class="flavor-grid">
+          <view wx:for="{{group.items}}" wx:key="_id" wx:for-item="f"
+            class="flavor-cell {{pickedIds[f._id] ? 'on' : ''}}"
+            data-id="{{f._id}}" bindtap="toggleFlavor">
+            <image wx:if="{{f.iconUrl}}" src="{{f.iconUrl}}" class="flavor-cell-img" />
+            <text wx:else class="flavor-emoji">{{f.emoji}}</text>
+            <text class="flavor-name">{{f.name}}</text>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+    <view class="btn w btn-primary" bindtap="closeFlavorPicker">完成</view>
+  </view>
+</view>

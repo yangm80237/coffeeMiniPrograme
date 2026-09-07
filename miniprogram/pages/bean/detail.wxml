@@ -1,0 +1,92 @@
+<view class="detail">
+  <!-- 顶栏：⋯ 菜单触发 -->
+  <view class="page-nav">
+    <view class="nav-spacer"></view>
+    <view class="more-btn" bindtap="toggleMore">⋯</view>
+  </view>
+
+  <!-- ⋯ 菜单：编辑 / 分享 / 删除 -->
+  <view wx:if="{{moreOpen}}" class="menu-mask" bindtap="toggleMore"></view>
+  <view wx:if="{{moreOpen}}" class="menu-pop">
+    <view class="menu-item" bindtap="goEdit">✏️ 编辑豆子</view>
+    <view class="menu-item disabled">⤴ 分享（待开发）</view>
+    <view class="menu-item danger" bindtap="confirmDelete">🗑️ 删除豆子</view>
+  </view>
+
+  <block wx:if="{{bean._id}}">
+    <!-- 主视觉：照片 swiper（≥2 张才可滑）/ 单图 / 首字占位 -->
+    <view class="detail-hero">
+      <swiper wx:if="{{bean.photos.length >= 2}}" class="photo-swiper" circular indicator-dots="{{true}}">
+        <swiper-item wx:for="{{bean.photos}}" wx:key="*this">
+          <image src="{{item}}" mode="aspectFill" class="photo-img" />
+        </swiper-item>
+      </swiper>
+      <image wx:elif="{{bean.photos.length === 1}}" src="{{bean.photos[0]}}" mode="aspectFill" class="photo-single" />
+      <view wx:else class="photo-placeholder">☕</view>
+
+      <view class="detail-name">{{bean.name}}</view>
+      <view class="detail-brand" bindtap="goBrand">
+        <text class="brand-flag">{{bean.brandFlag}}</text>
+        <text class="brand-name">{{bean.brand}}</text>
+        <text class="brand-arrow">›</text>
+      </view>
+
+      <!-- 风味行 -->
+      <view wx:if="{{bean.flavors.length}}" class="detail-flavor-row">
+        <flavor-tag wx:for="{{bean.flavors}}" wx:key="_id"
+          name="{{item.name}}" emoji="{{item.emoji}}" iconUrl="{{item.iconUrl}}" size="{{48}}" />
+      </view>
+      <view wx:if="{{bean.flavors.length}}" class="detail-flavor-text">
+        <block wx:for="{{bean.flavors}}" wx:key="_id">{{item.name}}{{index < bean.flavors.length - 1 ? ' · ' : ''}}</block>
+      </view>
+    </view>
+
+    <!-- 状态条：底色随四态 -->
+    <view class="status-bar s-{{bean.statusInfo.status}}">
+      <view class="status-left"><status-badge status="{{bean.statusInfo.status}}" /></view>
+      <text class="status-right">{{bean.statusText}}</text>
+    </view>
+
+    <!-- 评分并排区：我的=可点弹层只改自己 / 毛小毛=readonly 展示 -->
+    <view class="rating-section">
+      <view class="rating-card" bindtap="openRating">
+        <view class="rating-label">我的评分</view>
+        <rating-stars value="{{bean.myRating || 0}}" readonly="{{true}}" />
+        <view class="rating-score">{{bean.myRating ? bean.myRating + '.0' : '—'}}</view>
+      </view>
+      <view class="rating-card">
+        <view class="rating-label">毛小毛评分</view>
+        <rating-stars value="{{bean.wifeRating || 0}}" readonly="{{true}}" />
+        <view class="rating-score">{{bean.wifeRating ? bean.wifeRating + '.0' : '—'}}</view>
+      </view>
+    </view>
+
+    <!-- 豆子属性图标条 -->
+    <view class="attr-section-title">豆子属性</view>
+    <view class="attr-wrap"><attr-icon-bar bean="{{bean}}" /></view>
+
+    <!-- 底部操作栏：评分 + ⏰抓紧喝（仅在喝） + 主状态按钮 -->
+    <view class="detail-actions">
+      <view class="btn btn-score" bindtap="openRating">评分</view>
+      <view wx:if="{{bean.statusInfo.status === 'drinking'}}" class="btn btn-outline-orange" bindtap="setHurry">⏰ 抓紧喝</view>
+      <view class="btn {{mainBtn.cls}}" bindtap="advanceStatus">{{mainBtn.text}}</view>
+    </view>
+  </block>
+
+  <!-- 评分弹层：只写 myRating/myNotes -->
+  <view wx:if="{{ratingOpen}}" class="sheet-mask" bindtap="closeRating"></view>
+  <view wx:if="{{ratingOpen}}" class="add-sheet">
+    <view class="sheet-handle"></view>
+    <view class="sheet-title">给这袋豆子评分</view>
+    <view class="rate-row">
+      <text class="rate-who">我</text>
+      <view class="rate-stars"><rating-stars value="{{draft}}" bindchange="rateDraft" /></view>
+      <text class="rate-num">{{draft ? draft + '.0' : '—'}}</text>
+    </view>
+    <view class="rate-tip">每人只能修改自己的评分 · 毛小毛的评分由她自己打</view>
+    <view class="form-label">风味感受（可选）</view>
+    <textarea class="form-textarea" value="{{notes}}" bindinput="onNotes"
+      placeholder="例如：莓果酸质明亮，回甘带蜜香" />
+    <view class="btn w btn-primary save-rating" bindtap="saveRating">保存评分</view>
+  </view>
+</view>

@@ -1,0 +1,116 @@
+/* 确认编辑页——样式从 docs/prototype.html screen-confirm (894–1010) + save-dialog (1472–1490) 搬运 ×2 换算 rpx */
+.confirm { min-height: 100vh; }
+/* 顶栏（自定义导航，含状态栏间距） */
+.page-nav {
+  display: flex; align-items: center; gap: 24rpx;
+  padding: calc(env(safe-area-inset-top) + 16rpx) 32rpx 24rpx;
+}
+.back-btn { font-size: 40rpx; width: 64rpx; color: var(--ink); }
+.page-nav-title {
+  flex: 1; font-size: 34rpx; font-weight: 700;
+  font-family: var(--font-display); letter-spacing: 1rpx;
+}
+.save-btn {
+  background: var(--ink); color: #fff; padding: 14rpx 36rpx; border-radius: 999rpx;
+  font-size: 26rpx; font-weight: 600;
+}
+/* 步骤条 */
+.steps {
+  display: flex; align-items: center; justify-content: center; gap: 16rpx;
+  padding: 20rpx 32rpx 28rpx; font-size: 21rpx; color: var(--ink-2);
+}
+.steps .arr { color: rgba(80,60,30,.3); }
+.steps .cur { color: var(--accent); font-weight: 600; }
+/* 表单 */
+.form-section { padding: 0 32rpx 32rpx; }
+.form-label { font-size: 24rpx; color: var(--ink-2); margin-bottom: 12rpx; font-weight: 500; }
+.form-input {
+  box-sizing: border-box; width: 100%; padding: 20rpx 24rpx;
+  border: 2rpx solid rgba(80,60,30,.14); border-radius: 20rpx;
+  font-size: 26rpx; background: var(--card); color: var(--ink); margin-bottom: 24rpx;
+}
+.form-input.is-placeholder { color: var(--ink-3); }
+.form-row { display: flex; gap: 20rpx; }
+.form-row .form-group { flex: 1; }
+.form-textarea {
+  box-sizing: border-box; width: 100%; min-height: 120rpx; padding: 20rpx 24rpx;
+  border: 2rpx solid rgba(80,60,30,.14); border-radius: 20rpx;
+  font-size: 26rpx; background: var(--card); color: var(--ink); margin-bottom: 24rpx;
+}
+/* segment 胶囊：选中橙 */
+.segment {
+  display: flex; background: rgba(80,60,30,.08); border-radius: 20rpx; padding: 6rpx; margin-bottom: 24rpx;
+}
+.segment-item {
+  flex: 1; text-align: center; padding: 14rpx 0; font-size: 24rpx;
+  border-radius: 999rpx; color: var(--ink-2);
+}
+.segment-item.active { background: var(--accent); color: #fff; font-weight: 600; }
+/* AI 提示条 */
+.ai-hint {
+  display: flex; align-items: center; gap: 16rpx; padding: 16rpx 24rpx;
+  background: #F0FDF4; border-radius: 20rpx; margin-bottom: 28rpx; border: 2rpx solid #BBF7D0;
+}
+.ai-hint-icon { font-size: 28rpx; }
+.ai-hint-text { font-size: 24rpx; color: #166534; }
+.ai-tag { font-size: 18rpx; background: #07C160; color: #fff; padding: 4rpx 12rpx; border-radius: 12rpx; }
+/* 照片条 */
+.strip-wrap { margin-bottom: 28rpx; }
+/* 联想 chips */
+.sug-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12rpx; margin: -12rpx 0 24rpx; }
+.sug-cap { font-size: 20rpx; color: var(--ink-2); width: 68rpx; }
+.sug-pill {
+  font-size: 22rpx; padding: 6rpx 20rpx; border-radius: 999rpx; background: var(--card);
+  border: 2rpx solid rgba(80,60,30,.14); color: var(--ink-2);
+}
+.sug-pill:active { background: rgba(201,111,74,.12); color: var(--accent); border-color: var(--accent); }
+/* 风味标签行 */
+.flavor-tag-list { display: flex; flex-wrap: wrap; gap: 12rpx; margin-bottom: 24rpx; }
+.flavor-tag {
+  display: flex; align-items: center; gap: 8rpx; padding: 10rpx 20rpx; background: #fff;
+  border-radius: 28rpx; font-size: 24rpx; border: 2rpx solid #E5E5E5;
+}
+.flavor-tag .icon { font-size: 26rpx; }
+.flavor-tag .icon-img { width: 32rpx; height: 32rpx; }
+.flavor-tag .remove { color: var(--ink-3); font-size: 28rpx; margin-left: 4rpx; }
+.add-flavor-btn {
+  padding: 10rpx 20rpx; background: #F7F5F0; border-radius: 28rpx; font-size: 24rpx;
+  color: var(--ink-2); border: 2rpx dashed #ddd;
+}
+/* footer 主按钮 */
+.footer-bar { padding: 24rpx 32rpx calc(env(safe-area-inset-bottom) + 40rpx); }
+/* 保存确认对话框（原型 save-dialog ×2） */
+.dialog-mask {
+  position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 200;
+  background: rgba(26,27,28,.45); display: flex; align-items: center; justify-content: center;
+}
+.dialog {
+  width: 600rpx; background: #FFFDF8; border-radius: 32rpx; padding: 44rpx 40rpx 36rpx;
+  box-shadow: 0 24rpx 80rpx rgba(0,0,0,.22);
+}
+.dialog-title { font-size: 32rpx; font-weight: 700; color: var(--ink); text-align: center; margin-bottom: 12rpx; }
+.dialog-desc { font-size: 25rpx; color: var(--ink-2); text-align: center; margin-bottom: 36rpx; }
+.dialog-actions { display: flex; flex-direction: column; gap: 24rpx; }
+.dialog-cancel { height: 72rpx; line-height: 72rpx; text-align: center; font-size: 26rpx; color: var(--ink-3); }
+/* 风味标签浮层 */
+.picker-mask {
+  position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 150; background: rgba(26,27,28,.35);
+}
+.flavor-sheet {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 151; background: #fff;
+  border-radius: 40rpx 40rpx 0 0; padding: 32rpx 32rpx calc(env(safe-area-inset-bottom) + 40rpx);
+  box-shadow: 0 -8rpx 40rpx rgba(0,0,0,.1);
+}
+.sheet-handle { width: 72rpx; height: 8rpx; background: #ddd; border-radius: 4rpx; margin: 0 auto 32rpx; }
+.sheet-title { font-size: 32rpx; font-weight: 700; text-align: center; margin-bottom: 24rpx; }
+.flavor-scroll { max-height: 50vh; margin-bottom: 24rpx; }
+.flavor-group-title { font-size: 24rpx; font-weight: 600; color: var(--ink-2); margin: 16rpx 0; }
+.flavor-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16rpx; }
+.flavor-cell {
+  display: flex; flex-direction: column; align-items: center; gap: 8rpx;
+  padding: 16rpx 0; border-radius: 16rpx; background: var(--card); border: 2rpx solid transparent;
+}
+.flavor-cell.on { border-color: var(--accent); background: rgba(201,111,74,.08); }
+.flavor-emoji { font-size: 32rpx; line-height: 1.15; }
+.flavor-cell-img { width: 40rpx; height: 40rpx; }
+.flavor-name { font-size: 20rpx; color: var(--ink); }
