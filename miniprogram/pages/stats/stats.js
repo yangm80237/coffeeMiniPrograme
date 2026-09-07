@@ -23,7 +23,7 @@ function mulberry32(seed) {
 Page({
   data: {
     loaded: false,
-    headWeight: 0, drinkingCount: 0, bagCount: 0,
+    headWeight: 0, bagCount: 0,
     segDrinking: {}, segResting: {}, segFinished: {}, legend: [],
     processText: '',
     countryDist: [], varietyDist: [],
@@ -36,16 +36,22 @@ Page({
       const d = s.statusDist;
       const total = d.resting + d.drinking + d.hurry + d.finished;
       const pct = (n) => (total ? Math.round(n / total * 100) : 0);
+      // 外段=在喝+抓紧喝（drinking 段内嵌绿/橙两截并排）；子段宽为外段内百分比，两截相加=100
+      const seg = d.drinking + d.hurry;
+      const segPct = (n) => (seg ? Math.round(n / seg * 100) : 0);
       const maxC = s.countryDist.length ? s.countryDist[0].count : 1;
       const maxV = s.varietyDist.length ? s.varietyDist[0].count : 1;
       this.setData({
         loaded: true,
-        headWeight: s.totalWeight, drinkingCount: d.drinking, bagCount: total,
-        dist: [
-          { key: 'drinking', label: '在喝', count: d.drinking, pct: pct(d.drinking),
-            hurryPct: d.drinking ? Math.round(d.hurry / d.drinking * 100) : 0, color: 'var(--status-drinking)' },
-          { key: 'resting', label: '养豆', count: d.resting, pct: pct(d.resting), color: 'var(--status-resting)' },
-          { key: 'finished', label: '喝完', count: d.finished, pct: pct(d.finished), color: 'var(--status-finished)' },
+        headWeight: s.totalWeight, bagCount: total,
+        segDrinking: { pct: pct(seg), greenW: segPct(d.drinking), hurryW: segPct(d.hurry) },
+        segResting: { pct: pct(d.resting) },
+        segFinished: { pct: pct(d.finished) },
+        legend: [
+          { label: '养豆中', color: '#FAAD14', count: d.resting },
+          { label: '在喝', color: '#52C41A', count: d.drinking },
+          { label: '抓紧喝', color: '#F97316', count: d.hurry },
+          { label: '喝完', color: '#9CA3AF', count: d.finished },
         ],
         processText: Object.entries(s.processDist).map(([k, v]) => k + ' ' + v).join(' · '),
         countryDist: s.countryDist.map((c) => ({ ...c, width: Math.round(c.count / maxC * 100) })),

@@ -5,8 +5,9 @@
     <view class="stats-title">BeanStats<text class="yr"> 2026</text></view>
     <view class="stats-sum">
       <view class="sum-item"><text class="b">{{headWeight}}</text><text class="small">总克重 g</text></view>
-      <view class="sum-item"><text class="b">{{drinkingCount}}</text><text class="small">在喝中</text></view>
-      <view class="sum-item"><text class="b">{{bagCount}}</text><text class="small">总袋数</text></view>
+      <view class="sum-item"><text class="b">{{brandCount}}</text><text class="small">品牌数</text></view>
+      <view class="sum-item"><text class="b">{{countryCount}}</text><text class="small">产区数</text></view>
+      <view class="sum-item"><text class="b">{{varietyCount}}</text><text class="small">豆种数</text></view>
     </view>
   </view>
 
@@ -22,7 +23,7 @@
       <view class="seg" style="width:{{segFinished.pct}}%;background:var(--status-finished);"></view>
     </view>
     <view class="dist-legend">
-      <text wx:for="{{legend}}" wx:key="label">{{item.label}} {{item.count}}</text>
+      <text wx:for="{{legend}}" wx:key="label"><text style="color:{{item.color}}">●</text> {{item.label}} {{item.count}}</text>
     </view>
   </view>
 
