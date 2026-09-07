@@ -16,7 +16,8 @@ Page({
     const s = this.data.bean.statusInfo.status;
     const next = s === 'resting' ? 'drinking' : (s === 'finished' ? 'resting' : 'finished');
     beanApi.setBeanStatus(this.id, next).then(() => this.load()); },
-  load() { beanApi.getBean(this.id).then((b) => this.setData({ bean: b, mainBtn: MAIN_BTN[b.statusInfo.status] })); },
+  load() { beanApi.getBean(this.id).then((b) => this.setData({ bean: b, mainBtn: MAIN_BTN[b.statusInfo.status],
+    flavorIcons: b.flavors || [], flavorNames: (b.flavors || []).map((f) => f.name).join(' · ') })); },
   openRating() { this.setData({ ratingOpen: true, draft: this.data.bean.myRating || 0, notes: this.data.bean.myNotes || '' }); },
   closeRating() { this.setData({ ratingOpen: false }); },
   rateDraft(e) { this.setData({ draft: e.detail.value }); },

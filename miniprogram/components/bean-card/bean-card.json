@@ -1,1 +1,1 @@
-{ "component": true, "usingComponents": { "flavor-tag": "../flavor-tag/flavor-tag" } }
+{ "component": true, "usingComponents": {} }

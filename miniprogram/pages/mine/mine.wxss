@@ -22,8 +22,9 @@
 }
 .profile-main { flex: 1; min-width: 0; }
 .nickname-input {
+  height: 72rpx; line-height: 72rpx;
   font-size: 32rpx; font-weight: 600; color: var(--ink);
-  border-bottom: 2rpx solid rgba(80, 60, 30, .14); padding: 8rpx 0;
+  border-bottom: 2rpx solid rgba(80, 60, 30, .14); padding: 0;
 }
 .role-tag { display: inline-block; font-size: 20rpx; color: var(--accent); background: rgba(201, 111, 74, .12); border-radius: 999rpx; padding: 4rpx 16rpx; margin-top: 12rpx; }
 .save-mini {
@@ -48,7 +49,7 @@
   padding: 16rpx 0; border-top: 2rpx solid var(--line);
 }
 .fc-txt { font-size: 26rpx; color: var(--ink); }
-.regen-btn { font-size: 24rpx; color: var(--ink-2); background: #EFEAE0; border-radius: 999rpx; padding: 8rpx 24rpx; }
+.regen-btn { font-size: 24rpx; color: #6B7280; background: #F3F4F6; border-radius: 999rpx; padding: 8rpx 24rpx; }
 
 /* 入口列表 */
 .entries { padding: 8rpx 32rpx; }

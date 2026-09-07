@@ -9,7 +9,7 @@ Component({
       this.setData({
         avg: avgScore(b.myRating, b.wifeRating),
         first: firstChar(b.brand || b.name),
-        topFlavors: (b.flavors || []).slice(0, 3),
+        topFlavors: (b.flavors || []).slice(0, 4),
         roastCls: ROAST_CLS[b.roastLevel] || '',
       });
     },

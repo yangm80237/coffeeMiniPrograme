@@ -2,8 +2,7 @@
   "usingComponents": {
     "attr-icon-bar": "../../components/attr-icon-bar/attr-icon-bar",
     "rating-stars": "../../components/rating-stars/rating-stars",
-    "status-badge": "../../components/status-badge/status-badge",
-    "flavor-tag": "../../components/flavor-tag/flavor-tag"
+    "status-badge": "../../components/status-badge/status-badge"
   },
   "navigationBarTitleText": "豆子详情"
 }

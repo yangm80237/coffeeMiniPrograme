@@ -31,14 +31,14 @@
         <text class="brand-arrow">›</text>
       </view>
 
-      <!-- 风味行 -->
-      <view wx:if="{{bean.flavors.length}}" class="detail-flavor-row">
-        <flavor-tag wx:for="{{bean.flavors}}" wx:key="_id"
-          name="{{item.name}}" emoji="{{item.emoji}}" iconUrl="{{item.iconUrl}}" size="{{48}}" />
+      <!-- 风味行：emoji/水彩图标 + 合并名称（原型 1034-1040） -->
+      <view wx:if="{{bean.flavors.length}}" class="flavor-hero">
+        <block wx:for="{{flavorIcons}}" wx:key="_id">
+          <image wx:if="{{item.iconUrl}}" src="{{item.iconUrl}}" class="fh-img" />
+          <text wx:else class="fh-emoji">{{item.emoji || '☕'}}</text>
+        </block>
       </view>
-      <view wx:if="{{bean.flavors.length}}" class="detail-flavor-text">
-        <block wx:for="{{bean.flavors}}" wx:key="_id">{{item.name}}{{index < bean.flavors.length - 1 ? ' · ' : ''}}</block>
-      </view>
+      <view wx:if="{{bean.flavors.length}}" class="flavor-names">{{flavorNames}}</view>
     </view>
 
     <!-- 状态条：底色随四态 -->

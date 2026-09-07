@@ -12,7 +12,12 @@
     <view class="brand">{{bean.brand}}</view>
     <view class="name">{{bean.name}}</view>
     <view class="meta">
-      <view class="flavors"><flavor-tag wx:for="{{topFlavors}}" wx:key="_id" name="{{item.name}}" emoji="{{item.emoji}}" size="{{36}}" /></view>
+      <view class="flavors">
+        <block wx:for="{{topFlavors}}" wx:key="_id">
+          <image wx:if="{{item.iconUrl}}" src="{{item.iconUrl}}" class="fi-img" />
+          <view wx:else class="fi">{{item.emoji || '☕'}}</view>
+        </block>
+      </view>
       <text wx:if="{{avg}}" class="avg">★{{avg}}</text>
     </view>
   </view>
