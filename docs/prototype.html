@@ -1028,7 +1028,7 @@
     <div id="dsb" style="margin:0 16px 16px;padding:10px 14px;background:#F0FDF4;border-radius:10px;display:flex;align-items:center;justify-content:space-between;transition:background .25s;">
       <div style="display:flex;align-items:center;gap:8px;">
         <span id="dsb-dot" style="width:10px;height:10px;border-radius:50%;background:#52C41A;transition:background .25s;"></span>
-        <span id="dsb-label" style="font-size:13px;font-weight:600;color:#166534;transition:color .25s;">正在喝</span>
+        <span id="dsb-label" style="font-size:13px;font-weight:600;color:#166534;transition:color .25s;">在喝</span>
       </div>
       <span id="dsb-right" style="font-size:11px;color:#6B7280;">200g · 最佳赏味第12天</span>
     </div>
@@ -1502,13 +1502,14 @@ function clearBrandFilter() {
   document.querySelectorAll('#country-pop input').forEach(c => c.checked = false);
   applyBrandFilter();
 }
-// 详情页状态循环：养豆中 → 在喝 → 已喝完 → 养豆中（点按钮切换，状态条同步变化）
+// 详情页状态循环：养豆中 → 在喝 → 抓紧喝 → 已喝完 → 养豆中（点按钮切换，状态条同步变化）
 // 养豆期默认规则：烘焙月份 5-10 月 = 20 天，其他月份 = 25 天（本豆 08.28 烘焙 → 20 天）
 const REST_DAYS = (8 >= 5 && 8 <= 10) ? 20 : 25;
 const BEAN_ST = {
   resting:  { dot:'#FAAD14', bar:'#FFF8E6', txt:'#B45309', label:'养豆中', right:`还需10天 · 养豆期${REST_DAYS}天`, btn:'开喝',   cls:'primary' },
-  drinking: { dot:'#52C41A', bar:'#F0FDF4', txt:'#166534', label:'正在喝', right:'200g · 最佳赏味第12天',        btn:'喝完了', cls:'warn' },
-  finished: { dot:'#9CA3AF', bar:'#F3F4F6', txt:'#4B5563', label:'已喝完', right:'200g · 本袋已喝完',            btn:'重新养豆', cls:'gray' },
+  drinking: { dot:'#52C41A', bar:'#F0FDF4', txt:'#166534', label:'在喝',   right:'200g · 最佳赏味第12天',        btn:'抓紧喝', cls:'warn' },
+  hurry:    { dot:'#F97316', bar:'#FFF4EC', txt:'#C2410C', label:'抓紧喝', right:'200g · 风味衰退期 · 尽快饮用',  btn:'喝完',   cls:'warn' },
+  finished: { dot:'#9CA3AF', bar:'#F3F4F6', txt:'#4B5563', label:'喝完',   right:'200g · 本袋已喝完',            btn:'重新养豆', cls:'gray' },
 };
 let beanStatus = 'drinking';
 function renderBeanStatus() {
@@ -1520,7 +1521,7 @@ function renderBeanStatus() {
   const btn = document.getElementById('btn-status'); btn.textContent = m.btn; btn.className = 'action-btn ' + m.cls;
 }
 function cycleBeanStatus() {
-  beanStatus = { resting:'drinking', drinking:'finished', finished:'resting' }[beanStatus];
+  beanStatus = { resting:'drinking', drinking:'hurry', hurry:'finished', finished:'resting' }[beanStatus];
   renderBeanStatus();
 }
 renderBeanStatus();
