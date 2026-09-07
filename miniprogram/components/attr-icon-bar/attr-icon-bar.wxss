@@ -3,4 +3,4 @@
 .ic { width: 60rpx; height: 60rpx; }
 .sub { font-size: 16rpx; color: var(--ink-3); margin-top: 4rpx; }
 .val { font-size: 20rpx; font-weight: 600; color: var(--ink); margin-top: 4rpx; }
-.lbl { font-size: 19rpx; color: var(--ink-soft); line-height: 1; }
+.lbl { font-size: 19rpx; color: var(--ink-3); line-height: 1; }
