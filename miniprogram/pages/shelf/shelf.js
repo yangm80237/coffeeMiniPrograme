@@ -26,6 +26,7 @@ Page({
   goStats() { this.setData({ menuOpen: false }); wx.navigateTo({ url: '/pages/stats/stats' }); },
   goBrand() { this.setData({ menuOpen: false }); wx.navigateTo({ url: '/pages/brand/list' }); },
   goFlavor() { this.setData({ menuOpen: false }); wx.navigateTo({ url: '/pages/flavor/list' }); },
+  goMine() { this.setData({ menuOpen: false }); wx.navigateTo({ url: '/pages/mine/mine' }); },
   openBean(e) { wx.navigateTo({ url: '/pages/bean/detail?id=' + e.currentTarget.dataset.id }); },
   onPullDownRefresh() { this.refresh().then(() => wx.stopPullDownRefresh()); },
 });

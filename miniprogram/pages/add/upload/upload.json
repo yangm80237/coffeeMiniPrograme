@@ -1,1 +1,1 @@
-{ "usingComponents": { "photo-strip": "../../components/photo-strip/photo-strip" }, "navigationStyle": "custom" }
+{ "usingComponents": { "photo-strip": "../../../components/photo-strip/photo-strip" }, "navigationStyle": "custom" }

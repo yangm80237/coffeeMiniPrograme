@@ -14,6 +14,7 @@
     <view class="menu-item" bindtap="goStats">📊 豆子统计</view>
     <view class="menu-item" bindtap="goBrand">🏷️ 品牌库</view>
     <view class="menu-item" bindtap="goFlavor">🍓 风味标签</view>
+    <view class="menu-item" bindtap="goMine">👤 我的</view>
   </view>
 
   <!-- 搜索条（常驻，与筛选同行，实时过滤） -->

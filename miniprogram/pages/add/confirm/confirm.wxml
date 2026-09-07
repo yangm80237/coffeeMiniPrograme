@@ -19,7 +19,7 @@
     <block wx:if="{{!isEdit}}">
       <view class="form-label">本次照片 <text class="ai-tag">点选封面</text></view>
       <view class="strip-wrap">
-        <photo-strip photos="{{photos}}" current="{{coverIndex}}" bind:select="pickCover" />
+        <photo-strip photos="{{photos}}" current="{{coverIndex}}" badge-label="封面" bind:select="pickCover" />
       </view>
     </block>
 

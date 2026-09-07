@@ -1,4 +1,4 @@
-<view class="card bc" bindtap="onTap">
+<view class="card bc">
   <view class="ph-wrap">
     <image wx:if="{{bean.photos.length}}" src="{{bean.photos[0]}}" mode="aspectFill" class="ph" />
     <view wx:else class="ph ph-fb"><text>{{first}}</text></view>
