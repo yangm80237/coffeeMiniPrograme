@@ -300,6 +300,7 @@
   .action-btn.primary { background: #07C160; color: #fff; }
   .action-btn.warn { background: #FEF3C7; color: #92400E; }
   .action-btn.gray { background: #F3F4F6; color: #6B7280; }
+  .action-btn.outline { background: #fff; color: #C2410C; border: 1px solid rgba(194,65,12,.35); }
 
   /* ===== 风味维护页 ===== */
   .flavor-page-header {
@@ -1005,7 +1006,15 @@
     <div class="page-nav">
       <div class="back-btn" onclick="showScreen('shelf')">‹</div>
       <div style="flex:1;"></div>
-      <div class="icon-btn" style="width:32px;height:32px;font-size:14px;">⤴</div>
+      <div class="icon-btn" style="width:32px;height:32px;font-size:16px;font-weight:700;" onclick="toggleDetailMenu()">⋯</div>
+    </div>
+    <!-- ⋯ 菜单：编辑 / 分享 / 删除 -->
+    <div id="detail-menu-mask" onclick="toggleDetailMenu()" style="display:none;position:absolute;inset:0;z-index:40;background:rgba(26,27,28,.3);"></div>
+    <div id="detail-menu" style="display:none;position:absolute;top:88px;right:12px;z-index:41;width:176px;background:#FFFDF8;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:8px;border:1px solid rgba(80,60,30,.08);">
+      <div style="width:12px;height:12px;background:#FFFDF8;position:absolute;top:-6px;right:16px;transform:rotate(45deg);border-top:1px solid rgba(80,60,30,.08);border-left:1px solid rgba(80,60,30,.08);"></div>
+      <div class="menu-item" onclick="toggleDetailMenu();showScreen('confirm')">✏️ 编辑豆子</div>
+      <div class="menu-item" onclick="toggleDetailMenu()" style="color:#9CA3AF;">⤴ 分享（待开发）</div>
+      <div class="menu-item" onclick="delBean()" style="color:#DC2626;">🗑️ 删除豆子</div>
     </div>
 
     <div class="detail-hero">
@@ -1060,10 +1069,11 @@
       <div class="at-item"><div class="at-icon at-c10"><img src="../assets/icons/proposal1/bean_weight.png" alt="重量"></div><div class="at-value">200g</div><div class="at-label">重量</div></div>
     </div>
 
+    <!-- 底部操作栏：主按钮一键直达下一常用状态；抓紧喝仅在「在喝」时出现的次按钮（手动触发，不自动进入） -->
     <div class="detail-actions">
-      <button class="action-btn warn" id="btn-status" onclick="cycleBeanStatus()">喝完了</button>
-      <button class="action-btn gray" onclick="showScreen('confirm')">编辑</button>
-      <button class="action-btn primary" onclick="toggleRate()">评分</button>
+      <button class="action-btn gray" onclick="toggleRate()">评分</button>
+      <button class="action-btn outline" id="btn-hurry" onclick="setBeanStatus('hurry')">⏰ 抓紧喝</button>
+      <button class="action-btn warn" id="btn-status" onclick="advanceBeanStatus()">喝完</button>
     </div>
 
     <!-- 评分弹层 -->
@@ -1502,13 +1512,15 @@ function clearBrandFilter() {
   document.querySelectorAll('#country-pop input').forEach(c => c.checked = false);
   applyBrandFilter();
 }
-// 详情页状态循环：养豆中 → 在喝 → 抓紧喝 → 已喝完 → 养豆中（点按钮切换，状态条同步变化）
+// 详情页四状态：养豆中 → 在喝 → (可选手动)抓紧喝 → 喝完 → 养豆中
+// 主按钮 advanceBeanStatus：一键直达常用下一状态（在喝→喝完 跳过抓紧喝）
+// 抓紧喝 setBeanStatus('hurry')：仅在喝状态下手动点击，永不自动进入
 // 养豆期默认规则：烘焙月份 5-10 月 = 20 天，其他月份 = 25 天（本豆 08.28 烘焙 → 20 天）
 const REST_DAYS = (8 >= 5 && 8 <= 10) ? 20 : 25;
 const BEAN_ST = {
-  resting:  { dot:'#FAAD14', bar:'#FFF8E6', txt:'#B45309', label:'养豆中', right:`还需10天 · 养豆期${REST_DAYS}天`, btn:'开喝',   cls:'primary' },
-  drinking: { dot:'#52C41A', bar:'#F0FDF4', txt:'#166534', label:'在喝',   right:'200g · 最佳赏味第12天',        btn:'抓紧喝', cls:'warn' },
-  hurry:    { dot:'#F97316', bar:'#FFF4EC', txt:'#C2410C', label:'抓紧喝', right:'200g · 风味衰退期 · 尽快饮用',  btn:'喝完',   cls:'warn' },
+  resting:  { dot:'#FAAD14', bar:'#FFF8E6', txt:'#B45309', label:'养豆中', right:`还需10天 · 养豆期${REST_DAYS}天`, btn:'开喝',     cls:'primary' },
+  drinking: { dot:'#52C41A', bar:'#F0FDF4', txt:'#166534', label:'在喝',   right:'200g · 最佳赏味第12天',        btn:'喝完',     cls:'warn' },
+  hurry:    { dot:'#F97316', bar:'#FFF4EC', txt:'#C2410C', label:'抓紧喝', right:'200g · 风味衰退期 · 尽快饮用',  btn:'喝完',     cls:'warn' },
   finished: { dot:'#9CA3AF', bar:'#F3F4F6', txt:'#4B5563', label:'喝完',   right:'200g · 本袋已喝完',            btn:'重新养豆', cls:'gray' },
 };
 let beanStatus = 'drinking';
@@ -1519,12 +1531,24 @@ function renderBeanStatus() {
   const lb = document.getElementById('dsb-label'); lb.textContent = m.label; lb.style.color = m.txt;
   document.getElementById('dsb-right').textContent = m.right;
   const btn = document.getElementById('btn-status'); btn.textContent = m.btn; btn.className = 'action-btn ' + m.cls;
+  document.getElementById('btn-hurry').style.display = (beanStatus === 'drinking') ? '' : 'none';
 }
-function cycleBeanStatus() {
-  beanStatus = { resting:'drinking', drinking:'hurry', hurry:'finished', finished:'resting' }[beanStatus];
+function advanceBeanStatus() {
+  beanStatus = { resting:'drinking', drinking:'finished', hurry:'finished', finished:'resting' }[beanStatus];
   renderBeanStatus();
 }
+function setBeanStatus(s) { beanStatus = s; renderBeanStatus(); }
 renderBeanStatus();
+// 详情页 ⋯ 菜单开/关 + 删除
+function toggleDetailMenu() {
+  const m = document.getElementById('detail-menu'), k = document.getElementById('detail-menu-mask');
+  const show = m.style.display === 'none';
+  m.style.display = show ? 'block' : 'none';
+  k.style.display = show ? 'block' : 'none';
+}
+function delBean() {
+  if (confirm('确定删除这袋豆子吗？删除后不可恢复。')) { toggleDetailMenu(); showScreen('shelf'); }
+}
 // 货架：搜索条展开/收起 + 实时过滤（豆名/品牌/产区/豆种）
 function toggleShelfSearch() {
   const box = document.getElementById('shelf-search');
@@ -1545,7 +1569,7 @@ function toggleMainMenu() {
   m.style.display = show ? 'block' : 'none';
   k.style.display = show ? 'block' : 'none';
 }
-// 货架：状态筛选（与搜索条件叠加过滤）
+// 货架：状态筛选（与搜索条件叠加过滤；抓紧喝归入「在喝」tab——方案A）
 function filterShelf(el, key) {
   document.querySelectorAll('#screen-shelf .filter-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
