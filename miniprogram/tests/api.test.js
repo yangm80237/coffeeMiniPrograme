@@ -27,6 +27,14 @@ test('beanView 视图字段', async () => {
   assert.equal(b.flag, '🇪🇹'); assert.equal(b.brand, 'Blue Bottle');
   assert.ok(b.statusText.includes('还需')); assert.equal(b.flavors.length, 3);
 });
+test('动态roastDate：bean01恒resting且daysLeft=10，bean02恒drinking', async () => {
+  const list = await beanApi.listBeans({});
+  const b1 = list.find((b) => b._id === 'bean01');
+  const b2 = list.find((b) => b._id === 'bean02');
+  assert.equal(b1.statusInfo.status, 'resting');
+  assert.equal(b1.statusInfo.daysLeft, 10);
+  assert.equal(b2.statusInfo.status, 'drinking');
+});
 test('setBeanStatus 开喝→覆盖→还原', async () => {
   const b = await beanApi.setBeanStatus('bean01', 'drinking');
   assert.equal(b.statusInfo.status, 'drinking'); assert.ok(b.statusText.startsWith('200g'));
