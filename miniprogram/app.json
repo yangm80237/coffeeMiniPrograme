@@ -1,5 +1,6 @@
 {
   "pages": [
+    "pages/family/bind",
     "pages/shelf/shelf",
     "pages/add/add",
     "pages/add/camera/camera",
@@ -13,7 +14,6 @@
     "pages/brand/detail",
     "pages/flavor/list",
     "pages/flavor/detail",
-    "pages/family/bind",
     "pages/mine/mine",
     "pages/admin/admin"
   ],
