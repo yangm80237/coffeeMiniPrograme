@@ -54,5 +54,5 @@ function removeBean(id) {
   MOCK = MOCK.filter((x) => x._id !== id);
   return Promise.resolve({ ok: true });
 }
-function setBeanStatus(id, s) { return updateBean(id, { statusOverride: s === 'auto' ? undefined : s }); }
+function setBeanStatus(id, s) { return updateBean(id, { statusOverride: s === 'auto' ? null : s }); }
 module.exports = { listBeans, getBean, createBean, updateBean, removeBean, setBeanStatus };

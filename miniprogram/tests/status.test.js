@@ -24,6 +24,9 @@ test('手动覆盖 hurry/finished/drinking/resting', () => {
   assert.equal(computeStatus({ ...base, statusOverride: 'drinking' }, d('2026-09-03')).status, 'drinking');
   assert.equal(computeStatus({ ...base, statusOverride: 'resting' }, d('2026-09-03')).status, 'resting');
 });
+test('statusOverride=null 等价自动计算', () => {
+  assert.equal(computeStatus({ roastDate: '2026-09-01', statusOverride: null }, d('2026-09-03')).status, 'resting');
+});
 test('状态条文案（规格书3.4）', () => {
   const now = d('2026-09-07');
   assert.equal(statusBarText({ roastDate: '2026-08-28', weight: 200 }, now), '还需10天 · 养豆期20天');
