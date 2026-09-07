@@ -1,0 +1,45 @@
+<view class="shelf">
+  <!-- 顶栏 -->
+  <view class="shelf-header">
+    <view class="shelf-title">我的咖啡豆<text class="cnt"> {{beans.length}}袋</text></view>
+    <view class="header-actions">
+      <view class="icon-btn" bindtap="goAdd">➕</view>
+      <view class="icon-btn" bindtap="toggleMenu">☰</view>
+    </view>
+  </view>
+
+  <!-- 主菜单（☰ 弹出） -->
+  <view wx:if="{{menuOpen}}" class="mask dark" bindtap="toggleMenu"></view>
+  <view wx:if="{{menuOpen}}" class="popover menu">
+    <view class="menu-item" bindtap="goStats">📊 豆子统计</view>
+    <view class="menu-item" bindtap="goBrand">🏷️ 品牌库</view>
+    <view class="menu-item" bindtap="goFlavor">🍓 风味标签</view>
+  </view>
+
+  <!-- 搜索条（常驻，与筛选同行，实时过滤） -->
+  <view class="search-row">
+    <input class="search-input" placeholder="🔍 搜索豆名 / 品牌 / 产区 / 豆种…"
+      value="{{keyword}}" bindinput="onKeyword" confirm-type="search" />
+    <view class="filter-pill" bindtap="toggleFilter">
+      <text>{{filterLabel}}</text><text class="caret"> ▾</text>
+    </view>
+    <view wx:if="{{filterOpen}}" class="mask" bindtap="toggleFilter"></view>
+    <view wx:if="{{filterOpen}}" class="popover filter-menu">
+      <view wx:for="{{filters}}" wx:key="key" class="menu-item"
+        data-k="{{item.key}}" bindtap="pickFilter">{{item.label}}（{{item.count}}）</view>
+    </view>
+  </view>
+
+  <!-- 两列网格 -->
+  <view class="grid" wx:if="{{beans.length}}">
+    <bean-card wx:for="{{beans}}" wx:key="_id" bean="{{item}}"
+      data-id="{{item._id}}" bindtap="openBean" />
+  </view>
+
+  <!-- 空态 -->
+  <view class="empty" wx:if="{{!beans.length && loaded}}">
+    <view class="empty-icon">🫘</view>
+    <view class="empty-text">货架还是空的，添加第一袋豆子开始记录吧</view>
+    <view class="btn btn-primary empty-btn" bindtap="goAdd">添加第一袋豆子</view>
+  </view>
+</view>

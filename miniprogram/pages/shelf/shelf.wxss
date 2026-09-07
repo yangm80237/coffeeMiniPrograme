@@ -1,0 +1,75 @@
+/* 货架页——样式从 docs/prototype.html screen-shelf 段搬运 ×2 换算 rpx */
+
+.shelf { position: relative; min-height: 100vh; }
+
+/* 顶栏 */
+.shelf-header {
+  padding: 16rpx 32rpx 24rpx;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.shelf-title {
+  font-size: 40rpx; font-weight: 700; color: var(--ink);
+  font-family: var(--font-display); letter-spacing: 1rpx;
+}
+.shelf-title .cnt { font-size: 26rpx; color: var(--ink-2); font-weight: 400; margin-left: 6rpx; }
+.header-actions { display: flex; gap: 20rpx; }
+.icon-btn {
+  width: 64rpx; height: 64rpx; border-radius: 50%; background: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30rpx; box-shadow: 0 2rpx 8rpx rgba(0,0,0,.06);
+  box-sizing: border-box;
+}
+
+/* 浮层通用（菜单/筛选下拉） */
+.mask {
+  position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 40;
+}
+.mask.dark { background: rgba(26,27,28,.35); }
+.popover {
+  position: absolute; z-index: 41;
+  background: var(--card); border-radius: 28rpx;
+  box-shadow: 0 16rpx 56rpx rgba(0,0,0,.18);
+  padding: 16rpx; border: 2rpx solid rgba(80,60,30,.08);
+}
+.menu { top: 88rpx; right: 24rpx; width: 400rpx; }
+.menu-item {
+  padding: 22rpx 24rpx; border-radius: 20rpx;
+  font-size: 26rpx; color: var(--ink);
+}
+.menu-item:active { background: rgba(80,60,30,.06); }
+
+/* 搜索 + 筛选（深色胶囊） */
+.search-row {
+  padding: 0 32rpx 24rpx; display: flex; gap: 20rpx; align-items: center;
+  position: relative;
+}
+.search-input {
+  flex: 1; padding: 20rpx 24rpx;
+  border: 2rpx solid rgba(80,60,30,.14); border-radius: 24rpx;
+  font-size: 26rpx; background: var(--card); color: var(--ink);
+  box-sizing: border-box;
+}
+.filter-pill {
+  display: inline-flex; align-items: center; gap: 10rpx;
+  background: #1A1B1C; color: #fff;
+  padding: 18rpx 24rpx; border-radius: 999rpx;
+  font-size: 24rpx; font-weight: 600; white-space: nowrap;
+  box-sizing: border-box;
+}
+.filter-pill .caret { font-size: 20rpx; opacity: .7; }
+.filter-menu { top: 80rpx; right: 32rpx; width: 352rpx; }
+
+/* 两列网格 */
+.grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 24rpx; padding: 24rpx;
+}
+
+/* 空态 */
+.empty {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 160rpx 48rpx 80rpx; text-align: center;
+}
+.empty-icon { font-size: 120rpx; margin-bottom: 32rpx; }
+.empty-text { font-size: 28rpx; color: var(--ink-2); margin-bottom: 48rpx; line-height: 1.6; }
+.empty-btn { width: 60%; }
