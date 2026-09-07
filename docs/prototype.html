@@ -289,11 +289,12 @@
 
   /* 底部操作 */
   .detail-actions {
-    display: flex; gap: 8px; padding: 12px 16px 24px;
+    display: flex; gap: 12px; padding: 12px 16px 24px;
   }
   .action-btn {
-    flex: 1; padding: 12px; border-radius: 12px; text-align: center;
-    font-size: 13px; font-weight: 600; cursor: pointer; border: none;
+    flex: 1; height: 44px; padding: 0; border-radius: 12px; text-align: center;
+    font-size: 14px; font-weight: 600; cursor: pointer; border: none;
+    display: inline-flex; align-items: center; justify-content: center;
   }
   .action-btn.primary { background: #07C160; color: #fff; }
   .action-btn.warn { background: #FEF3C7; color: #92400E; }
@@ -814,7 +815,7 @@
   <div class="screen" id="screen-camera">
     <div class="status-bar" style="color:#fff;"><span>9:41</span><span>🔋 100%</span></div>
     <div class="cam-top">
-      <div class="icon-btn" style="color:#fff;background:rgba(255,255,255,.12);" onclick="showScreen('add')">✕</div>
+      <div class="icon-btn" style="color:#fff;background:rgba(255,255,255,.12);" onclick="showScreen('shelf')">✕</div>
       <div class="cam-title">拍摄豆袋</div>
       <div class="icon-btn" style="color:#fff;background:rgba(255,255,255,.12);">⚡</div>
     </div>
@@ -836,7 +837,7 @@
     <div class="page-nav">
       <div class="back-btn" onclick="showScreen('camera')">‹</div>
       <div class="page-nav-title">确认照片</div>
-      <button class="save-btn" onclick="showScreen('processing')">开始识别</button>
+      <div style="width:40px;"></div>
     </div>
     <div class="steps">① 拍照 <i>→</i> <b>② 确认上传</b> <i>→</i> ③ AI 识别 <i>→</i> ④ 核对入库</div>
     <div class="upload-preview">🫘</div>
@@ -847,9 +848,9 @@
       <div class="photo-thumb add">＋</div>
     </div>
     <div class="upload-tip"><span>✨</span>AI 将识别品牌、豆名、产区、处理法等信息，完成后进入核对</div>
-    <div style="display:flex;gap:10px;padding:0 16px 30px;">
-      <button class="add-option secondary" style="flex:1;border-radius:999px;text-align:center;padding:11px;" onclick="showScreen('camera')">重新拍摄</button>
-      <button class="save-btn" style="flex:1.4;padding:11px;" onclick="showScreen('processing')">✨ 开始 AI 识别</button>
+    <div style="display:flex;gap:12px;padding:0 16px 30px;">
+      <button class="action-btn gray" onclick="showScreen('camera')">重新拍摄</button>
+      <button class="action-btn primary" style="flex:1.4;" onclick="showScreen('processing')">✨ 确认使用</button>
     </div>
   </div>
 
@@ -893,11 +894,11 @@
   <div class="screen" id="screen-confirm">
     <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
     <div class="page-nav">
-      <div class="back-btn" onclick="showScreen('upload')">‹</div>
-      <div class="page-nav-title">确认豆子信息</div>
-      <button class="save-btn" onclick="showScreen('shelf')">入库</button>
+      <div class="back-btn" onclick="confirmBack()">‹</div>
+      <div class="page-nav-title" id="confirm-title">确认豆子信息</div>
+      <button class="save-btn" id="btn-confirm-primary" onclick="editSave()">入库</button>
     </div>
-    <div class="steps">① 拍照 <i>→</i> ② 确认上传 <i>→</i> ③ AI 识别 <i>→</i> <b>④ 核对入库</b></div>
+    <div class="steps" id="confirm-steps">① 拍照 <i>→</i> ② 确认上传 <i>→</i> ③ AI 识别 <i>→</i> <b>④ 核对入库</b></div>
     <div class="form-section">
       <!-- 本次拍摄的照片 -->
       <div class="form-label">本次照片 <span class="ai-tag">点选封面</span></div>
@@ -908,7 +909,7 @@
         <div class="photo-thumb add">＋</div>
       </div>
       <!-- AI识别提示 -->
-      <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#F0FDF4;border-radius:10px;margin-bottom:14px;border:1px solid #BBF7D0;">
+      <div id="confirm-ai-hint" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#F0FDF4;border-radius:10px;margin-bottom:14px;border:1px solid #BBF7D0;">
         <span style="font-size:14px;">✨</span>
         <span style="font-size:12px;color:#166534;">AI已识别以下信息，请核对确认</span>
       </div>
@@ -1018,25 +1019,25 @@
     <div id="detail-menu-mask" onclick="toggleDetailMenu()" style="display:none;position:absolute;inset:0;z-index:40;background:rgba(26,27,28,.3);"></div>
     <div id="detail-menu" style="display:none;position:absolute;top:88px;right:12px;z-index:41;width:176px;background:#FFFDF8;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:8px;border:1px solid rgba(80,60,30,.08);">
       <div style="width:12px;height:12px;background:#FFFDF8;position:absolute;top:-6px;right:16px;transform:rotate(45deg);border-top:1px solid rgba(80,60,30,.08);border-left:1px solid rgba(80,60,30,.08);"></div>
-      <div class="menu-item" onclick="toggleDetailMenu();showScreen('confirm')">✏️ 编辑豆子</div>
+      <div class="menu-item" onclick="toggleDetailMenu();openEditFromDetail()">✏️ 编辑豆子</div>
       <div class="menu-item" onclick="toggleDetailMenu()" style="color:#9CA3AF;">⤴ 分享（待开发）</div>
       <div class="menu-item" onclick="delBean()" style="color:#DC2626;">🗑️ 删除豆子</div>
     </div>
 
     <div class="detail-hero">
       <div class="detail-photo" style="background:linear-gradient(135deg,#2d2d2d,#4a4a4a);">☕</div>
-      <div class="detail-name">Ethiopia Tamiru Tadesse<br>Alo Village</div>
+      <div class="detail-name" id="dt-name">Ethiopia Tamiru Tadesse<br>Alo Village</div>
       <div class="detail-brand">
         <span class="logo">O</span>
         Onyx Coffee Lab
       </div>
-      <div class="detail-flavor-row">
+      <div class="detail-flavor-row" id="dt-flavorrow">
         <div class="detail-flavor-icon">🍓</div>
         <div class="detail-flavor-icon">🍊</div>
         <div class="detail-flavor-icon">🍦</div>
         <div class="detail-flavor-icon">🍯</div>
       </div>
-      <div class="detail-flavor-text">草莓 · 奶油 · 橙子 · 白蜜</div>
+      <div class="detail-flavor-text" id="dt-flavortext">草莓 · 奶油 · 橙子 · 白蜜</div>
     </div>
 
     <!-- 状态条：随底部按钮循环 养豆中→在喝→已喝完；养豆期规则：烘焙月份5-10月=20天，其他=25天（本豆08.28烘焙→20天） -->
@@ -1065,14 +1066,14 @@
     <div class="attr-section-title">豆子属性</div>
     <!-- 冲煮方式三图标：手冲=brewing.png / 意式=espresso_roast.png / 通用=omni_roast.png，按值切换 -->
     <div class="at-grid">
-      <div class="at-item"><div class="at-icon at-c1"><img src="../assets/icons/proposal1/roast_date.png" alt="烘焙日期"></div><div class="at-value">08.28</div><div class="at-label">烘焙日期</div></div>
-      <div class="at-item"><div class="at-icon at-c5"><img src="../assets/icons/proposal1/bean_variety.png" alt="豆种"></div><div class="at-value">74158</div><div class="at-label">豆种</div></div>
-      <div class="at-item"><div class="at-icon at-c4"><img src="../assets/icons/proposal1/process_method.png" alt="处理法"></div><div class="at-value">水洗</div><div class="at-label">处理法</div></div>
-      <div class="at-item"><div class="at-icon at-c6"><img src="../assets/icons/proposal1/country_region.png" alt="产区"></div><div class="at-sub">埃塞俄比亚</div><div class="at-value">耶加雪菲</div><div class="at-label">产区</div></div>
-      <div class="at-item"><div class="at-icon at-c7"><img src="../assets/icons/proposal1/altitude.png" alt="海拔"></div><div class="at-value">2200m</div><div class="at-label">海拔</div></div>
-      <div class="at-item"><div class="at-icon at-c8"><img src="../assets/icons/proposal1/roast_level.png" alt="烘焙度"></div><div class="at-value">浅烘</div><div class="at-label">烘焙度</div></div>
-      <div class="at-item"><div class="at-icon at-c9"><img src="../assets/icons/proposal1/brewing.png" alt="手冲"></div><div class="at-value">手冲</div><div class="at-label">冲煮方式</div></div>
-      <div class="at-item"><div class="at-icon at-c10"><img src="../assets/icons/proposal1/bean_weight.png" alt="重量"></div><div class="at-value">200g</div><div class="at-label">重量</div></div>
+      <div class="at-item"><div class="at-icon at-c1"><img src="../assets/icons/proposal1/roast_date.png" alt="烘焙日期"></div><div class="at-value" id="dt-roastdate">08.28</div><div class="at-label">烘焙日期</div></div>
+      <div class="at-item"><div class="at-icon at-c5"><img src="../assets/icons/proposal1/bean_variety.png" alt="豆种"></div><div class="at-value" id="dt-variety">74158</div><div class="at-label">豆种</div></div>
+      <div class="at-item"><div class="at-icon at-c4"><img src="../assets/icons/proposal1/process_method.png" alt="处理法"></div><div class="at-value" id="dt-process">水洗</div><div class="at-label">处理法</div></div>
+      <div class="at-item"><div class="at-icon at-c6"><img src="../assets/icons/proposal1/country_region.png" alt="产区"></div><div class="at-sub" id="dt-country">埃塞俄比亚</div><div class="at-value" id="dt-origin">耶加雪菲</div><div class="at-label">产区</div></div>
+      <div class="at-item"><div class="at-icon at-c7"><img src="../assets/icons/proposal1/altitude.png" alt="海拔"></div><div class="at-value" id="dt-altitude">2200m</div><div class="at-label">海拔</div></div>
+      <div class="at-item"><div class="at-icon at-c8"><img src="../assets/icons/proposal1/roast_level.png" alt="烘焙度"></div><div class="at-value" id="dt-roast">浅烘</div><div class="at-label">烘焙度</div></div>
+      <div class="at-item"><div class="at-icon at-c9"><img id="dt-brew-img" src="../assets/icons/proposal1/brewing.png" alt="手冲"></div><div class="at-value" id="dt-brew">手冲</div><div class="at-label">冲煮方式</div></div>
+      <div class="at-item"><div class="at-icon at-c10"><img src="../assets/icons/proposal1/bean_weight.png" alt="重量"></div><div class="at-value" id="dt-weight">200g</div><div class="at-label">重量</div></div>
     </div>
 
     <!-- 底部操作栏：主按钮一键直达下一常用状态；抓紧喝仅在「在喝」时出现的次按钮（手动触发，不自动进入） -->
@@ -1102,7 +1103,10 @@
   <div class="screen" id="screen-flavor">
     <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
     <div class="flavor-page-header">
-      <div class="page-nav-title" style="font-size:17px;font-weight:700;">风味标签维护</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="back-btn" onclick="showScreen('shelf')">‹</div>
+        <div class="page-nav-title" style="font-size:17px;font-weight:700;">风味标签维护</div>
+      </div>
       <div class="icon-btn" onclick="showScreen('flavor-detail')" title="新增风味标签">➕</div>
     </div>
     <div style="padding:0 16px 12px;">
@@ -1162,9 +1166,14 @@
   <div class="screen" id="screen-brand">
     <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
     <div class="flavor-page-header">
-      <div class="page-nav-title" style="font-size:17px;font-weight:700;">品牌库</div>
-      <div class="icon-btn" onclick="toggleBrandFilter()" title="按国家筛选">🚩</div>
-      <div class="icon-btn" onclick="showScreen('brand-add')" title="新增品牌">➕</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="back-btn" onclick="showScreen('shelf')">‹</div>
+        <div class="page-nav-title" style="font-size:17px;font-weight:700;">品牌库</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <div class="icon-btn" onclick="toggleBrandFilter()" title="按国家筛选">🚩</div>
+        <div class="icon-btn" onclick="showScreen('brand-add')" title="新增品牌">➕</div>
+      </div>
     </div>
     <div style="padding:0 16px 12px;">
       <input class="form-input" placeholder="🔍 搜索品牌（中英文）..." style="margin-bottom:0;">
@@ -1459,6 +1468,19 @@
 
 <p style="margin-top:16px;font-size:11px;color:#9CA3AF;">* 原型中风味图标使用emoji占位，实际使用Seedream AI生成统一水彩风格插画</p>
 
+<!-- 保存确认对话框（编辑返回且有变更时） -->
+<div id="save-dialog" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(26,27,28,.45);align-items:center;justify-content:center;">
+  <div style="width:300px;background:#FFFDF8;border-radius:16px;padding:22px 20px 18px;box-shadow:0 12px 40px rgba(0,0,0,.22);">
+    <div style="font-size:16px;font-weight:700;color:#1A1B1C;text-align:center;margin-bottom:6px;">是否保存修改？</div>
+    <div style="font-size:12.5px;color:#6B7280;text-align:center;margin-bottom:18px;">你对豆子信息做了修改，返回前请选择</div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <button class="action-btn primary" style="width:100%;" onclick="dialogSave()">保存</button>
+      <button class="action-btn gray" style="width:100%;" onclick="dialogDiscard()">不保存</button>
+      <button style="height:36px;background:none;border:none;font-size:13px;color:#9CA3AF;cursor:pointer;" onclick="hideSaveDialog()">取消</button>
+    </div>
+  </div>
+</div>
+
 <script>
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -1466,10 +1488,137 @@ function showScreen(name) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   event && event.target && event.target.classList.add('active');
 }
+// ===== 编辑上下文（详情⤴编辑 vs 四步入库核对）=====
+// editSource: null = 入库流程中的核对页（返回→确认照片，主按钮=入库）
+//             'detail' = 从豆子详情进入的编辑（返回→详情，主按钮=保存；有变更时弹三选确认）
+let editSource = null;
+let editSnapshot = null;
+
+function snapshotForm() {
+  const sc = document.getElementById('screen-confirm');
+  const d = { inputs: [], segments: [], tags: [] };
+  sc.querySelectorAll('.form-input').forEach(i => d.inputs.push(i.value));
+  sc.querySelectorAll('.segment').forEach(seg => {
+    const a = seg.querySelector('.segment-item.active');
+    d.segments.push(a ? a.textContent : '');
+  });
+  sc.querySelectorAll('.flavor-tag').forEach(t => d.tags.push(t.textContent.replace('×', '').trim()));
+  return d;
+}
+function formChanged() {
+  const s = editSnapshot, c = snapshotForm();
+  return s.inputs.join('¦') !== c.inputs.join('¦')
+      || s.segments.join('¦') !== c.segments.join('¦')
+      || s.tags.join('¦') !== c.tags.join('¦');
+}
+function openEditFromDetail() {
+  editSource = 'detail';
+  editSnapshot = snapshotForm();
+  document.getElementById('confirm-title').textContent = '编辑豆子';
+  document.getElementById('btn-confirm-primary').textContent = '保存';
+  document.getElementById('confirm-steps').style.display = 'none';
+  document.getElementById('confirm-ai-hint').style.display = 'none';
+  showScreen('confirm');
+}
+function confirmBack() {
+  if (editSource === 'detail') {
+    if (formChanged()) showSaveDialog();
+    else closeEdit('detail');
+  } else showScreen('upload');
+}
+function closeEdit(target) {
+  editSource = null;
+  document.getElementById('confirm-title').textContent = '确认豆子信息';
+  document.getElementById('btn-confirm-primary').textContent = '入库';
+  document.getElementById('confirm-steps').style.display = '';
+  document.getElementById('confirm-ai-hint').style.display = '';
+  showScreen(target);
+}
+function editSave() {
+  if (editSource === 'detail') { syncDetailFromForm(); closeEdit('detail'); toast('修改已保存'); }
+  else showScreen('shelf');
+}
+// 保存确认对话框：保存 / 不保存 / 取消
+function showSaveDialog() { document.getElementById('save-dialog').style.display = 'flex'; }
+function hideSaveDialog() { document.getElementById('save-dialog').style.display = 'none'; }
+function restoreSnapshot() {
+  const sc = document.getElementById('screen-confirm');
+  const inputs = sc.querySelectorAll('.form-input');
+  editSnapshot.inputs.forEach((v, i) => { if (inputs[i]) inputs[i].value = v; });
+  sc.querySelectorAll('.segment').forEach((seg, i) => {
+    seg.querySelectorAll('.segment-item').forEach(it =>
+      it.classList.toggle('active', it.textContent === editSnapshot.segments[i]));
+  });
+  const list = sc.querySelector('.flavor-tag-list');
+  list.querySelectorAll('.flavor-tag').forEach(t => t.remove());
+  const addBtn = list.querySelector('.add-flavor-btn');
+  editSnapshot.tags.forEach(name => {
+    const icons = {'草莓':'🍓','橙子':'🍊','奶油':'🍦','白蜜':'🍯','焦糖':'🍬','花香':'🌼','柑橘':'🍋','坚果':'🌰','巧克力':'🍫','莓果':'🫐'};
+    const tag = document.createElement('div');
+    tag.className = 'flavor-tag';
+    tag.innerHTML = `<span class="icon">${icons[name] || '🏷️'}</span>${name}<span class="remove">×</span>`;
+    list.insertBefore(tag, addBtn);
+  });
+}
+function dialogSave() { hideSaveDialog(); syncDetailFromForm(); closeEdit('detail'); toast('修改已保存'); }
+function dialogDiscard() { hideSaveDialog(); restoreSnapshot(); closeEdit('detail'); toast('已放弃修改'); }
+// 编辑保存后，把表单值同步到详情页展示
+function syncDetailFromForm() {
+  const sc = document.getElementById('screen-confirm');
+  const inputs = sc.querySelectorAll('.form-input'); // 顺序：豆名/国家/产区/豆种/处理法/海拔/克重/烘焙日期/风味描述
+  const t = (id, v) => setIf(el => el.textContent = v, id);
+  t('dt-name', inputs[0].value);
+  t('dt-country', inputs[1].value);
+  t('dt-origin', inputs[2].value);
+  t('dt-variety', inputs[3].value);
+  t('dt-process', inputs[4].value);
+  t('dt-altitude', inputs[5].value);
+  t('dt-weight', inputs[6].value);
+  const m = inputs[7].value.match(/(\d{4})-(\d{2})-(\d{2})/);
+  t('dt-roastdate', m ? `${m[2]}.${m[3]}` : inputs[7].value);
+  const segText = i => { const seg = sc.querySelectorAll('.segment')[i]; const a = seg.querySelector('.segment-item.active'); return a ? a.textContent : ''; };
+  const BREW_IMG = { '手冲': '../assets/icons/proposal1/brewing.png', '意式': '../assets/icons/proposal1/espresso_roast.png', '通用': '../assets/icons/proposal1/omni_roast.png' };
+  setIf(el => el.textContent = segText(0), 'dt-roast');
+  setIf(el => { el.textContent = segText(1); document.getElementById('dt-brew-img').src = BREW_IMG[segText(1)] || BREW_IMG['手冲']; }, 'dt-brew');
+  // 风味标签同步到详情
+  const tags = [...sc.querySelectorAll('.flavor-tag')].map(t => ({
+    icon: t.querySelector('.icon') ? t.querySelector('.icon').textContent : '🏷️',
+    name: t.textContent.replace('×', '').trim(),
+  }));
+  if (tags.length) {
+    document.getElementById('dt-flavorrow').innerHTML = tags.map(t => `<div class="detail-flavor-icon">${t.icon}</div>`).join('');
+    document.getElementById('dt-flavortext').textContent = tags.map(t => t.name).join(' · ');
+  }
+}
+function setIf(fn, id) { const el = document.getElementById(id); if (el) fn(el); }
+// 轻提示
+let toastTimer = null;
+function toast(msg) {
+  let t = document.getElementById('proto-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'proto-toast';
+    t.style.cssText = 'position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:rgba(26,27,28,.88);color:#fff;font-size:13px;padding:10px 18px;border-radius:999px;z-index:300;transition:opacity .25s;opacity:0;pointer-events:none;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg; t.style.opacity = '1';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.style.opacity = '0', 1600);
+}
 // 确认编辑页：联想联动，点击快捷标签填入输入框
 function fillVal(el, inputId) {
   document.getElementById(inputId).value = el.textContent;
 }
+// 分段选择器可点选（编辑变更演示）
+document.querySelectorAll('.segment').forEach(seg => seg.querySelectorAll('.segment-item').forEach(it =>
+  it.addEventListener('click', () => {
+    seg.querySelectorAll('.segment-item').forEach(x => x.classList.remove('active'));
+    it.classList.add('active');
+  })));
+// 风味标签 × 可删除（编辑变更演示）
+document.addEventListener('click', e => {
+  if (e.target.classList && e.target.classList.contains('remove')) e.target.parentElement.remove();
+});
 // 照片条：点选封面（同步更新封面徽标）
 function pickCover(el) {
   const strip = el.parentElement;
