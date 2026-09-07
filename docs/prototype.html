@@ -640,7 +640,8 @@
     </div>
     <!-- 主菜单（☰ 弹出） -->
     <div id="main-menu-mask" onclick="toggleMainMenu()" style="display:none;position:absolute;inset:0;z-index:40;background:rgba(26,27,28,.35);"></div>
-    <div id="main-menu" style="display:none;position:absolute;top:0;right:0;z-index:41;width:200px;background:#FFFDF8;border-radius:0 0 16px 16px;box-shadow:0 8px 24px rgba(0,0,0,.14);padding:8px;">
+    <div id="main-menu" style="display:none;position:absolute;top:88px;right:12px;z-index:41;width:200px;background:#FFFDF8;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:8px;border:1px solid rgba(80,60,30,.08);">
+      <div style="width:12px;height:12px;background:#FFFDF8;position:absolute;top:-6px;right:16px;transform:rotate(45deg);border-top:1px solid rgba(80,60,30,.08);border-left:1px solid rgba(80,60,30,.08);"></div>
       <div class="menu-item" onclick="toggleMainMenu();showScreen('flavor')">🏷️ 风味标签维护</div>
       <div class="menu-item" onclick="toggleMainMenu();showScreen('brand')">🏢 品牌库</div>
       <div class="menu-item" onclick="toggleMainMenu();showScreen('stats')">📊 豆子统计</div>
