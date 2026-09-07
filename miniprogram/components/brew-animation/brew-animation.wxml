@@ -1,0 +1,22 @@
+<view class="brew-stage">
+  <view class="brew-scene">
+    <view class="pbean b1"></view>
+    <view class="pbean b2"></view>
+    <view class="pbean b3"></view>
+    <view class="pp" style="left:204rpx;--dx:-16rpx;"></view>
+    <view class="pp" style="left:224rpx;--dx:-8rpx;"></view>
+    <view class="pp" style="left:244rpx;--dx:0rpx;"></view>
+    <view class="pp" style="left:264rpx;--dx:6rpx;"></view>
+    <view class="pp" style="left:284rpx;--dx:12rpx;"></view>
+    <view class="pp" style="left:300rpx;--dx:18rpx;"></view>
+    <view class="pp" style="left:216rpx;--dx:-12rpx;"></view>
+    <view class="pp" style="left:276rpx;--dx:10rpx;"></view>
+    <view class="kettle"><view class="spout"></view><view class="body"></view><view class="lid"></view><view class="handle"></view></view>
+    <view class="wstream"></view>
+    <view class="v60"></view>
+    <view class="drip d1"></view>
+    <view class="drip d2"></view>
+    <view class="drip d3"></view>
+    <view class="carafe"><view class="cliquid"></view></view>
+  </view>
+</view>

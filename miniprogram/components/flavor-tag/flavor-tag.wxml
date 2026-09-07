@@ -1,0 +1,2 @@
+<view class="ft"><image wx:if="{{iconUrl}}" src="{{iconUrl}}" class="ic" style="width:{{size}}rpx;height:{{size}}rpx;" />
+  <text wx:else class="emoji">{{emoji || '☕'}}</text><text class="name">{{name}}</text></view>

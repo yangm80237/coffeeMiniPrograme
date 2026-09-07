@@ -1,0 +1,106 @@
+/* 从 docs/prototype.html screen-processing (CSS 行 496–600) 整段搬运，px×2→rpx，keyframes 秒数不变 */
+.brew-stage { position: relative; width: 500rpx; height: 632rpx; margin: 16rpx auto 0; }
+.brew-scene { position: absolute; inset: 0; animation: sceneFade 10s linear infinite; }
+@keyframes sceneFade { 0%,86% { opacity: 1; } 93%,100% { opacity: 0; } }
+/* 咖啡豆 */
+.pbean { position: absolute; width: 52rpx; height: 38rpx; border-radius: 50%/44%; background: #7A5542; opacity: 0;
+  animation: beanAnim 10s infinite; --r: 0deg; }
+.pbean:after { content: ""; position: absolute; left: 50%; top: 14%; bottom: 14%; width: 5rpx; margin-left: -2.5rpx;
+  border-radius: 2rpx; background: rgba(255,246,236,.4); transform: rotate(14deg); }
+.pbean.b1 { left: 184rpx; top: 16rpx; }
+.pbean.b2 { left: 240rpx; top: 4rpx; --r: 16deg; }
+.pbean.b3 { left: 292rpx; top: 20rpx; --r: -12deg; }
+@keyframes beanAnim {
+  0% { opacity: 0; transform: translateY(-12rpx) rotate(var(--r)); }
+  3% { opacity: 1; }
+  6% { transform: translateY(0) rotate(calc(var(--r) + 7deg)); }
+  10% { transform: translateY(0) rotate(calc(var(--r) - 7deg)); }
+  13% { opacity: 1; transform: translateY(0) rotate(calc(var(--r) + 4deg)); }
+  16%,100% { opacity: 0; transform: translateY(32rpx) rotate(var(--r)) scale(.5); }
+}
+/* 粉末颗粒 */
+.pp { position: absolute; top: 56rpx; width: 10rpx; height: 10rpx; border-radius: 50%; background: #9C7A64; opacity: 0;
+  animation: ppAnim 10s infinite; }
+@keyframes ppAnim {
+  0%,15% { opacity: 0; transform: translate(0,0); }
+  17% { opacity: 1; }
+  30% { opacity: 1; transform: translate(var(--dx,0rpx),176rpx) scale(.9); }
+  33%,100% { opacity: 0; transform: translate(var(--dx,0rpx),176rpx) scale(.9); }
+}
+/* V60 滤杯 */
+.v60 { position: absolute; left: 50%; top: 224rpx; width: 208rpx; height: 108rpx; margin-left: -104rpx;
+  background: linear-gradient(180deg,rgba(255,255,255,.30),rgba(255,255,255,.12));
+  clip-path: polygon(0 0,100% 0,60% 100%,40% 100%); }
+.v60:before { content: ""; position: absolute; inset: 0;
+  background: repeating-linear-gradient(90deg,transparent 0 24rpx,rgba(255,255,255,.22) 24rpx 28rpx); }
+/* 细口壶 */
+.kettle { position: absolute; left: 266rpx; top: 68rpx; width: 140rpx; height: 100rpx; opacity: 0;
+  animation: kettleAnim 10s infinite; transform-origin: 12% 80%; }
+.kettle .body { position: absolute; left: 60rpx; bottom: 0; width: 76rpx; height: 60rpx; background: #4A413A; border-radius: 14rpx 14rpx 22rpx 22rpx; }
+.kettle .lid { position: absolute; left: 84rpx; bottom: 60rpx; width: 32rpx; height: 10rpx; background: #4A413A; border-radius: 6rpx 6rpx 0 0; }
+.kettle .spout { position: absolute; left: -12rpx; bottom: 32rpx; width: 76rpx; height: 10rpx; background: #4A413A; border-radius: 6rpx; transform: rotate(-8deg); }
+.kettle .handle { position: absolute; right: 8rpx; bottom: 56rpx; width: 40rpx; height: 26rpx;
+  border: 8rpx solid #4A413A; border-bottom: none; border-radius: 20rpx 20rpx 0 0; }
+@keyframes kettleAnim {
+  0%,24% { opacity: 0; transform: translateX(88rpx) rotate(0); }
+  30% { opacity: 1; transform: translateX(0) rotate(0); }
+  36% { transform: translateX(0) rotate(-12deg); }
+  56% { transform: translateX(0) rotate(-12deg); }
+  62% { transform: translateX(0) rotate(0); }
+  68% { opacity: 1; transform: translateX(0) rotate(0); }
+  75%,100% { opacity: 0; transform: translateX(88rpx) rotate(0); }
+}
+/* 水流 */
+.wstream { position: absolute; left: 242rpx; top: 126rpx; width: 10rpx; height: 0; border-radius: 6rpx;
+  background: linear-gradient(180deg,rgba(196,230,255,.95),rgba(140,200,240,.85));
+  animation: streamAnim 10s infinite; }
+@keyframes streamAnim {
+  0%,38% { height: 0; opacity: 0; }
+  42% { height: 98rpx; opacity: 1; }
+  56% { height: 98rpx; opacity: 1; }
+  60%,100% { height: 0; opacity: 0; }
+}
+/* 咖啡滴落 */
+.drip { position: absolute; left: 244rpx; top: 332rpx; width: 12rpx; height: 18rpx; border-radius: 50% 50% 60% 60%;
+  background: linear-gradient(180deg,#C9A063,#8B5A2B); opacity: 0; }
+.drip.d1 { animation: dripA 10s infinite; }
+.drip.d2 { animation: dripB 10s infinite; }
+.drip.d3 { animation: dripC 10s infinite; }
+@keyframes dripA {
+  0%,45% { opacity: 0; transform: translateY(0); }
+  46% { opacity: 1; }
+  49% { opacity: 1; transform: translateY(164rpx); }
+  50%,66% { opacity: 0; transform: translateY(164rpx); }
+  67% { opacity: 1; transform: translateY(0); }
+  70% { opacity: 1; transform: translateY(164rpx); }
+  71%,100% { opacity: 0; transform: translateY(164rpx); }
+}
+@keyframes dripB {
+  0%,52% { opacity: 0; transform: translateY(0); }
+  53% { opacity: 1; }
+  56% { opacity: 1; transform: translateY(164rpx); }
+  57%,74% { opacity: 0; transform: translateY(164rpx); }
+  75% { opacity: 1; transform: translateY(0); }
+  78% { opacity: 1; transform: translateY(164rpx); }
+  79%,100% { opacity: 0; transform: translateY(164rpx); }
+}
+@keyframes dripC {
+  0%,59% { opacity: 0; transform: translateY(0); }
+  60% { opacity: 1; }
+  63% { opacity: 1; transform: translateY(164rpx); }
+  64%,80% { opacity: 0; transform: translateY(164rpx); }
+  81% { opacity: 1; transform: translateY(0); }
+  84% { opacity: 1; transform: translateY(164rpx); }
+  85%,100% { opacity: 0; transform: translateY(164rpx); }
+}
+/* 玻璃分享壶 */
+.carafe { position: absolute; left: 162rpx; top: 416rpx; width: 176rpx; height: 184rpx; overflow: hidden;
+  border: 6rpx solid rgba(255,255,255,.42); border-top: none; border-radius: 0 0 52rpx 52rpx/0 0 60rpx 60rpx;
+  background: rgba(255,255,255,.05); }
+.cliquid { position: absolute; left: 0; right: 0; bottom: 0; height: 0;
+  background: linear-gradient(180deg,#B98A54,#7A4E26); animation: liquidAnim 10s infinite; }
+@keyframes liquidAnim {
+  0%,46% { height: 0; }
+  86% { height: 104rpx; }
+  94%,100% { height: 104rpx; }
+}

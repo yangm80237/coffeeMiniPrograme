@@ -1,0 +1,2 @@
+.ft { display: inline-flex; align-items: center; gap: 6rpx; }
+.ft .name { font-family: var(--font-display); font-style: italic; font-size: 24rpx; color: var(--ink-2); }

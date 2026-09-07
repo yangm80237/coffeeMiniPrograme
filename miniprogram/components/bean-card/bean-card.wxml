@@ -1,0 +1,19 @@
+<view class="card bc" bindtap="onTap">
+  <view class="ph-wrap">
+    <image wx:if="{{bean.photos.length}}" src="{{bean.photos[0]}}" mode="aspectFill" class="ph" />
+    <view wx:else class="ph ph-fb"><text>{{first}}</text></view>
+    <view class="roast {{roastCls}}">{{bean.roastLevel}}烘</view>
+    <view class="pill" style="background: {{bean.statusInfo.status === 'resting' ? 'var(--status-resting)' : bean.statusInfo.status === 'drinking' ? 'var(--status-drinking)' : bean.statusInfo.status === 'hurry' ? 'var(--status-hurry)' : 'var(--status-finished)'}}">
+      {{bean.statusInfo.status === 'resting' ? '还需' + bean.statusInfo.daysLeft + '天' : bean.statusInfo.status === 'finished' ? '喝完' : '在喝'}}</view>
+    <view wx:if="{{bean.statusInfo.status === 'hurry'}}" class="hurry">⏰ 抓紧喝</view>
+    <view wx:if="{{bean.isNew}}" class="new">NEW</view>
+  </view>
+  <view class="info">
+    <view class="brand">{{bean.brand}}</view>
+    <view class="name">{{bean.name}}</view>
+    <view class="meta">
+      <view class="flavors"><flavor-tag wx:for="{{topFlavors}}" wx:key="_id" name="{{item.name}}" emoji="{{item.emoji}}" size="{{36}}" /></view>
+      <text wx:if="{{avg}}" class="avg">★{{avg}}</text>
+    </view>
+  </view>
+</view>

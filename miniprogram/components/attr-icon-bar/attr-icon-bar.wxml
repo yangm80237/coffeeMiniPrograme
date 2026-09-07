@@ -1,0 +1,7 @@
+<view class="bar">
+  <view wx:for="{{items}}" wx:key="label" class="cell" style="background:{{item.bg}};">
+    <image src="{{item.icon}}" class="ic" />
+    <text wx:if="{{item.sub}}" class="sub">{{item.sub}}</text>
+    <text class="val">{{item.value}}</text>
+  </view>
+</view>

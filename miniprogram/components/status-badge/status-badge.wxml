@@ -1,0 +1,1 @@
+<view class="badge" style="--c:{{meta.color}}"><view class="dot"></view><text>{{meta.label}}</text></view>
