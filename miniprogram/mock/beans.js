@@ -9,7 +9,7 @@ const daysAgo = (n) => { const d = new Date(); d.setDate(d.getDate() - n); retur
 module.exports = [
   { _id: 'bean01', brandId: 'b02', name: 'Bella Donovan', country: '埃塞俄比亚', origin: '耶加雪菲',
     variety: '74158', process: '水洗', altitude: '2200m', roastLevel: '浅', brewMethod: '手冲',
-    weight: 200, roastDate: '2026-08-28', inDate: '2026-09-01', flavorTagIds: ['f01', 'f07', 'f09'],
+    weight: 200, roastDate: daysAgo(10), inDate: '2026-09-01', flavorTagIds: ['f01', 'f07', 'f09'],
     flavorDesc: '草莓、蜂蜜、黑巧', photos: [], statusOverride: undefined, isNew: true,
     myRating: 4, wifeRating: null, myNotes: '', wifeNotes: '', createTime: '2026-09-01T10:00:00' },
   { _id: 'bean02', brandId: 'b03', name: 'Komichi', country: '埃塞俄比亚', origin: '西达摩',

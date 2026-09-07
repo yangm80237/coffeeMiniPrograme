@@ -30,7 +30,8 @@ test('beanView 视图字段', async () => {
 test('setBeanStatus 开喝→覆盖→还原', async () => {
   const b = await beanApi.setBeanStatus('bean01', 'drinking');
   assert.equal(b.statusInfo.status, 'drinking'); assert.ok(b.statusText.startsWith('200g'));
-  await beanApi.setBeanStatus('bean01', 'auto');
+  const r = await beanApi.setBeanStatus('bean01', 'auto');
+  assert.equal(r.statusInfo.status, 'resting'); assert.equal(r.statusInfo.daysLeft, 10);
 });
 test('createBean 默认字段', async () => {
   const b = await beanApi.createBean({ brandId: 'b01', name: '测试豆', country: '中国', origin: '保山',
