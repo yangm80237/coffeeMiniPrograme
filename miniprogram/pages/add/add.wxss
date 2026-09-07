@@ -1,0 +1,31 @@
+/* 添加页——底部弹窗，样式从 docs/prototype.html screen-add (758–814) 搬运 ×2 换算 rpx */
+.add { position: relative; min-height: 100vh; }
+.mask {
+  position: fixed; left: 0; top: 0; right: 0; bottom: 0;
+  background: rgba(26,27,28,.35); z-index: 50;
+}
+.add-sheet {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 60;
+  background: var(--card); border-radius: 40rpx 40rpx 0 0;
+  padding: 40rpx 40rpx calc(env(safe-area-inset-bottom) + 60rpx);
+  box-shadow: 0 -8rpx 40rpx rgba(0,0,0,.1);
+}
+.sheet-handle {
+  width: 72rpx; height: 8rpx; background: #ddd; border-radius: 4rpx;
+  margin: 0 auto 32rpx;
+}
+.sheet-title {
+  font-size: 32rpx; font-weight: 700; text-align: center; margin-bottom: 32rpx;
+}
+.add-option {
+  display: flex; align-items: center; gap: 24rpx; padding: 28rpx;
+  border-radius: 24rpx; margin-bottom: 16rpx;
+}
+.add-option.primary { background: var(--ink); color: #fff; }
+.add-option.secondary { background: var(--card); color: var(--ink); }
+.add-option-icon { font-size: 44rpx; }
+.add-option-text { flex: 1; }
+.add-option-text .main { font-size: 28rpx; font-weight: 600; }
+.add-option-text .sub { font-size: 22rpx; opacity: .6; margin-top: 4rpx; }
+.arrow { font-size: 36rpx; }
+.add-option.secondary .arrow { color: #999; }

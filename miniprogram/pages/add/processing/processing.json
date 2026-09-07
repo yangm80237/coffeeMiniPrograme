@@ -1,1 +1,1 @@
-{ "usingComponents": {} }
+{ "usingComponents": { "brew-animation": "../../components/brew-animation/brew-animation" }, "navigationStyle": "custom" }

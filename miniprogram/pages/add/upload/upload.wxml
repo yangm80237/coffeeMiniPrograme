@@ -1,0 +1,31 @@
+<view class="upload">
+  <!-- 顶栏（自定义导航） -->
+  <view class="page-nav">
+    <view class="back-btn" bindtap="retake">‹</view>
+    <view class="page-nav-title">确认照片</view>
+    <view class="nav-spacer"></view>
+  </view>
+  <!-- 步骤条：② 高亮 -->
+  <view class="steps">
+    <text>① 拍照</text><text class="arr">→</text>
+    <text class="cur">② 确认上传</text><text class="arr">→</text>
+    <text>③ AI 识别</text><text class="arr">→</text>
+    <text>④ 核对入库</text>
+  </view>
+  <!-- 大图预览：当前主图 -->
+  <view class="upload-preview">
+    <image wx:if="{{photos.length}}" class="preview-img" src="{{photos[current]}}" mode="aspectFill" />
+    <view wx:else class="preview-empty">🫘</view>
+  </view>
+  <!-- 缩略条：点选切主图 -->
+  <view class="strip-wrap">
+    <photo-strip photos="{{photos}}" current="{{current}}" bind:select="pick" />
+  </view>
+  <!-- 提示 -->
+  <view class="upload-tip"><text class="tip-icon">✨</text> AI 将识别品牌、豆名、产区、处理法等信息，完成后进入核对</view>
+  <!-- 底部操作 -->
+  <view class="bottom-bar">
+    <view class="btn btn-gray retake-btn" bindtap="retake">重新拍摄</view>
+    <view class="btn btn-primary confirm-btn" bindtap="confirmUse">✨ 确认使用</view>
+  </view>
+</view>

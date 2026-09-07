@@ -1,0 +1,45 @@
+/* AI 识别中页——深色沉浸，样式从 docs/prototype.html screen-processing (858–893) 搬运 ×2 换算 rpx */
+page { background: #1C1712; color: #fff; }
+.processing { min-height: 100vh; }
+/* 顶栏 */
+.proc-header {
+  text-align: center;
+  padding: calc(env(safe-area-inset-top) + 16rpx) 32rpx 24rpx;
+}
+.proc-title {
+  font-size: 34rpx; font-weight: 700; color: #fff;
+  font-family: var(--font-display); letter-spacing: 1rpx;
+}
+/* 步骤条 */
+.proc-steps {
+  display: flex; align-items: center; justify-content: center; gap: 16rpx;
+  padding: 20rpx 32rpx 28rpx; font-size: 21rpx; color: rgba(255,255,255,.5);
+}
+.proc-steps .arr { color: rgba(255,255,255,.26); }
+.proc-steps .cur { color: #E89B6F; font-weight: 600; }
+/* 冲煮动画 */
+brew-animation { display: block; }
+/* 文案轮播 */
+.proc-hint {
+  text-align: center; font-size: 24rpx; color: rgba(255,255,255,.68);
+  margin-top: 20rpx; min-height: 32rpx;
+}
+/* 闪点 */
+.proc-dots { display: flex; gap: 10rpx; justify-content: center; margin-top: 16rpx; }
+.proc-dots .dot {
+  width: 10rpx; height: 10rpx; border-radius: 50%;
+  background: rgba(255,255,255,.4); animation: dotBlink 1.4s infinite;
+}
+.proc-dots .dot:nth-child(2) { animation-delay: .2s; }
+.proc-dots .dot:nth-child(3) { animation-delay: .4s; }
+@keyframes dotBlink {
+  0%,100% { opacity: .25; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-6rpx); }
+}
+/* 跳过 */
+.proc-skip {
+  display: block; margin: 40rpx 32rpx calc(env(safe-area-inset-bottom) + 68rpx);
+  width: calc(100% - 64rpx); padding: 24rpx; border-radius: 999rpx; box-sizing: border-box;
+  background: rgba(255,255,255,.1); color: rgba(255,255,255,.85);
+  border: 2rpx solid rgba(255,255,255,.22); font-size: 24rpx; text-align: center;
+}

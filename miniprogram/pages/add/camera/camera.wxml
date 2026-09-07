@@ -1,0 +1,10 @@
+<camera device-position="back" flash="off" class="cam">
+  <view class="mask">
+    <view class="corner tl"></view><view class="corner tr"></view>
+    <view class="corner bl"></view><view class="corner br"></view>
+    <view class="hint">将豆袋置于取景框内</view>
+    <view class="close" bindtap="onClose">✕</view>
+    <view class="album-badge" bindtap="pickFromAlbum">🖼️ 3</view>
+    <view class="shutter" bindtap="onShutter"></view>
+  </view>
+</camera>

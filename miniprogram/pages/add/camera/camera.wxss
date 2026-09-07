@@ -1,0 +1,51 @@
+/* 拍照页——沉浸式取景，样式从 docs/prototype.html screen-camera (815–834) 搬运 ×2 换算 rpx */
+page { background: #15120E; }
+.cam { width: 100%; height: 100vh; }
+.mask {
+  position: absolute; left: 0; top: 0; right: 0; bottom: 0;
+}
+/* 取景框四角 */
+.corner {
+  position: absolute; width: 56rpx; height: 56rpx;
+  border: 5rpx solid rgba(255,255,255,.6);
+}
+.corner.tl { top: 200rpx; left: 56rpx; border-right: none; border-bottom: none; border-radius: 12rpx 0 0 0; }
+.corner.tr { top: 200rpx; right: 56rpx; border-left: none; border-bottom: none; border-radius: 0 12rpx 0 0; }
+.corner.bl { bottom: 320rpx; left: 56rpx; border-right: none; border-top: none; border-radius: 0 0 0 12rpx; }
+.corner.br { bottom: 320rpx; right: 56rpx; border-left: none; border-top: none; border-radius: 0 0 12rpx 0; }
+/* 提示文案 */
+.hint {
+  position: absolute; left: 0; right: 0; bottom: 340rpx;
+  text-align: center; color: rgba(255,255,255,.85);
+  font-size: 26rpx; line-height: 1.7;
+}
+/* 关闭 */
+.close {
+  position: absolute; left: 32rpx;
+  top: calc(env(safe-area-inset-top) + 24rpx);
+  width: 64rpx; height: 64rpx; border-radius: 50%;
+  background: rgba(255,255,255,.12); color: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 32rpx;
+}
+/* 相册入口（带数量角标） */
+.album-badge {
+  position: absolute; left: 48rpx;
+  bottom: calc(env(safe-area-inset-bottom) + 96rpx);
+  display: inline-flex; align-items: center; gap: 6rpx;
+  padding: 16rpx 20rpx; border-radius: 20rpx;
+  background: rgba(255,255,255,.12); color: #fff; font-size: 30rpx;
+}
+/* 快门 */
+.shutter {
+  position: absolute; left: 50%;
+  bottom: calc(env(safe-area-inset-bottom) + 96rpx);
+  transform: translateX(-50%);
+  width: 128rpx; height: 128rpx; border-radius: 50%;
+  border: 8rpx solid rgba(255,255,255,.9);
+  display: flex; align-items: center; justify-content: center;
+}
+.shutter::after {
+  content: ""; width: 96rpx; height: 96rpx; border-radius: 50%;
+  background: #fff; transition: transform .1s;
+}
+.shutter:active::after { transform: scale(.86); background: #F3EDE2; }

@@ -1,0 +1,39 @@
+<view class="add">
+  <view class="mask" bindtap="close"></view>
+  <view class="add-sheet">
+    <view class="sheet-handle"></view>
+    <view class="sheet-title">添加豆子</view>
+    <view class="add-option primary" bindtap="goCamera">
+      <view class="add-option-icon">📷</view>
+      <view class="add-option-text">
+        <view class="main">AI拍照识别</view>
+        <view class="sub">拍豆袋包装，自动识别所有信息</view>
+      </view>
+      <view class="arrow">›</view>
+    </view>
+    <view class="add-option secondary" bindtap="pickAlbum">
+      <view class="add-option-icon">🖼️</view>
+      <view class="add-option-text">
+        <view class="main">相册批量导入</view>
+        <view class="sub">从相册选择豆袋照片批量识别</view>
+      </view>
+      <view class="arrow">›</view>
+    </view>
+    <view class="add-option secondary" bindtap="goManual">
+      <view class="add-option-icon">✏️</view>
+      <view class="add-option-text">
+        <view class="main">手动录入</view>
+        <view class="sub">不用AI，自己填写所有信息</view>
+      </view>
+      <view class="arrow">›</view>
+    </view>
+    <view class="add-option secondary" bindtap="toastSoon">
+      <view class="add-option-icon">🔗</view>
+      <view class="add-option-text">
+        <view class="main">粘贴商品链接</view>
+        <view class="sub">淘宝/微店链接，AI抓取商品信息</view>
+      </view>
+      <view class="arrow">›</view>
+    </view>
+  </view>
+</view>

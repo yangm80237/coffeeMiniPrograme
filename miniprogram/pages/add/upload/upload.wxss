@@ -1,0 +1,44 @@
+/* 确认照片页——沉浸式，样式从 docs/prototype.html screen-upload (835–857) 搬运 ×2 换算 rpx */
+.upload { min-height: 100vh; }
+/* 顶栏（自定义导航，含状态栏间距） */
+.page-nav {
+  display: flex; align-items: center; gap: 24rpx;
+  padding: calc(env(safe-area-inset-top) + 16rpx) 32rpx 24rpx;
+}
+.back-btn { font-size: 40rpx; width: 64rpx; color: var(--ink); }
+.page-nav-title {
+  flex: 1; font-size: 34rpx; font-weight: 700;
+  font-family: var(--font-display); letter-spacing: 1rpx;
+}
+.nav-spacer { width: 80rpx; }
+/* 步骤条 */
+.steps {
+  display: flex; align-items: center; justify-content: center; gap: 16rpx;
+  padding: 20rpx 32rpx 28rpx; font-size: 21rpx; color: #8A8172;
+}
+.steps .arr { color: rgba(80,60,30,.3); }
+.steps .cur { color: var(--accent); font-weight: 600; }
+/* 大图预览 */
+.upload-preview {
+  margin: 0 32rpx 28rpx; height: 460rpx; border-radius: 36rpx;
+  background: linear-gradient(160deg,#EFEBE2,#E2DACB);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 152rpx; box-shadow: 0 4rpx 20rpx rgba(80,60,30,.08); overflow: hidden;
+}
+.preview-img { width: 100%; height: 100%; }
+.preview-empty { font-size: 152rpx; }
+/* 缩略条 */
+.strip-wrap { margin: 0 32rpx 28rpx; }
+/* 提示 */
+.upload-tip {
+  margin: 0 32rpx 32rpx; padding: 18rpx 24rpx;
+  background: #F0FDF4; border: 2rpx solid #BBF7D0; border-radius: 20rpx;
+  font-size: 22rpx; color: #166534; display: flex; gap: 12rpx; align-items: center;
+}
+/* 底部按钮 */
+.bottom-bar {
+  display: flex; gap: 24rpx;
+  padding: 0 32rpx calc(env(safe-area-inset-bottom) + 60rpx);
+}
+.retake-btn { flex: 1; }
+.confirm-btn { flex: 1.4; }

@@ -1,0 +1,23 @@
+<view class="processing">
+  <!-- 顶栏（自定义导航） -->
+  <view class="proc-header">
+    <view class="proc-title">AI 识别中</view>
+  </view>
+  <!-- 步骤条：③ 高亮 -->
+  <view class="steps proc-steps">
+    <text>① 拍照</text><text class="arr">→</text>
+    <text>② 确认上传</text><text class="arr">→</text>
+    <text class="cur">③ AI 识别</text><text class="arr">→</text>
+    <text>④ 核对入库</text>
+  </view>
+  <!-- 冲煮动画 -->
+  <brew-animation />
+  <!-- 文案轮播 -->
+  <view class="proc-hint">{{tip}}</view>
+  <!-- 闪点 -->
+  <view class="proc-dots">
+    <view class="dot"></view><view class="dot"></view><view class="dot"></view>
+  </view>
+  <!-- 跳过 -->
+  <view class="proc-skip" bindtap="skip">识别完成后自动进入 · 点此直接查看结果</view>
+</view>
