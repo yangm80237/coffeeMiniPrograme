@@ -1,5 +1,9 @@
 const test = require('node:test');
 const assert = require('node:assert');
+// 契约测试锁定 mock 分支：env.USE_CLOUD 已切 true（云开发），node 跑无 wx.cloud，
+// 此处强制锁 false 以保持契约测试测 mock 内存分支
+const env = require('../config/env');
+env.USE_CLOUD = false;
 const beanApi = require('../api/bean');
 const brandApi = require('../api/brand');
 const flavorApi = require('../api/flavor');

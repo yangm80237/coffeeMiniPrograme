@@ -57,7 +57,7 @@ Page({
     if (!f.roastDate) return wx.showToast({ title: '请选择烘焙日期', icon: 'none' });
     const p = this.data.isEdit
       ? beanApi.updateBean(this.editId, this.payload())
-      : beanApi.createBean(this.payload());
+      : upload.uploadImages(this.data.photos).then((fileIDs) => beanApi.createBean({ ...this.payload(), photos: fileIDs }));
     p.then(() => { getApp().globalData.pendingPhotos = null;
       if (this.data.isEdit) wx.navigateBack(); else wx.reLaunch({ url: '/pages/shelf/shelf' }); });
   },
