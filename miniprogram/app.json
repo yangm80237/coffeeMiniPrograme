@@ -1,0 +1,27 @@
+{
+  "pages": [
+    "pages/shelf/shelf",
+    "pages/add/add",
+    "pages/add/camera/camera",
+    "pages/add/upload/upload",
+    "pages/add/processing/processing",
+    "pages/add/confirm/confirm",
+    "pages/bean/detail",
+    "pages/stats/stats",
+    "pages/brand/list",
+    "pages/brand/add",
+    "pages/brand/detail",
+    "pages/flavor/list",
+    "pages/flavor/detail",
+    "pages/family/bind",
+    "pages/mine/mine",
+    "pages/admin/admin"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#F3EDE2",
+    "navigationBarTextStyle": "black"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

@@ -1,0 +1,11 @@
+page {
+  --bg-paper: #F3EDE2; --card: #FFFDF8;
+  --ink: #1A1B1C; --ink-2: #6B7280; --ink-3: #9CA3AF; --line: #EDE7DC;
+  --accent: #C96F4A; --accent-score: #FF6E20; --green: #07C160;
+  --status-resting: #FAAD14; --status-drinking: #52C41A;
+  --status-hurry: #F97316; --status-finished: #9CA3AF;
+  --attr-roast-date: #FFE5DB; --attr-variety: #F0E4DA; --attr-process: #D7EBF7; --attr-origin: #DCEEDA;
+  --attr-altitude: #F0F3CF; --attr-roast-level: #FFE9BC; --attr-brew: #FBE4D2; --attr-weight: #E7E2F1;
+  --font-display: "Songti SC", "STSong", Georgia, serif;
+  --btn-h: 88rpx; --btn-radius: 24rpx; --btn-gap: 24rpx;
+}

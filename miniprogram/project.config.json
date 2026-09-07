@@ -1,0 +1,8 @@
+{
+  "miniprogramRoot": "./",
+  "projectname": "coffeeApp",
+  "appid": "touristappid",
+  "compileType": "miniprogram",
+  "setting": { "es6": true, "postcss": true, "minified": true },
+  "libVersion": "latest"
+}

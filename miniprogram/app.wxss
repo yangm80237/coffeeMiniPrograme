@@ -1,0 +1,13 @@
+@import "styles/tokens.wxss";
+page { background: var(--bg-paper); color: var(--ink); font-size: 28rpx; }
+.card { background: var(--card); border-radius: 24rpx; }
+.btn { height: var(--btn-h); line-height: var(--btn-h); border-radius: var(--btn-radius);
+  font-size: 28rpx; text-align: center; padding: 0 24rpx; }
+.btn::after { border: none; }
+.btn-primary { background: var(--green); color: #fff; }
+.btn-score { background: var(--accent-score); color: #fff; }
+.btn-gray { background: #EFEAE0; color: var(--ink-2); }
+.btn-outline-orange { background: #fff; color: var(--status-hurry); border: 2rpx solid var(--status-hurry); }
+.btn-cream { background: #F5EEDC; color: #6B4F2A; }
+.btn-muted { background: #E5E5E5; color: var(--ink-2); }
+.w { width: 100%; }
