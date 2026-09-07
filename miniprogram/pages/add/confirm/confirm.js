@@ -1,6 +1,7 @@
 const beanApi = require('../../../api/bean');
 const flavorApi = require('../../../api/flavor');
 const { getFlag, COUNTRIES } = require('../../../api/flags');
+const upload = require('../../../api/upload');
 const EMPTY = { name:'', brandId:'', brandName:'', country:'', origin:'', variety:'', process:'',
   altitude:'', weight:'', roastLevel:'中', brewMethod:'手冲', roastDate:'', flavorTagIds:[], flavorDesc:'' };
 const ROAST = ['浅','中浅','中','中深','深']; const BREW = ['手冲','意式','通用'];
