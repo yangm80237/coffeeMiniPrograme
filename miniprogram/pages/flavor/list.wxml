@@ -15,7 +15,7 @@
     <view class="flavor-tag-grid">
       <view wx:for="{{item.items}}" wx:for-item="f" wx:key="_id"
         class="flavor-tag-item" data-id="{{f._id}}" bindtap="goDetail">
-        <view class="icon">{{f.emoji || '🏷️'}}</view>
+        <view class="icon"><image wx:if="{{f.iconUrl}}" src="{{f.iconUrl}}" mode="aspectFill" class="icon-img" /><text wx:else>{{f.emoji || '🏷️'}}</text></view>
         <view class="name">{{f.name}}</view>
       </view>
     </view>

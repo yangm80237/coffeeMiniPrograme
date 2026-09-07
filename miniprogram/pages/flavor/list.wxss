@@ -30,8 +30,10 @@
 .flavor-tag-item .icon {
   width: 64rpx; height: 64rpx; margin: 0 auto 8rpx; border-radius: 50%;
   background: #F7F5F0; display: flex; align-items: center; justify-content: center;
-  font-size: 32rpx;
+  overflow: hidden;
 }
+.icon-img { width: 100%; height: 100%; display: block; }
+.icon text { font-size: 32rpx; }
 .flavor-tag-item .name { font-size: 20rpx; color: var(--ink); }
 
 /* 空态 / 底注 */
