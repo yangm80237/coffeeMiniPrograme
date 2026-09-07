@@ -1,5 +1,5 @@
 <view class="strip">
-  <view wx:for="{{photos}}" wx:key="index" data-i="{{index}}" bindtap="select"
+  <view wx:for="{{photos}}" wx:key="*this" data-i="{{index}}" bindtap="select"
     class="cell {{index === current ? 'on' : ''}}"><image src="{{item}}" mode="aspectFill" class="img" /></view>
   <view class="cell add" bindtap="add">＋</view>
 </view>

@@ -3,5 +3,6 @@
     <image src="{{item.icon}}" class="ic" />
     <text wx:if="{{item.sub}}" class="sub">{{item.sub}}</text>
     <text class="val">{{item.value}}</text>
+    <text class="lbl">{{item.label}}</text>
   </view>
 </view>
