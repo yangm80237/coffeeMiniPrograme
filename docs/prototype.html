@@ -241,8 +241,9 @@
     display: flex; align-items: center; justify-content: center; color: #fff; font-size: 9px; font-weight: 700;
   }
   .detail-flavor-row {
-    display: flex; align-items: center; justify-content: center; gap: 6px; margin: 12px 0 10px;
+    display: flex; align-items: center; justify-content: center; gap: 0; margin: 12px 0 10px;
   }
+  .detail-flavor-icon + .detail-flavor-icon { margin-left: -38px; } /* ICON PREVIEW: 透明留白区重叠，防溢出 */
   .detail-flavor-icon {
     font-size: 48px; line-height: 1.15;
     filter: drop-shadow(0 3px 6px rgba(60, 40, 20, .16));

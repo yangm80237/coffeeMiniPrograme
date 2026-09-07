@@ -42,9 +42,9 @@
 }
 .detail-brand { font-size: 26rpx; color: var(--ink-2); display: flex; align-items: center; justify-content: center; gap: 12rpx; }
 .detail-brand .brand-arrow { font-size: 32rpx; color: #999; }
-.flavor-hero { display: flex; align-items: center; justify-content: center; gap: 12rpx; margin: 24rpx 0 16rpx; }
-.fh-emoji { font-size: 120rpx; line-height: 1.15; filter: drop-shadow(0 6rpx 12rpx rgba(60,40,20,.16)); }
-.fh-img { width: 120rpx; height: 120rpx; border-radius: 22rpx; }
+.flavor-hero { display: flex; align-items: center; justify-content: center; gap: 0; margin: 24rpx 0 16rpx; }
+.fh-emoji { font-size: 120rpx; line-height: 1.15; filter: drop-shadow(0 6rpx 12rpx rgba(60,40,20,.16)); margin: 0 -12rpx; }
+.fh-img { width: 120rpx; height: 120rpx; border-radius: 22rpx; margin: 0 -12rpx; }
 .flavor-names {
   font-family: var(--font-display); font-style: italic; font-size: 26rpx; color: var(--ink-3);
   text-align: center; margin-top: 8rpx; letter-spacing: 1rpx;
