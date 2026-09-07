@@ -299,6 +299,7 @@
   .action-btn.warn { background: #FEF3C7; color: #92400E; }
   .action-btn.gray { background: #F3F4F6; color: #6B7280; }
   .action-btn.outline { background: #fff; color: #C2410C; border: 1px solid rgba(194,65,12,.35); }
+  .action-btn.orange { background: #FF6E20; color: #fff; }
   .action-btn.coffee { background: #6F4E37; color: #fff; }
 
   /* ===== 风味维护页 ===== */
@@ -630,13 +631,8 @@
       <div class="shelf-title">我的咖啡豆 <span>6袋</span></div>
       <div class="header-actions">
         <div class="icon-btn" onclick="showScreen('add')" title="添加豆子">➕</div>
-        <div class="icon-btn" onclick="toggleShelfSearch()" title="搜索豆子">🔍</div>
         <div class="icon-btn" onclick="toggleMainMenu()" title="菜单">☰</div>
       </div>
-    </div>
-    <!-- 搜索条（🔍 展开） -->
-    <div id="shelf-search" style="display:none;padding:0 16px 10px;">
-      <input id="shelf-search-input" class="form-input" placeholder="搜索豆名 / 品牌 / 产区 / 豆种…" style="margin-bottom:0;" oninput="doShelfSearch(this.value)">
     </div>
     <!-- 主菜单（☰ 弹出） -->
     <div id="main-menu-mask" onclick="toggleMainMenu()" style="display:none;position:absolute;inset:0;z-index:40;background:rgba(26,27,28,.35);"></div>
@@ -648,13 +644,16 @@
       <div class="menu-item" onclick="toggleMainMenu()" style="color:#9CA3AF;">⚙️ 设置（待开发）</div>
       <div class="menu-item" onclick="toggleMainMenu()" style="color:#9CA3AF;">👤 关于（待开发）</div>
     </div>
-    <!-- 状态筛选：收起为单个胶囊，点击弹出下拉菜单（5 个 tab 太挤） -->
-    <div style="padding:0 16px 12px;position:relative;">
-      <div id="shelf-filter-pill" onclick="toggleShelfFilter()" style="display:inline-flex;align-items:center;gap:6px;background:#1A1B1C;color:#fff;padding:8px 14px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;">
-        <span id="shelf-filter-label">全部 · 6袋</span><span style="font-size:10px;opacity:.7;">▾</span>
+    <!-- 搜索条（常驻，与筛选同行，实时过滤） -->
+    <div style="padding:0 16px 12px;display:flex;gap:10px;align-items:center;position:relative;">
+      <div style="flex:1;position:relative;">
+        <input id="shelf-search-input" class="form-input" placeholder="🔍 搜索豆名 / 品牌 / 产区 / 豆种…" style="margin-bottom:0;padding-left:36px;" oninput="doShelfSearch(this.value)">
       </div>
-      <div id="shelf-filter-mask" onclick="toggleShelfFilter()" style="display:none;position:absolute;inset:-80px 0 0 0;z-index:40;"></div>
-      <div id="shelf-filter-menu" style="display:none;position:absolute;top:42px;left:16px;z-index:41;width:176px;background:#FFFDF8;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:8px;border:1px solid rgba(80,60,30,.08);">
+      <div id="shelf-filter-pill" onclick="toggleShelfFilter()" style="display:inline-flex;align-items:center;gap:5px;background:#1A1B1C;color:#fff;padding:9px 12px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;">
+        <span id="shelf-filter-label">全部</span><span style="font-size:10px;opacity:.7;">▾</span>
+      </div>
+      <div id="shelf-filter-mask" onclick="toggleShelfFilter()" style="display:none;position:fixed;inset:0;z-index:40;"></div>
+      <div id="shelf-filter-menu" style="display:none;position:absolute;top:46px;right:16px;z-index:41;width:176px;background:#FFFDF8;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:8px;border:1px solid rgba(80,60,30,.08);">
         <div class="menu-item" onclick="setShelfFilter('all')">☕ 全部（6）</div>
         <div class="menu-item" onclick="setShelfFilter('resting')">🟡 养豆中（2）</div>
         <div class="menu-item" onclick="setShelfFilter('drinking')">🟢 在喝（2）</div>
@@ -1078,7 +1077,7 @@
 
     <!-- 底部操作栏：主按钮一键直达下一常用状态；抓紧喝仅在「在喝」时出现的次按钮（手动触发，不自动进入） -->
     <div class="detail-actions">
-      <button class="action-btn primary" onclick="toggleRate()">评分</button>
+      <button class="action-btn orange" onclick="toggleRate()">评分</button>
       <button class="action-btn outline" id="btn-hurry" onclick="setBeanStatus('hurry')">⏰ 抓紧喝</button>
       <button class="action-btn warn" id="btn-status" onclick="advanceBeanStatus()">喝完</button>
     </div>
@@ -1525,7 +1524,7 @@ function clearBrandFilter() {
 // 养豆期默认规则：烘焙月份 5-10 月 = 20 天，其他月份 = 25 天（本豆 08.28 烘焙 → 20 天）
 const REST_DAYS = (8 >= 5 && 8 <= 10) ? 20 : 25;
 const BEAN_ST = {
-  resting:  { dot:'#FAAD14', bar:'#FFF8E6', txt:'#B45309', label:'养豆中', right:`还需10天 · 养豆期${REST_DAYS}天`, btn:'开喝',     cls:'coffee' },
+  resting:  { dot:'#FAAD14', bar:'#FFF8E6', txt:'#B45309', label:'养豆中', right:`还需10天 · 养豆期${REST_DAYS}天`, btn:'开喝',     cls:'primary' },
   drinking: { dot:'#52C41A', bar:'#F0FDF4', txt:'#166534', label:'在喝',   right:'200g · 最佳赏味第12天',        btn:'喝完',     cls:'warn' },
   hurry:    { dot:'#F97316', bar:'#FFF4EC', txt:'#C2410C', label:'抓紧喝', right:'200g · 风味衰退期 · 尽快饮用',  btn:'喝完',     cls:'warn' },
   finished: { dot:'#9CA3AF', bar:'#F3F4F6', txt:'#4B5563', label:'喝完',   right:'200g · 本袋已喝完',            btn:'重新养豆', cls:'gray' },
@@ -1556,13 +1555,7 @@ function toggleDetailMenu() {
 function delBean() {
   if (confirm('确定删除这袋豆子吗？删除后不可恢复。')) { toggleDetailMenu(); showScreen('shelf'); }
 }
-// 货架：搜索条展开/收起 + 实时过滤（豆名/品牌/产区/豆种）
-function toggleShelfSearch() {
-  const box = document.getElementById('shelf-search');
-  box.style.display = box.style.display === 'none' ? 'block' : 'none';
-  if (box.style.display === 'none') { document.getElementById('shelf-search-input').value = ''; doShelfSearch(''); }
-  else document.getElementById('shelf-search-input').focus();
-}
+// 货架：搜索实时过滤（豆名/品牌/产区/豆种，与筛选叠加）
 function doShelfSearch(q) {
   applyShelfFilters(shelfFilter);
 }
@@ -1575,11 +1568,11 @@ function toggleMainMenu() {
 }
 // 货架：状态筛选下拉（胶囊收起 + 弹出菜单；与搜索条件叠加过滤）
 const SHELF_FILTERS = {
-  all:      { label: '全部 · 6袋',     },
-  resting:  { label: '🟡 养豆中 · 2袋' },
-  drinking: { label: '🟢 在喝 · 2袋'   },
-  hurry:    { label: '🟠 抓紧喝 · 1袋' },
-  finished: { label: '⚪ 喝完 · 1袋'  },
+  all:      { label: '全部'      },
+  resting:  { label: '🟡 养豆中' },
+  drinking: { label: '🟢 在喝'   },
+  hurry:    { label: '🟠 抓紧喝' },
+  finished: { label: '⚪ 喝完'  },
 };
 let shelfFilter = 'all';
 function toggleShelfFilter() {
