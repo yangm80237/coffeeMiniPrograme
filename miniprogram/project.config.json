@@ -29,7 +29,9 @@
   "libVersion": "latest",
   "simulatorPluginLibVersion": {},
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      { "type": "folder", "value": "cloudfunctions" }
+    ],
     "include": []
   },
   "editorSetting": {}
