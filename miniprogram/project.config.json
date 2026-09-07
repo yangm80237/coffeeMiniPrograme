@@ -1,5 +1,6 @@
 {
   "miniprogramRoot": "./",
+  "cloudfunctionRoot": "cloudfunctions/",
   "projectname": "coffeeApp",
   "appid": "wx57293e724607a9d0",
   "compileType": "miniprogram",
