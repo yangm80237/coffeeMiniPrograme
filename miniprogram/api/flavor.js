@@ -13,8 +13,9 @@ function listFlavors() {
 }
 function createFlavor({ name, category } = {}) {
   if (enabled()) return call('flavor', { action: 'create', name, category });
-  const f = { _id: 'f' + Date.now(), name: name || '', category: category || '其他', iconUrl: '', emoji: '', isBuiltin: false };
-  return Promise.resolve(f);
+  const f = { _id: 'f' + Date.now(), name: name || '', category: category || '其他', iconUrl: '', emoji: '☕', isBuiltin: false };
+  FLAVORS.push(f);
+  return Promise.resolve(clone(f));
 }
 function updateFlavor(id, patch) {
   if (enabled()) return call('flavor', { action: 'update', id, patch });

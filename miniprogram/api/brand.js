@@ -4,6 +4,7 @@ const beanApi = require('./bean');
 const { getFlag } = require('./flags');
 const BRANDS = require('../mock/brands');
 const clone = (x) => JSON.parse(JSON.stringify(x));
+const withFlag = (b) => ({ ...b, flag: getFlag(b.country) });
 
 function listBrands({ countries = [] } = {}) {
   if (enabled()) return call('brand', { action: 'list', countries });
@@ -29,6 +30,7 @@ function createBrand({ name, nameEn, logo, country, description } = {}) {
   if (enabled()) return call('brand', { action: 'create', name, nameEn, logo, country, description });
   const b = { _id: 'b' + Date.now(), name: name || '', nameEn: nameEn || '', logo: logo || '',
     country: country || '', flag: getFlag(country || ''), description: description || '', isBuiltin: false };
-  return Promise.resolve(b);
+  BRANDS.unshift(b);
+  return Promise.resolve(withFlag(b));
 }
 module.exports = { listBrands, getBrand, createBrand };

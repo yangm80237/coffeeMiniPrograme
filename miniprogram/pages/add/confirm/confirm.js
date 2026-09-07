@@ -24,6 +24,7 @@ Page({
       });
     } else {
       const g = getApp().globalData;
+      if (options.mode === 'manual') { g.pendingPhotos = null; this.setData({ photos: [] }); }
       this.snapshot = JSON.stringify({ ...EMPTY });
       this.setData({ mode: options.mode || 'ai', photos: g.pendingPhotos || [], coverIndex: g.mainIndex || 0 });
     }

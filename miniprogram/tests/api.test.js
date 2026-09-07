@@ -57,3 +57,15 @@ test('joinFamily 错码拒绝；模型配置可写', async () => {
   const cfg = await adminApi.updateModelConfig({ modelVision: 'ep-test-1' });
   assert.equal(cfg.modelVision, 'ep-test-1');
 });
+test('createBrand/createFlavor 落内存列表（契约）', async () => {
+  const brand = await brandApi.createBrand({ name: '测试品牌', country: '中国' });
+  assert.equal(brand.isBuiltin, false); assert.ok(brand.flag);
+  const brands = await brandApi.listBrands({});
+  const hit = brands.find((b) => b._id === brand._id);
+  assert.ok(hit); assert.equal(hit.beanCount, 0); assert.equal(hit.name, '测试品牌');
+  const flavor = await flavorApi.createFlavor({ name: '测试风味', category: '其他' });
+  assert.equal(flavor.emoji, '☕');
+  const flavors = await flavorApi.listFlavors();
+  const other = flavors.find((g) => g.category === '其他');
+  assert.ok(other.items.find((f) => f._id === flavor._id && f.name === '测试风味'));
+});
