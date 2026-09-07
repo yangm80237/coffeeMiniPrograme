@@ -143,14 +143,6 @@
     font-size: 9px; padding: 2px 6px; border-radius: 8px; font-weight: 600;
   }
 
-  /* 底部添加按钮 */
-  .add-fab {
-    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-    background: #1A1B1C; color: #fff; padding: 12px 28px; border-radius: 24px;
-    font-size: 14px; font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-    cursor: pointer; z-index: 50; display: flex; align-items: center; gap: 6px;
-  }
-
   /* ===== 添加弹窗 ===== */
   .add-sheet {
     position: absolute; bottom: 0; left: 0; right: 0; background: #fff;
@@ -307,7 +299,7 @@
   .action-btn.warn { background: #FEF3C7; color: #92400E; }
   .action-btn.gray { background: #F3F4F6; color: #6B7280; }
   .action-btn.outline { background: #fff; color: #C2410C; border: 1px solid rgba(194,65,12,.35); }
-  .action-btn.green { background: #07C160; color: #fff; }
+  .action-btn.coffee { background: #6F4E37; color: #fff; }
 
   /* ===== 风味维护页 ===== */
   .flavor-page-header {
@@ -637,6 +629,7 @@
     <div class="shelf-header">
       <div class="shelf-title">我的咖啡豆 <span>6袋</span></div>
       <div class="header-actions">
+        <div class="icon-btn" onclick="showScreen('add')" title="添加豆子">➕</div>
         <div class="icon-btn" onclick="toggleShelfSearch()" title="搜索豆子">🔍</div>
         <div class="icon-btn" onclick="toggleMainMenu()" title="菜单">☰</div>
       </div>
@@ -655,12 +648,19 @@
       <div class="menu-item" onclick="toggleMainMenu()" style="color:#9CA3AF;">⚙️ 设置（待开发）</div>
       <div class="menu-item" onclick="toggleMainMenu()" style="color:#9CA3AF;">👤 关于（待开发）</div>
     </div>
-    <div class="filter-tabs">
-      <div class="filter-tab active" onclick="filterShelf(this,'all')">全部 <span class="count">6</span></div>
-      <div class="filter-tab" onclick="filterShelf(this,'resting')">🟡 养豆中 <span class="count">2</span></div>
-      <div class="filter-tab" onclick="filterShelf(this,'drinking')">🟢 在喝 <span class="count">2</span></div>
-      <div class="filter-tab" onclick="filterShelf(this,'hurry')">🟠 抓紧喝 <span class="count">1</span></div>
-      <div class="filter-tab" onclick="filterShelf(this,'finished')">⚪ 喝完 <span class="count">1</span></div>
+    <!-- 状态筛选：收起为单个胶囊，点击弹出下拉菜单（5 个 tab 太挤） -->
+    <div style="padding:0 16px 12px;position:relative;">
+      <div id="shelf-filter-pill" onclick="toggleShelfFilter()" style="display:inline-flex;align-items:center;gap:6px;background:#1A1B1C;color:#fff;padding:8px 14px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;">
+        <span id="shelf-filter-label">全部 · 6袋</span><span style="font-size:10px;opacity:.7;">▾</span>
+      </div>
+      <div id="shelf-filter-mask" onclick="toggleShelfFilter()" style="display:none;position:absolute;inset:-80px 0 0 0;z-index:40;"></div>
+      <div id="shelf-filter-menu" style="display:none;position:absolute;top:42px;left:16px;z-index:41;width:176px;background:#FFFDF8;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:8px;border:1px solid rgba(80,60,30,.08);">
+        <div class="menu-item" onclick="setShelfFilter('all')">☕ 全部（6）</div>
+        <div class="menu-item" onclick="setShelfFilter('resting')">🟡 养豆中（2）</div>
+        <div class="menu-item" onclick="setShelfFilter('drinking')">🟢 在喝（2）</div>
+        <div class="menu-item" onclick="setShelfFilter('hurry')">🟠 抓紧喝（1）</div>
+        <div class="menu-item" onclick="setShelfFilter('finished')">⚪ 喝完（1）</div>
+      </div>
     </div>
     <div class="bean-grid">
       <!-- 在喝 -->
@@ -752,7 +752,6 @@
         </div>
       </div>
     </div>
-    <div class="add-fab" onclick="showScreen('add')">➕ 添加豆子</div>
   </div>
 
   <!-- ===== 添加豆子 ===== -->
@@ -1526,7 +1525,7 @@ function clearBrandFilter() {
 // 养豆期默认规则：烘焙月份 5-10 月 = 20 天，其他月份 = 25 天（本豆 08.28 烘焙 → 20 天）
 const REST_DAYS = (8 >= 5 && 8 <= 10) ? 20 : 25;
 const BEAN_ST = {
-  resting:  { dot:'#FAAD14', bar:'#FFF8E6', txt:'#B45309', label:'养豆中', right:`还需10天 · 养豆期${REST_DAYS}天`, btn:'开喝',     cls:'primary' },
+  resting:  { dot:'#FAAD14', bar:'#FFF8E6', txt:'#B45309', label:'养豆中', right:`还需10天 · 养豆期${REST_DAYS}天`, btn:'开喝',     cls:'coffee' },
   drinking: { dot:'#52C41A', bar:'#F0FDF4', txt:'#166534', label:'在喝',   right:'200g · 最佳赏味第12天',        btn:'喝完',     cls:'warn' },
   hurry:    { dot:'#F97316', bar:'#FFF4EC', txt:'#C2410C', label:'抓紧喝', right:'200g · 风味衰退期 · 尽快饮用',  btn:'喝完',     cls:'warn' },
   finished: { dot:'#9CA3AF', bar:'#F3F4F6', txt:'#4B5563', label:'喝完',   right:'200g · 本袋已喝完',            btn:'重新养豆', cls:'gray' },
@@ -1565,10 +1564,7 @@ function toggleShelfSearch() {
   else document.getElementById('shelf-search-input').focus();
 }
 function doShelfSearch(q) {
-  const active = document.querySelector('#screen-shelf .filter-tab.active');
-  const key = active ? [...document.querySelectorAll('#screen-shelf .filter-tab')].indexOf(active) : 0;
-  const statusKey = ['all','resting','drinking','finished'][key] || 'all';
-  applyShelfFilters(statusKey);
+  applyShelfFilters(shelfFilter);
 }
 // 货架：☰ 主菜单开/关
 function toggleMainMenu() {
@@ -1577,10 +1573,25 @@ function toggleMainMenu() {
   m.style.display = show ? 'block' : 'none';
   k.style.display = show ? 'block' : 'none';
 }
-// 货架：状态筛选（与搜索条件叠加过滤；抓紧喝归入「在喝」tab——方案A）
-function filterShelf(el, key) {
-  document.querySelectorAll('#screen-shelf .filter-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
+// 货架：状态筛选下拉（胶囊收起 + 弹出菜单；与搜索条件叠加过滤）
+const SHELF_FILTERS = {
+  all:      { label: '全部 · 6袋',     },
+  resting:  { label: '🟡 养豆中 · 2袋' },
+  drinking: { label: '🟢 在喝 · 2袋'   },
+  hurry:    { label: '🟠 抓紧喝 · 1袋' },
+  finished: { label: '⚪ 喝完 · 1袋'  },
+};
+let shelfFilter = 'all';
+function toggleShelfFilter() {
+  const m = document.getElementById('shelf-filter-menu'), k = document.getElementById('shelf-filter-mask');
+  const show = m.style.display === 'none';
+  m.style.display = show ? 'block' : 'none';
+  k.style.display = show ? 'block' : 'none';
+}
+function setShelfFilter(key) {
+  shelfFilter = key;
+  document.getElementById('shelf-filter-label').textContent = SHELF_FILTERS[key].label;
+  if (document.getElementById('shelf-filter-menu').style.display !== 'none') toggleShelfFilter();
   applyShelfFilters(key);
 }
 function applyShelfFilters(statusKey) {
