@@ -270,11 +270,12 @@
   .attr-section-title::before, .attr-section-title::after {
     content: ''; flex: 1; height: 1px; background: rgba(80,60,30,.14);
   }
-  /* 豆子属性：图标条（emoji 占位，后续替换为 PNG 图标） */
+  /* 豆子属性：图标条（PNG 图标，统一显示尺寸） */
   .at-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px 8px; padding:6px 16px 22px; align-items:start; }
   .at-item { display:flex; flex-direction:column; align-items:center; text-align:center; gap:3px; }
   .at-icon { width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center;
-    font-size:23px; box-shadow:var(--shadow-card); }
+    box-shadow:var(--shadow-card); }
+  .at-icon img { width:30px; height:30px; object-fit:contain; display:block; }
   .at-sub { font-size:9px; color:var(--ink-soft); line-height:1; }
   .at-value { font-size:12px; font-weight:700; color:var(--ink); line-height:1.25; }
   .at-label { font-size:9.5px; color:var(--ink-soft); line-height:1; }
@@ -1033,16 +1034,16 @@
     </div>
 
     <div class="attr-section-title">豆子属性</div>
-    <!-- 图标暂用 emoji 占位，后续替换为 PNG 图标；冲煮方式：🫖手冲 / ☕意式 / 🥣通用 -->
+    <!-- 冲煮方式三图标：手冲=brewing.png / 意式=espresso_roast.png / 通用=omni_roast.png，按值切换 -->
     <div class="at-grid">
-      <div class="at-item"><div class="at-icon at-c1">📅</div><div class="at-value">08.28</div><div class="at-label">烘焙日期</div></div>
-      <div class="at-item"><div class="at-icon at-c5">🫘</div><div class="at-value">74158</div><div class="at-label">豆种</div></div>
-      <div class="at-item"><div class="at-icon at-c4">💧</div><div class="at-value">水洗</div><div class="at-label">处理法</div></div>
-      <div class="at-item"><div class="at-icon at-c6">📍</div><div class="at-sub">埃塞俄比亚</div><div class="at-value">耶加雪菲</div><div class="at-label">产区</div></div>
-      <div class="at-item"><div class="at-icon at-c7">⛰️</div><div class="at-value">2200m</div><div class="at-label">海拔</div></div>
-      <div class="at-item"><div class="at-icon at-c8">🔥</div><div class="at-value">浅烘</div><div class="at-label">烘焙度</div></div>
-      <div class="at-item"><div class="at-icon at-c9">🫖</div><div class="at-value">手冲</div><div class="at-label">冲煮方式</div></div>
-      <div class="at-item"><div class="at-icon at-c10">📥</div><div class="at-value">09.01</div><div class="at-label">入库日期</div></div>
+      <div class="at-item"><div class="at-icon at-c1"><img src="../assets/icons/proposal1/roast_date.png" alt="烘焙日期"></div><div class="at-value">08.28</div><div class="at-label">烘焙日期</div></div>
+      <div class="at-item"><div class="at-icon at-c5"><img src="../assets/icons/proposal1/bean_variety.png" alt="豆种"></div><div class="at-value">74158</div><div class="at-label">豆种</div></div>
+      <div class="at-item"><div class="at-icon at-c4"><img src="../assets/icons/proposal1/process_method.png" alt="处理法"></div><div class="at-value">水洗</div><div class="at-label">处理法</div></div>
+      <div class="at-item"><div class="at-icon at-c6"><img src="../assets/icons/proposal1/country_region.png" alt="产区"></div><div class="at-sub">埃塞俄比亚</div><div class="at-value">耶加雪菲</div><div class="at-label">产区</div></div>
+      <div class="at-item"><div class="at-icon at-c7"><img src="../assets/icons/proposal1/altitude.png" alt="海拔"></div><div class="at-value">2200m</div><div class="at-label">海拔</div></div>
+      <div class="at-item"><div class="at-icon at-c8"><img src="../assets/icons/proposal1/roast_level.png" alt="烘焙度"></div><div class="at-value">浅烘</div><div class="at-label">烘焙度</div></div>
+      <div class="at-item"><div class="at-icon at-c9"><img src="../assets/icons/proposal1/brewing.png" alt="手冲"></div><div class="at-value">手冲</div><div class="at-label">冲煮方式</div></div>
+      <div class="at-item"><div class="at-icon at-c10"><img src="../assets/icons/proposal1/storage_date.png" alt="入库日期"></div><div class="at-value">09.01</div><div class="at-label">入库日期</div></div>
     </div>
 
     <div class="detail-actions">
