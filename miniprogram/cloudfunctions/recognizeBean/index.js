@@ -66,12 +66,14 @@ function postChat(key, model, b64) {
 
 function fetchBuffer(url) {
   return new Promise((resolve, reject) => {
-    https.get(url, (res) => {
+    const req = https.get(url, (res) => {
       if (res.statusCode >= 400) return reject(new Error(`IMG_${res.statusCode}`));
       const chunks = [];
       res.on('data', (c) => chunks.push(c));
       res.on('end', () => resolve(Buffer.concat(chunks)));
-    }).on('error', reject);
+    });
+    req.setTimeout(30000, () => req.destroy(new Error('IMG_TIMEOUT')));
+    req.on('error', reject);
   });
 }
 
@@ -120,8 +122,8 @@ exports.main = async (event) => {
   const key = process.env.ARK_API_KEY;
   let familyId = null;
   try {
-    if (!key) throw new Error('NO_ARK_KEY: 请在函数配置里设置环境变量 ARK_API_KEY');
     ({ familyId } = await requireFamily(OPENID));
+    if (!key) throw new Error('NO_ARK_KEY: 请在函数配置里设置环境变量 ARK_API_KEY');
     const fileID = event.fileID;
     if (!fileID) throw new Error('NO_FILE');
 
@@ -136,7 +138,7 @@ exports.main = async (event) => {
 
     // 3. 模型配置：config.ark.modelVision → 环境变量 → 默认
     const ark = await db.collection('config').doc('ark').get().catch(() => null);
-    model = (ark && ark.data && ark.data.modelVision)
+    const model = (ark && ark.data && ark.data.modelVision)
       || process.env.ARK_MODEL_VISION || DEFAULT_MODEL;
 
     // 4. 方舟视觉模型

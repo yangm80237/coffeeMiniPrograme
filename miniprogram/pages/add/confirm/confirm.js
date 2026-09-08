@@ -83,8 +83,32 @@ Page({
       if (mode === 'manual') { g.pendingPhotos = null; this.setData({ photos: [] }); }
       this.snapshot = JSON.stringify({ ...EMPTY });
       this.setData({ mode, navTitle, photos: g.pendingPhotos || [], coverIndex: g.mainIndex || 0 });
+      // ai 模式：消费 processing 写入 globalData.aiResult 的识别结果（form 字段对象），合并预填
+      if (mode === 'ai') {
+        const ai = g.aiResult;
+        if (ai) {
+          const merged = { ...this.data.form };
+          Object.keys(ai).forEach((k) => { if (ai[k] !== '' && ai[k] !== null && ai[k] !== undefined) merged[k] = ai[k]; });
+          this.setData({ form: merged });
+          this.pendingAiTagIds = merged.flavorTagIds || []; // flavorGroups 异步加载完成后由 applyFlavorGroups 落到 pickedFlavors
+          g.aiResult = null; // 消费即置空，避免返回重复预填
+        }
+      }
       this.syncVarietySelFromForm();
     }
+  },
+
+  // 风味库异步加载完成：按 form.flavorTagIds 重算已选集合（来源不管 ai/edit/手动，以 tagIds 为准）
+  applyFlavorGroups(flavorGroups) {
+    const groups = flavorGroups || [];
+    // AI 预填暂存：flavorGroups 异步到位后落到 form 与 picked（ai 模式，pendingAiTagIds 由 onLoad 写入）
+    if (this.pendingAiTagIds) {
+      this.setData({ 'form.flavorTagIds': this.pendingAiTagIds });
+      this.pendingAiTagIds = null; // 落定即清理，避免返回重复预填
+    }
+    const pickedFlavors = groups.flatMap((g) => g.items).filter((f) => this.data.form.flavorTagIds.includes(f._id));
+    const pickedIds = Object.fromEntries(pickedFlavors.map((f) => [f._id, true]));
+    this.setData({ flavorGroups: groups, pickedFlavors, pickedIds });
   },
 
   // 从 beans 聚合某字段 Top n（mock 数据阶段走内存；云开发阶段替换为聚合接口）
