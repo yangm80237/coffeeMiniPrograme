@@ -23,12 +23,13 @@ test('在喝筛选不含抓紧喝；hurry 专项', async () => {
   assert.equal(h.length, 1); assert.equal(h[0]._id, 'bean03');
 });
 test('关键词命中品牌/豆种/国家', async () => {
-  const r = await beanApi.listBeans({ keyword: 'Blue' });
+  // mock 品牌清单已换为 Excel 初始化数据：bean01 的品牌为 SEY（美区烘焙商）
+  const r = await beanApi.listBeans({ keyword: 'SEY' });
   assert.equal(r.length, 1); assert.equal(r[0]._id, 'bean01');
 });
 test('beanView 视图字段', async () => {
   const b = await beanApi.getBean('bean01');
-  assert.equal(b.flag, '🇪🇹'); assert.equal(b.brand, 'Blue Bottle');
+  assert.equal(b.flag, '🇪🇹'); assert.equal(b.brand, 'SEY');
   assert.ok(b.statusText.includes('还需')); assert.equal(b.flavors.length, 3);
 });
 test('setBeanStatus 开喝→覆盖→还原', async () => {

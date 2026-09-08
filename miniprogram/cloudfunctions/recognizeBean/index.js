@@ -31,14 +31,14 @@ const PROMPT = `你是专业的咖啡豆包装标签识别助手。请从图片�
 - 湿剥法（Wet hulled / Giling basah / Semi-washed，印尼苏门答腊常见）
 - 半水洗（Pulped natural / Semi-washed 处理）
 3. 常见产地国中英对照（country 输出中文标准名）：埃塞俄比亚 Ethiopia、肯尼亚 Kenya、巴拿马 Panama、哥伦比亚 Colombia、危地马拉 Guatemala、巴西 Brazil、印度尼西亚 Indonesia（苏门答腊/爪哇）、卢旺达 Rwanda、洪都拉斯 Honduras、哥斯达黎加 Costa Rica、也门 Yemen、中国 China（云南）、美国 USA（夏威夷）、日本 Japan、德国 Germany、丹麦 Denmark、挪威 Norway、韩国 Korea
-4. 常见豆种表（variety 有对应中文优先输出中文，词表外保留原文）：瑰夏 Geisha/Gesha、铁皮卡 Typica、波旁 Bourbon、SL28、卡杜拉 Caturra、卡帝姆 Catimor、74158
+4. 常见豆种词表（variety 优先匹配词表写法；词表外保留原文，有对应中文优先输出中文）：瑰夏 Geisha/Gesha、铁皮卡 Typica、波旁 Bourbon、SL28、SL34、SL09、Batian、Ruiru11、卡杜拉 Caturra、卡杜艾 Catuai/Catuai pb、卡帝姆 Catimor、Heirloom、Wolisho/Wolisbo、Dega、aji、Typica Americana、purple caturra、曼德拉、拼配、74110、74112、74158
 5. 常见风味词参考（flavorDesc 与 flavors 用中文）：柑橘、柠檬、莓果、蓝莓、草莓、热带水果、芒果、菠萝、百香果、花香、茉莉、玫瑰、桂花、焦糖、蜂蜜、红糖、香草、巧克力、黑巧、坚果、榛子、杏仁、香料、肉桂、发酵、酒香、茶感、奶油、麦芽、草本
 
 【翻译规则】
 - brand 与 name：保留包装原文，拉丁字母/日文/韩文一律不翻译、不转写
 - country：输出中文标准名（对照知识库 3）
 - process：输出处理法标准词（对照知识库 2）
-- variety：知识库 4 内有对应中文用词表名，没有则保留原文
+- variety：优先匹配知识库 4 词表写法，词表内有对应中文用词表名，词表外保留原文
 - flavorDesc：翻译为中文
 - flavors：每项为一个独立中文风味词（参考知识库 5），从风味描述拆分
 
@@ -91,10 +91,12 @@ const PROCESS_MAP = {
   'wet hulled': '湿剥法', 'giling basah': '湿剥法', 'semi washed': '湿剥法', '湿剥法': '湿剥法',
   'pulped natural': '半水洗', '半水洗': '半水洗',
 };
-// variety：小写 → 词表名（74158 等不在表内原样保留）
+// variety：小写 → 词表名（74110/74112/74158、Typica Americana、purple caturra、Dega、aji 等词表外原样保留）
 const VARIETY_MAP = {
   geisha: '瑰夏', gesha: '瑰夏', typica: '铁皮卡', bourbon: '波旁',
-  sl28: 'SL28', sl34: 'SL34', caturra: '卡杜拉', catimor: '卡帝姆',
+  sl28: 'SL28', sl34: 'SL34', sl09: 'SL09', batian: 'Batian', ruiru11: 'Ruiru11',
+  caturra: '卡杜拉', catimor: '卡帝姆', catuai: '卡杜艾', 'catuai pb': '卡杜艾',
+  heirloom: 'Heirloom', wolisbo: 'Wolisho', wolisho: 'Wolisho',
 };
 
 async function requireFamily(openid) {
