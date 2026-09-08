@@ -21,6 +21,15 @@
   </view>
 
   <view class="form-section">
+    <!-- 库外新风味候选区：AI 识别出风味库没有的词，勾选后入库时自动创建为「其他」分类标签 -->
+    <view wx:if="{{mode === 'ai' && newFlavorCands.length}}" class="new-flavor-box">
+      <view class="new-flavor-title">✨ 发现库外新风味 <text class="new-flavor-hint">勾选后将创建为「其他」分类标签</text></view>
+      <view class="chip-list">
+        <text wx:for="{{newFlavorCands}}" wx:key="name"
+          class="chip {{item.checked ? 'sel' : ''}}" data-i="{{index}}" bindtap="toggleNewFlavor">{{item.name}}</text>
+      </view>
+    </view>
+
     <!-- 照片：三种形态都展示（编辑态可查看/补拍） -->
     <view class="form-label">{{isEdit ? '照片' : '本次照片'}} <text class="hint">点选任一照片设为封面</text></view>
     <view class="strip-wrap">

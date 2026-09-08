@@ -1,4 +1,4 @@
-// admin 云函数——Ark 模型 ID 维护（契约：miniprogram/api/admin.js，action 为 getConfig/updateConfig）
+// admin 云函数——Ark 模型 ID 维护 + 配置开关（契约：miniprogram/api/admin.js，action 为 getConfig/updateConfig）
 // 错误码：NO_FAMILY / FORBIDDEN
 const cloud = require('wx-server-sdk');
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
@@ -21,10 +21,16 @@ exports.main = async (event) => {
   switch (event.action) {
     case 'getConfig': {
       const ark = await readArk();
-      if (ark) return { modelVision: ark.modelVision || '', modelImage: ark.modelImage || '', source: 'config' };
+      if (ark) {
+        return {
+          modelVision: ark.modelVision || '', modelImage: ark.modelImage || '',
+          autoIcon: ark.autoIcon !== false, source: 'config', // 缺省 true
+        };
+      }
       return { // 无 config 文档回退云函数环境变量
         modelVision: process.env.ARK_MODEL_VISION || '',
         modelImage: process.env.ARK_MODEL_IMAGE || '',
+        autoIcon: true,
         source: 'fallback',
       };
     }
@@ -35,11 +41,15 @@ exports.main = async (event) => {
       const data = {};
       if (patch.modelVision !== undefined) data.modelVision = patch.modelVision;
       if (patch.modelImage !== undefined) data.modelImage = patch.modelImage;
+      if (patch.autoIcon !== undefined) data.autoIcon = !!patch.autoIcon;
       const ark = await readArk();
       if (ark) await db.collection('config').doc('ark').update({ data });
       else await db.collection('config').add({ data: { _id: 'ark', ...data } });
       const saved = await readArk();
-      return { modelVision: saved.modelVision || '', modelImage: saved.modelImage || '', source: 'config' };
+      return {
+        modelVision: saved.modelVision || '', modelImage: saved.modelImage || '',
+        autoIcon: saved.autoIcon !== false, source: 'config',
+      };
     }
     default:
       throw new Error('UNKNOWN_ACTION');

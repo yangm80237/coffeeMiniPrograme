@@ -1,7 +1,8 @@
 // genFlavorIcon 云函数——Seedream v4 提示词生成 → jimp 抠图透明底 → 云存储 → 写回 flavor_tags.iconUrl
-// 断点续跑模式（平台超时上限 60s）：每次调用自动挑选「还没有 iconUrl」的内置风味生成，
+// 断点续跑模式（平台超时上限 60s）：入参 {} 自动挑选「还没有 iconUrl」的内置风味生成，
 // 45 秒预算到点即返回进度；在测试面板重复点「测试」（入参 {}）直到 remaining=0。
-// 重生成单个：{"names":["黑巧"],"force":true}
+// 指定重生成/自定义风味：{"names":["黑巧"]}——按 name 查首个文档（内置/自定义、是否已有图标均可）按 _id 更新；
+// 加 {"force":true} 同义（显式指定时本就强制更新）。确认页新风味入库即触发 names 指定模式。
 // 环境变量：ARK_API_KEY（必填）、ARK_MODEL_IMAGE（可选，默认 doubao-seedream-5-0-260128）
 const cloud = require('wx-server-sdk');
 const https = require('https');
@@ -119,35 +120,41 @@ exports.main = async (event) => {
   const model = event.model || process.env.ARK_MODEL_IMAGE || 'doubao-seedream-5-0-260128';
   const started = Date.now();
 
-  // 待生成名单：force+names 指定重生；否则自动挑「isBuiltin 且无 iconUrl」的
+  // 待生成队列 [{ name, id }]：
+  // - names 显式指定：按 name 查首个文档（无论内置/自定义/是否已有图标），按 _id 更新
+  // - 否则自动模式（断点续跑）：只挑「isBuiltin 且无 iconUrl」的
+  const results = [], errors = [];
   let queue;
   if (event.names && event.names.length) {
-    queue = event.names;
+    queue = [];
+    for (const name of event.names) {
+      const r = await db.collection('flavor_tags').where({ name }).limit(1).get();
+      if (r.data[0]) queue.push({ name: r.data[0].name, id: r.data[0]._id });
+      else errors.push({ name, error: 'NOT_FOUND' });
+    }
   } else {
     const pend = await db.collection('flavor_tags')
       .where({ isBuiltin: true, iconUrl: _.exists(false) })
       .limit(100)
       .get();
-    queue = pend.data.map((f) => f.name);
+    queue = pend.data.map((f) => ({ name: f.name, id: f._id }));
   }
 
-  const results = [], errors = [];
-  for (const name of queue) {
+  for (const q of queue) {
     if (Date.now() - started > TIME_BUDGET_MS) break; // 预算到点，断点续跑
     try {
-      const prompt = buildPrompt(name);
+      const prompt = buildPrompt(q.name);
       const j = await postJson(key, { model, prompt, size: SIZE, output_format: 'png', response_format: 'url', watermark: false });
       const url = j && j.data && j.data[0] && j.data[0].url;
       if (!url) throw new Error('NO_URL');
       const raw = await fetchBuffer(url);
       const png = await cutout(raw);
-      const up = await cloud.uploadFile({ cloudPath: `flavors/${name}.png`, fileContent: png });
-      const q = await db.collection('flavor_tags')
-        .where({ name, isBuiltin: true })
+      const up = await cloud.uploadFile({ cloudPath: `flavors/${q.name}.png`, fileContent: png });
+      const upd = await db.collection('flavor_tags').doc(q.id)
         .update({ data: { iconUrl: up.fileID, iconPrompt: prompt, updateTime: db.serverDate() } });
-      results.push({ name, fileID: up.fileID, updated: q.stats && q.stats.updated });
+      results.push({ name: q.name, fileID: up.fileID, updated: upd.stats && upd.stats.updated });
     } catch (e) {
-      errors.push({ name, error: String(e.message || e).slice(0, 200) });
+      errors.push({ name: q.name, error: String(e.message || e).slice(0, 200) });
     }
   }
 

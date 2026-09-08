@@ -14,5 +14,14 @@
       <view class="btn btn-gray test" bindtap="testConn">测试连接</view>
     </view>
     <view class="note">仅家庭创建者可修改；修改后影响 AI 识别与风味图标生成</view>
+
+    <!-- ⚙️ 新风味自动生图开关（config.autoIcon，缺省开） -->
+    <view class="switch-row">
+      <view class="switch-info">
+        <view class="switch-title">⚙️ 新风味自动生图</view>
+        <view class="switch-desc">AI 识别出库外风味并在确认页勾选入库后，自动生成图标</view>
+      </view>
+      <switch checked="{{autoIcon}}" bindchange="onAutoIcon" color="#c96f4a" />
+    </view>
   </view>
 </view>

@@ -19,8 +19,11 @@ Page({
         g.pendingPhotos = fileIDs; // 替换为 fileID 数组：confirm 入库时 uploadImages 直接透传，避免重复上传
         return fileIDs.length ? aiApi.recognizeBean(fileIDs[g.mainIndex] || fileIDs[0]) : null;
       })
-      .then((r) => { g.aiResult = (r && r.form) || null; })
-      .catch(() => { g.aiResult = null; })
+      .then((r) => {
+        g.aiResult = (r && r.form) || null;
+        g.aiNewFlavors = (r && r.newFlavors) || []; // 库外新风味候选，confirm 页消费
+      })
+      .catch(() => { g.aiResult = null; g.aiNewFlavors = []; })
       .then(() => this.go());
   },
   onUnload() { clearInterval(this.timer); this.dead = true; },

@@ -24,3 +24,13 @@
 .test { flex: 0 0 200rpx; }
 .btn-ink { background: var(--ink); color: #fff; }
 .note { font-size: 22rpx; color: var(--ink-3); margin-top: 24rpx; line-height: 1.6; }
+
+/* ⚙️ 新风味自动生图开关行（沿用卡片内 note 上方分隔） */
+.switch-row {
+  display: flex; align-items: center; gap: 20rpx;
+  border-top: 2rpx solid rgba(80, 60, 30, .08);
+  margin-top: 28rpx; padding-top: 28rpx;
+}
+.switch-info { flex: 1; }
+.switch-title { font-size: 26rpx; font-weight: 600; color: var(--ink); }
+.switch-desc { font-size: 22rpx; color: var(--ink-3); margin-top: 6rpx; line-height: 1.5; }

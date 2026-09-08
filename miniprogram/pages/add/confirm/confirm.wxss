@@ -118,6 +118,14 @@
   background: rgba(201,111,74,.1); border-color: var(--accent); color: var(--accent); font-weight: 600;
 }
 
+/* 库外新风味候选区（AI 识别，勾选创建） */
+.new-flavor-box {
+  background: rgba(201,111,74,.06); border: 2rpx dashed rgba(201,111,74,.35);
+  border-radius: 16rpx; padding: 20rpx 24rpx 4rpx; margin-bottom: 24rpx;
+}
+.new-flavor-title { font-size: 24rpx; font-weight: 600; color: var(--accent); margin-bottom: 8rpx; }
+.new-flavor-hint { font-size: 19rpx; font-weight: 400; color: var(--ink-3); margin-left: 10rpx; }
+
 /* 输入框后缀单位 */
 .input-suffix { position: relative; }
 .input-suffix .form-input { padding-right: 72rpx; }

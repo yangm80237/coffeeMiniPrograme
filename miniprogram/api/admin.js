@@ -2,7 +2,7 @@
 const { enabled, call } = require('./cloud');
 const F = require('../mock/family');
 
-let CONFIG = { modelVision: 'ep-vision-default', modelImage: 'ep-image-default', source: 'env' };
+let CONFIG = { modelVision: 'ep-vision-default', modelImage: 'ep-image-default', autoIcon: true, source: 'env' };
 
 function isOwner(openid) { return openid === F.MOCK_SELF_OPENID; } // mock：本人即 owner
 

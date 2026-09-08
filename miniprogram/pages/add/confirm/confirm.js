@@ -1,6 +1,8 @@
 const beanApi = require('../../../api/bean');
 const brandApi = require('../../../api/brand');
 const flavorApi = require('../../../api/flavor');
+const adminApi = require('../../../api/admin');
+const { call, enabled: cloudEnabled } = require('../../../api/cloud');
 const { COUNTRIES } = require('../../../api/flags');
 const upload = require('../../../api/upload');
 const { firstChar } = require('../../../utils/format');
@@ -86,6 +88,8 @@ Page({
       // ai 模式：消费 processing 写入 globalData.aiResult 的识别结果（form 字段对象），合并预填
       if (mode === 'ai') {
         const ai = g.aiResult;
+        const aiNewFlavors = g.aiNewFlavors || []; // 库外新风味候选（识别云函数返回），消费即清
+        g.aiNewFlavors = [];
         if (ai) {
           const merged = { ...this.data.form };
           Object.keys(ai).forEach((k) => { if (ai[k] !== '' && ai[k] !== null && ai[k] !== undefined) merged[k] = ai[k]; });
@@ -93,6 +97,8 @@ Page({
           this.pendingAiTagIds = merged.flavorTagIds || []; // flavorGroups 异步加载完成后由 applyFlavorGroups 落到 pickedFlavors
           g.aiResult = null; // 消费即置空，避免返回重复预填
         }
+        // 库外新风味候选区：默认全选，入库时创建为「其他」分类标签
+        this.setData({ newFlavorCands: aiNewFlavors.map((n) => ({ name: n, checked: true })) });
       }
       this.syncVarietySelFromForm();
     }
@@ -192,6 +198,30 @@ Page({
     if (p[id]) delete p[id]; else p[id] = true;
     const pickedFlavors = this.data.flavorGroups.flatMap((g) => g.items).filter((f) => p[f._id]);
     this.setData({ pickedIds: p, pickedFlavors, 'form.flavorTagIds': pickedFlavors.map((f) => f._id) }); },
+
+  // ===== 库外新风味候选（AI 识别，勾选后入库时创建为「其他」分类标签）=====
+  toggleNewFlavor(e) {
+    const i = e.currentTarget.dataset.i;
+    this.setData({ [`newFlavorCands[${i}].checked`]: !this.data.newFlavorCands[i].checked });
+  },
+  // 逐个创建勾选的新风味（返回 [{name, _id}]；单个失败跳过不阻塞入库）
+  createCheckedNewFlavors() {
+    const cands = this.data.newFlavorCands.filter((c) => c.checked);
+    const created = [];
+    return cands.reduce((chain, c) => chain.then(() =>
+      flavorApi.createFlavor({ name: c.name, category: '其他' })
+        .then((f) => created.push({ name: c.name, _id: f._id }))
+        .catch(() => {})
+    ), Promise.resolve()).then(() => created);
+  },
+  // 新风味自动生图（config.autoIcon 开关控制，缺省开）：fire-and-forget，不阻塞跳转
+  triggerIconGen(created) {
+    if (!created.length) return;
+    adminApi.getModelConfig().then((c) => {
+      if (!c || c.autoIcon === false || !cloudEnabled()) return;
+      call('genFlavorIcon', { names: created.map((x) => x.name) }).catch(() => {});
+    }).catch(() => {});
+  },
   openFlavorPicker() { this.setData({ flavorPickerOpen: true }); },
   closeFlavorPicker() { this.setData({ flavorPickerOpen: false }); },
   pickCover(e) { this.setData({ coverIndex: e.detail.index }); },
@@ -311,20 +341,32 @@ Page({
     if (!f.roastDate) return wx.showToast({ title: '请选择烘焙日期', icon: 'none' });
     this.setData({ submitting: true });
     wx.showLoading({ title: this.data.isEdit ? '保存中…' : '入库中…', mask: true });
+    // 勾选的库外新风味先建档（「其他」分类），用返回 _id 补进 flavorTagIds 再入库
+    const prep = this.createCheckedNewFlavors().then((created) => {
+      if (created.length) {
+        this.setData({ 'form.flavorTagIds':
+          [...this.data.form.flavorTagIds, ...created.map((x) => x._id)] });
+      }
+      return created;
+    });
     // 编辑态：旧图保留，只上传新增照片（避免 fileID 被当临时路径重复上传）
-    const p = this.data.isEdit
-      ? (() => {
-          const init = this._initialPhotos || [];
-          const kept = this.data.photos.filter((x) => init.includes(x));
-          const added = this.data.photos.filter((x) => !init.includes(x));
-          return upload.uploadImages(added).then((ids) =>
-            beanApi.updateBean(this.editId, { ...this.payload(), photos: [...kept, ...ids] }));
-        })()
-      : upload.uploadImages(this.data.photos).then((fileIDs) => beanApi.createBean({ ...this.payload(), photos: fileIDs }));
+    const p = prep.then((created) => {
+      const save = this.data.isEdit
+        ? (() => {
+            const init = this._initialPhotos || [];
+            const kept = this.data.photos.filter((x) => init.includes(x));
+            const added = this.data.photos.filter((x) => !init.includes(x));
+            return upload.uploadImages(added).then((ids) =>
+              beanApi.updateBean(this.editId, { ...this.payload(), photos: [...kept, ...ids] }));
+          })()
+        : upload.uploadImages(this.data.photos).then((fileIDs) => beanApi.createBean({ ...this.payload(), photos: fileIDs }));
+      return save.then(() => created);
+    });
     // 15s 超时兜底：超时后恢复按钮允许重试（阶段③接入云函数时需服务端按 beanName+roastDate 幂等去重）
     const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('TIMEOUT')), 15000));
-    Promise.race([p, timeout]).then(() => {
+    Promise.race([p, timeout]).then((created) => {
       wx.hideLoading();
+      this.triggerIconGen(created || []); // 自动生图开关开启时异步生成新风味图标（fire-and-forget）
       getApp().globalData.pendingPhotos = null;
       if (this.data.isEdit) wx.navigateBack(); else wx.reLaunch({ url: '/pages/shelf/shelf' });
     }).catch((e) => {
