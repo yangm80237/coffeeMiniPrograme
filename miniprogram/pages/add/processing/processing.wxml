@@ -1,7 +1,9 @@
 <view class="processing">
   <!-- 顶栏（自定义导航） -->
-  <view class="proc-header">
+  <view class="proc-header" style="padding-top:{{statusBarPx}}px;min-height:{{navH}}px">
+    <view class="back-btn" bindtap="onBack">‹</view>
     <view class="proc-title">AI 识别中</view>
+    <view class="nav-spacer"></view>
   </view>
   <!-- 步骤条：③ 高亮 -->
   <view class="steps proc-steps">

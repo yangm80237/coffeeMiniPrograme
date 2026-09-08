@@ -3,3 +3,11 @@ node_modules/
 miniprogram_npm/
 project.private.config.json
 样例/
+
+# AI 生图样张（中间产物，成品在 assets/icons/generated）
+icon-preview/
+icon-preview-v2/
+icon-preview-v3/
+icon-preview-v4/
+icon-final/
+icon-final-v4/

@@ -7,5 +7,5 @@ page {
   --attr-roast-date: #FFE5DB; --attr-variety: #F0E4DA; --attr-process: #D7EBF7; --attr-origin: #DCEEDA;
   --attr-altitude: #F0F3CF; --attr-roast-level: #FFE9BC; --attr-brew: #FBE4D2; --attr-weight: #E7E2F1;
   --font-display: "Songti SC", "STSong", Georgia, serif;
-  --btn-h: 88rpx; --btn-radius: 24rpx; --btn-gap: 24rpx;
+  --btn-h: 76rpx; --btn-radius: 20rpx; --btn-gap: 24rpx;
 }

@@ -23,10 +23,9 @@ const META = { resting: { label: '养豆中', color: '#FAAD14' }, drinking: { la
 const statusMeta = (s) => META[s];
 function statusBarText(bean, now = new Date()) {
   const { status, daysLeft, restDays, dayOfPeak } = computeStatus(bean, now);
-  const w = bean.weight ? bean.weight + 'g · ' : '';
   if (status === 'resting') return '还需' + daysLeft + '天 · 养豆期' + restDays + '天';
-  if (status === 'drinking') return w + '最佳赏味第' + dayOfPeak + '天';
-  if (status === 'hurry') return w + '风味衰退期 · 尽快饮用';
-  return w + '本袋已喝完';
+  if (status === 'drinking') return '最佳赏味第' + dayOfPeak + '天';
+  if (status === 'hurry') return '风味衰退期 · 尽快饮用';
+  return '本袋已喝完';
 }
 module.exports = { getRestDays, computeStatus, statusMeta, statusBarText };

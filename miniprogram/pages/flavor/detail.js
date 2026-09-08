@@ -6,7 +6,7 @@ const CATEGORIES = ['水果类', '花香类', '甜感类', '坚果可可类', '�
 
 Page({
   data: { mode: 'edit', categories: CATEGORIES, catIndex: 0,
-    name: '', emoji: '', iconUrl: '', usage: 0 },
+    name: '', emoji: '', iconUrl: '', usage: 0, regenerated: false },
   onLoad(options) {
     if (options.mode === 'new') { this.setData({ mode: 'new' }); return; }
     this.id = options.id;
@@ -27,7 +27,22 @@ Page({
   },
   onName(e) { this.setData({ name: e.detail.value }); },
   onCategory(e) { this.setData({ catIndex: Number(e.detail.value) }); },
-  regenIcon() { wx.showToast({ title: '阶段④开放', icon: 'none' }); },
+  // 重新生成图标（阶段② mock：展示决策流；阶段④接方舟 Seedream）
+  regenIcon() {
+    wx.showLoading({ title: '生成中…' });
+    setTimeout(() => {
+      wx.hideLoading();
+      this.setData({ regenerated: true });
+    }, 800);
+  },
+  confirmReplace() {
+    // 阶段④：上传 newIconUrl 到云存储后 updateFlavor({ iconUrl })
+    wx.showToast({ title: '已替换，记得保存' });
+    this.setData({ regenerated: false });
+  },
+  keepOriginal() {
+    this.setData({ regenerated: false });
+  },
   save() {
     const name = (this.data.name || '').trim();
     if (!name) return wx.showToast({ title: '请填写名称', icon: 'none' });
@@ -45,9 +60,12 @@ Page({
     }
   },
   remove() {
+    const usage = this.data.usage;
     wx.showModal({
       title: '删除标签',
-      content: '确定删除「' + this.data.name + '」吗？',
+      content: usage > 0
+        ? '「' + this.data.name + '」正被 ' + usage + ' 袋豆子使用，删除后将从这些豆子中移除。确定删除吗？'
+        : '确定删除「' + this.data.name + '」吗？',
       confirmColor: '#C96F4A',
       success: (r) => {
         if (!r.confirm) return;

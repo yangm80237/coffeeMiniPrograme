@@ -1,6 +1,6 @@
 <view class="upload">
   <!-- 顶栏（自定义导航） -->
-  <view class="page-nav">
+  <view class="page-nav" style="padding-top:{{statusBarPx}}px;min-height:{{navH}}px">
     <view class="back-btn" bindtap="retake">‹</view>
     <view class="page-nav-title">确认照片</view>
     <view class="nav-spacer"></view>
@@ -17,9 +17,9 @@
     <image wx:if="{{photos.length}}" class="preview-img" src="{{photos[current]}}" mode="aspectFill" />
     <view wx:else class="preview-empty">🫘</view>
   </view>
-  <!-- 缩略条：点选切主图 -->
+  <!-- 缩略条：点选切主图，＋ 补拍/加图 -->
   <view class="strip-wrap">
-    <photo-strip photos="{{photos}}" current="{{current}}" bind:select="pick" />
+    <photo-strip photos="{{photos}}" current="{{current}}" bind:select="pick" bind:add="addMore" />
   </view>
   <!-- 提示 -->
   <view class="upload-tip"><text class="tip-icon">✨</text> AI 将识别品牌、豆名、产区、处理法等信息，完成后进入核对</view>

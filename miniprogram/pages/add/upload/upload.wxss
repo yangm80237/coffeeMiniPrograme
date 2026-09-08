@@ -1,16 +1,18 @@
 /* 确认照片页——沉浸式，样式从 docs/prototype.html screen-upload (835–857) 搬运 ×2 换算 rpx */
 .upload { min-height: 100vh; }
-/* 顶栏（自定义导航，含状态栏间距） */
+/* 顶栏（自定义导航，sticky 钉在顶部；padding-top/行高由 JS 动态下发） */
 .page-nav {
+  position: sticky; top: 0; z-index: 90;
+  background: var(--bg-paper);
   display: flex; align-items: center; gap: 24rpx;
-  padding: calc(env(safe-area-inset-top) + 16rpx) 32rpx 24rpx;
+  padding: 0 32rpx 24rpx;
 }
 .back-btn { font-size: 40rpx; width: 64rpx; color: var(--ink); }
 .page-nav-title {
   flex: 1; font-size: 34rpx; font-weight: 700;
   font-family: var(--font-display); letter-spacing: 1rpx;
 }
-.nav-spacer { width: 80rpx; }
+.nav-spacer { width: 180rpx; flex-shrink: 0; }
 /* 步骤条 */
 .steps {
   display: flex; align-items: center; justify-content: center; gap: 16rpx;
@@ -32,8 +34,8 @@
 /* 提示 */
 .upload-tip {
   margin: 0 32rpx 32rpx; padding: 18rpx 24rpx;
-  background: #F0FDF4; border: 2rpx solid #BBF7D0; border-radius: 20rpx;
-  font-size: 22rpx; color: #166534; display: flex; gap: 12rpx; align-items: center;
+  background: rgba(201,111,74,.08); border: 2rpx solid rgba(201,111,74,.2); border-radius: 20rpx;
+  font-size: 22rpx; color: var(--ink-2); display: flex; gap: 12rpx; align-items: center;
 }
 /* 底部按钮 */
 .bottom-bar {

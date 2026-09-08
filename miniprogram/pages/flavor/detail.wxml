@@ -19,12 +19,35 @@
 
   <block wx:if="{{mode !== 'new'}}">
     <view class="form-label">水彩风格图标 <text class="ai-tag">AI生成</text></view>
+
+    <!-- 重新生成后出现：原图 vs 新图对比 -->
+    <view wx:if="{{regenerated}}" class="icon-compare">
+      <view class="compare-box">
+        <view class="compare-thumb">
+          <image wx:if="{{iconUrl}}" src="{{iconUrl}}" mode="aspectFill" />
+          <text wx:else>{{emoji || '🏷️'}}</text>
+        </view>
+        <text class="compare-label">原图</text>
+      </view>
+      <text class="compare-vs">VS</text>
+      <view class="compare-box">
+        <view class="compare-thumb"><text>✨</text></view>
+        <text class="compare-label">新生成</text>
+      </view>
+    </view>
+
     <view class="btn-row">
       <view class="btn btn-ink flex1" bindtap="save">保存</view>
     </view>
     <view class="btn-row gap">
       <view class="pill dark flex1" bindtap="regenIcon">重新生成图标</view>
       <view class="pill light del" bindtap="remove">删除标签</view>
+    </view>
+
+    <!-- 决策按钮：仅在重新生成后出现 -->
+    <view wx:if="{{regenerated}}" class="btn-row gap">
+      <view class="btn btn-ink flex1" bindtap="confirmReplace">确认替换</view>
+      <view class="pill light flex1" bindtap="keepOriginal">保留原图</view>
     </view>
   </block>
 

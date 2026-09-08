@@ -33,7 +33,7 @@ test('beanView 视图字段', async () => {
 });
 test('setBeanStatus 开喝→覆盖→还原', async () => {
   const b = await beanApi.setBeanStatus('bean01', 'drinking');
-  assert.equal(b.statusInfo.status, 'drinking'); assert.ok(b.statusText.startsWith('200g'));
+  assert.equal(b.statusInfo.status, 'drinking'); assert.ok(b.statusText.startsWith('最佳赏味'));
   const r = await beanApi.setBeanStatus('bean01', 'auto');
   assert.equal(r.statusInfo.status, 'resting'); assert.equal(r.statusInfo.daysLeft, 10);
 });

@@ -1,10 +1,10 @@
 @import "styles/tokens.wxss";
 page { background: var(--bg-paper); color: var(--ink); font-size: 28rpx; }
 .card { background: var(--card); border-radius: 24rpx; }
-.btn { height: var(--btn-h); line-height: var(--btn-h); border-radius: var(--btn-radius);
-  font-size: 28rpx; text-align: center; padding: 0 24rpx; }
+.btn { box-sizing: border-box; height: var(--btn-h); line-height: var(--btn-h); border-radius: var(--btn-radius);
+  font-size: 26rpx; text-align: center; padding: 0 24rpx; }
 .btn::after { border: none; }
-.btn-primary { background: var(--green); color: #fff; }
+.btn-primary { background: var(--ink); color: #fff; }
 .btn-score { background: var(--accent-score); color: #fff; }
 .btn-gray { background: #F3F4F6; color: #6B7280; }
 .btn-outline-orange { background: #fff; color: #C2410C; border: 2rpx solid rgba(194,65,12,.35); }

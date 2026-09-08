@@ -9,9 +9,9 @@ const { computeStatus, statusBarText } = require('./utils/status');
 const { getFlag } = require('./utils/flags');
 
 const ORDER = { drinking: 0, resting: 1, hurry: 2, finished: 3 };
-const WHITELIST = ['name', 'country', 'origin', 'variety', 'process', 'altitude', 'weight',
+const WHITELIST = ['name', 'brandId', 'country', 'origin', 'variety', 'process', 'altitude', 'weight',
   'roastLevel', 'brewMethod', 'roastDate', 'flavorTagIds', 'flavorDesc', 'photos', 'statusOverride',
-  'myRating', 'wifeRating', 'myNotes', 'wifeNotes']; // 评分/笔记：pages/bean/detail.js 经 updateBean 写入
+  'myRating', 'wifeRating', 'myNotes', 'wifeNotes']; // brandId 由确认页选择写入；brand 名服务端按 brandId 派生，不存
 
 async function requireFamily(openid) {
   const r = await db.collection('users').where({ _openid: openid }).limit(1).get();

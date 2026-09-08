@@ -43,6 +43,6 @@
   <!-- 底部新增入口 -->
   <view class="bottom">
     <view class="btn btn-ink w" bindtap="goAdd">＋ 新增品牌</view>
-    <view class="tip">内置 50+ 品牌 · 可自定义新增</view>
+    <view class="tip">内置品牌库 · 可自定义新增</view>
   </view>
 </view>

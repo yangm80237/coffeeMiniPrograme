@@ -1,0 +1,1758 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>咖啡豆管理小程序 · 高保真原型 V2</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --paper: #F3EDE2;        /* 暖纸底 */
+    --card: #FFFDF8;         /* 卡片 */
+    --ink: #26221C;          /* 主文字 */
+    --ink-soft: #8A8172;     /* 次文字 */
+    --accent: #C96F4A;       /* 陶土橙强调 */
+    --accent-bg: #FAF0E8;
+    --accent-line: rgba(201,111,74,.28);
+    --status-resting: #FAAD14;
+    --status-drinking: #52C41A;
+    --status-finished: #9CA3AF;
+    --radius-lg: 18px;
+    --radius-md: 12px;
+    --shadow-card: 0 2px 10px rgba(80,60,30,.08);
+    --font-display: "Songti SC","STSong",Georgia,serif;
+  }
+  body {
+    font-family: -apple-system, 'PingFang SC', 'Segoe UI', sans-serif;
+    background: #DDD8CC;
+    padding: 20px;
+    display: flex; flex-direction: column; align-items: center;
+    min-height: 100vh;
+  }
+  h1 { font-size: 18px; color: #1A1B1C; margin-bottom: 6px; }
+  .subtitle { font-size: 12px; color: #6B7280; margin-bottom: 14px; }
+
+  /* 页面切换（演示外壳：激活色归墨，与应用主题一致） */
+  .tab-bar { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+  .tab-btn {
+    padding: 7px 14px; border-radius: 16px; border: 1px solid #ddd;
+    background: #fff; font-size: 12px; cursor: pointer; color: #6B7280; transition: all .2s;
+  }
+  .tab-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+  .phone {
+    width: 375px; height: 720px; background: #fff; border-radius: 40px;
+    border: 8px solid #1A1B1C; overflow: hidden; position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  }
+  .phone-notch {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 140px; height: 28px; background: #1A1B1C; border-radius: 0 0 18px 18px; z-index: 100;
+  }
+  /* 保持 static：底部主按钮/弹层以 .phone 为定位基准，才能钉住不随滚动 */
+  .screen { width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden; display: none; background: var(--paper); }
+  .screen.active { display: block; }
+  .screen::-webkit-scrollbar { display: none; }
+
+  .status-bar {
+    height: 44px; display: flex; align-items: flex-end; justify-content: space-between;
+    padding: 0 24px 6px; font-size: 14px; font-weight: 600; color: #1A1B1C;
+  }
+
+  /* ===== 通用导航/按钮 ===== */
+  .page-nav { display: flex; align-items: center; padding: 8px 16px 12px; gap: 12px; }
+  .back-btn { font-size: 20px; cursor: pointer; width: 32px; color: var(--ink); }
+  .page-nav-title { font-size: 17px; font-weight: 700; flex: 1; font-family: var(--font-display); letter-spacing: .5px; }
+  .save-btn {
+    background: var(--ink); color: #fff; padding: 7px 18px; border-radius: 999px;
+    font-size: 13px; font-weight: 600; cursor: pointer; border: none;
+  }
+  .menu-item { padding: 11px 12px; border-radius: 10px; font-size: 13px; color: var(--ink); cursor: pointer; }
+  .menu-item:hover { background: rgba(80,60,30,.06); }
+  .empty-state {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 60px 20px; text-align: center;
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: .5; }
+  .empty-text { font-size: 14px; color: #9CA3AF; margin-bottom: 16px; line-height: 1.8; }
+
+  /* ===== 货架页 ===== */
+  .shelf-header { padding: 8px 16px 12px; display: flex; align-items: center; justify-content: space-between; }
+  .shelf-title { font-size: 20px; font-weight: 700; color: var(--ink); font-family: var(--font-display); letter-spacing: .5px; }
+  .shelf-title span { font-size: 13px; color: #6B7280; font-weight: 400; margin-left: 6px; }
+  .header-actions { display: flex; gap: 10px; }
+  .icon-btn {
+    width: 32px; height: 32px; border-radius: 50%; background: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 15px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06); cursor: pointer;
+  }
+  .bean-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px 90px; }
+  .bean-card {
+    background: var(--card); border-radius: var(--radius-lg); overflow: hidden; cursor: pointer;
+    box-shadow: var(--shadow-card); position: relative;
+    border: 1px solid rgba(80,60,30,.06);
+  }
+  .bean-photo {
+    width: 100%; height: 96px; object-fit: cover;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 34px;
+    background: linear-gradient(160deg,#F1E7D2,#E5D6BB);
+  }
+  .roast-badge {
+    position: absolute; top: 8px; left: 8px; height: 22px; padding: 0 7px;
+    border-radius: 999px; display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: #fff;
+  }
+  .roast-light { background: #E8C97A; }
+  .roast-medium { background: #B8860B; }
+  .roast-dark { background: #5D4037; }
+  .status-badge {
+    position: absolute; top: 8px; right: 8px; padding: 3px 8px; border-radius: 999px;
+    font-size: 10px; font-weight: 700; box-shadow: 0 1px 4px rgba(0,0,0,.15);
+  }
+  .status-resting { background: var(--status-resting); color: #fff; }
+  .status-drinking { background: var(--status-drinking); color: #fff; }
+  .status-finished { background: var(--status-finished); color: #fff; }
+  .hurry-flag {
+    position: absolute; left: 8px; top: 8px; padding: 3px 8px; border-radius: 999px;
+    background: rgba(249,115,22,.92); color: #fff; font-size: 10px; font-weight: 700;
+    box-shadow: 0 1px 4px rgba(0,0,0,.18);
+  }
+  .bean-info { padding: 8px 10px 10px; }
+  .bean-brand { font-size: 10px; color: var(--ink-soft); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 1px; }
+  .new-badge { display: inline-block; font-size: 8px; background: #EA6668; color: #fff;
+    padding: 1px 5px; border-radius: 6px; font-weight: 600; margin-left: 4px; vertical-align: 1px; letter-spacing: 0; }
+  .bean-name { font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.3; margin-bottom: 6px;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .flavor-icons { display: flex; gap: 4px; }
+  .flavor-icon {
+    width: 27px; height: 27px; border-radius: 50%; background: #FFF;
+    border: 1px solid rgba(80,60,30,.12);
+    display: flex; align-items: center; justify-content: center; font-size: 15px;
+  }
+  .rest-progress { height: 3px; border-radius: 2px; background: rgba(80,60,30,.1); margin-top: 8px; overflow: hidden; }
+  .rest-progress i { display: block; height: 100%; background: linear-gradient(90deg,#C9D8BC,#A9BF9E); border-radius: 2px; }
+
+  /* ===== 添加弹窗 ===== */
+  .add-sheet {
+    position: absolute; bottom: 0; left: 0; right: 0; background: #fff;
+    border-radius: 20px 20px 0 0; padding: 20px 20px 30px; z-index: 60;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+  }
+  .sheet-handle { width: 36px; height: 4px; background: #ddd; border-radius: 2px; margin: 0 auto 16px; }
+  .sheet-title { font-size: 16px; font-weight: 700; text-align: center; margin-bottom: 16px; }
+  .add-option {
+    display: flex; align-items: center; gap: 12px; padding: 14px;
+    border-radius: 12px; margin-bottom: 8px; cursor: pointer;
+  }
+  .add-option.primary { background: var(--ink); color: #fff; }
+  .add-option.secondary { background: var(--card); color: var(--ink); border: 1px solid rgba(80,60,30,.08); }
+  .add-option-icon { font-size: 22px; }
+  .add-option-text { flex: 1; }
+  .add-option-text .main { font-size: 14px; font-weight: 600; }
+  .add-option-text .sub { font-size: 11px; opacity: .6; margin-top: 2px; }
+
+  /* ===== 表单通用 ===== */
+  .form-section { padding: 0 16px 12px; }
+  .form-label { font-size: 12px; color: #6F6656; margin-bottom: 6px; font-weight: 600; }
+  .form-label .hint { float: right; font-size: 11px; color: var(--ink-soft); font-weight: 400; }
+  .form-input {
+    width: 100%; padding: 10px 12px; border: 1px solid rgba(80,60,30,.14); border-radius: var(--radius-md);
+    font-size: 13px; background: var(--card); color: var(--ink); margin-bottom: 12px;
+  }
+  .form-row { display: flex; gap: 10px; }
+  .form-row .form-group { flex: 1; min-width: 0; }
+  .input-suffix { position: relative; }
+  .input-suffix .form-input { padding-right: 34px; }
+  .input-suffix .suffix {
+    position: absolute; right: 12px; top: 10px; font-size: 12px; color: var(--ink-soft); pointer-events: none;
+  }
+  .section-title {
+    font-size: 11.5px; color: var(--ink-soft); text-align: center; padding: 10px 0 12px;
+    display: flex; align-items: center; gap: 10px; letter-spacing: 1px;
+  }
+  .section-title::before, .section-title::after { content: ''; flex: 1; height: 1px; background: rgba(80,60,30,.14); }
+  .section-title:first-child { padding-top: 2px; }
+  .segment { display: flex; background: rgba(80,60,30,.08); border-radius: 10px; padding: 3px; margin-bottom: 12px; }
+  .segment-item {
+    flex: 1; text-align: center; padding: 7px 2px; font-size: 12px; border-radius: 8px;
+    cursor: pointer; color: var(--ink-soft);
+  }
+  .segment-item.active { background: var(--card); color: var(--ink); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  textarea.form-input { resize: none; line-height: 1.6; }
+
+  /* AI 汇总条（唯一 AI 线索，陶土橙） */
+  .ai-summary {
+    display:flex; align-items:center; gap:8px; margin:0 16px 14px; padding:9px 12px;
+    background:var(--accent-bg); border:1px solid var(--accent-line); border-radius:10px;
+  }
+  .ai-summary .sp { font-size:13px; }
+  .ai-summary .tx { font-size:11.5px; color:#9A4E2E; line-height:1.5; }
+  .ai-summary .tx b { font-weight:700; }
+  .ai-mini { float:right; font-size:11px; font-weight:600; color:var(--accent); cursor:pointer;
+    background:var(--accent-bg); border:1px solid var(--accent-line); padding:2px 8px; border-radius:999px; }
+  .ai-mini.busy { color:var(--ink-soft); background:transparent; border-color:rgba(80,60,30,.14); }
+  .ai-badge { float:right; font-size:10px; font-weight:600; color:#9A4E2E;
+    background:var(--accent-bg); border:1px solid var(--accent-line); padding:1px 6px; border-radius:999px; }
+
+  /* 品牌 */
+  .brand-match {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    background: var(--card); border-radius: 10px; margin-bottom: 12px; border: 1px solid rgba(80,60,30,.1);
+  }
+  .brand-logo {
+    width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg,#667eea,#764ba2);
+    display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; font-weight: 700;
+  }
+  .brand-match-info { flex: 1; }
+  .brand-match-name { font-size: 13px; font-weight: 600; }
+  .brand-match-desc { font-size: 10px; color: var(--ink-soft); margin-top: 1px; }
+  .brand-pick {
+    display:flex; align-items:center; gap:10px; padding:12px; margin-bottom:12px;
+    border:1.5px dashed rgba(80,60,30,.25); border-radius:10px; color:var(--ink-soft); font-size:12.5px; cursor:pointer;
+  }
+
+  /* 多选/联想 chip */
+  .pair-row { display: flex; gap: 10px; margin-bottom: 12px; }
+  .pair-col { flex: 1; min-width: 0; }
+  .pair-col .form-input { margin-bottom: 6px; }
+  .chip-list { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:2px; }
+  .chip { font-size:11px; padding:3px 9px; border-radius:999px; background:var(--card);
+    border:1px solid rgba(80,60,30,.14); color:var(--ink-soft); cursor:pointer; }
+  .chip:active { background:rgba(201,111,74,.12); color:var(--accent); border-color:var(--accent); }
+  .chip.sel { background:rgba(201,111,74,.12); color:var(--accent); border-color:var(--accent); }
+
+  /* 国家输入 + 下拉联想 */
+  .combo-wrap { position: relative; }
+  .combo-pop { display:none; position:absolute; top:calc(100% - 6px); left:0; right:0; max-height:170px; overflow-y:auto;
+    background:var(--card); border:1px solid rgba(80,60,30,.14); border-radius:10px;
+    box-shadow:0 10px 28px rgba(40,30,10,.18); z-index:70; }
+  .combo-pop.show { display:block; }
+  .combo-opt { display:flex; align-items:center; gap:6px; padding:9px 12px; font-size:12.5px; color:var(--ink); cursor:pointer; }
+  .combo-opt:hover { background:rgba(201,111,74,.08); }
+  .combo-opt i { margin-left:auto; font-style:normal; font-size:10px; color:var(--ink-soft); }
+  .combo-opt.manual { color:var(--accent); }
+
+  /* 风味 */
+  .flavor-tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .flavor-tag {
+    display: flex; align-items: center; gap: 4px; padding: 5px 10px; background: var(--card);
+    border-radius: 14px; font-size: 12px; border: 1px solid rgba(80,60,30,.12);
+  }
+  .flavor-tag .icon { font-size: 13px; }
+  .flavor-tag .remove { color: #9CA3AF; cursor: pointer; font-size: 14px; margin-left: 2px; padding: 0 2px; }
+  .add-flavor-btn {
+    padding: 5px 10px; background: #F7F5F0; border-radius: 14px; font-size: 12px;
+    color: var(--ink-soft); cursor: pointer; border: 1px dashed #ddd;
+  }
+
+  /* 照片条 */
+  .photo-strip { display:flex; gap:8px; margin-bottom:14px; }
+  .photo-thumb { position:relative; width:76px; height:76px; border-radius:14px;
+    background:linear-gradient(160deg,#EFEBE2,#E2DACB);
+    display:flex; align-items:center; justify-content:center; font-size:30px; cursor:pointer;
+    border:2px solid transparent; flex:0 0 auto; }
+  .photo-thumb.sel { border-color:var(--accent); box-shadow:0 2px 10px rgba(201,111,74,.28); }
+  .photo-thumb .cover-tag { position:absolute; bottom:4px; left:50%; transform:translateX(-50%);
+    font-size:8px; background:var(--accent); color:#fff; border-radius:999px; padding:1px 6px; white-space:nowrap; }
+  .photo-thumb .pick { position:absolute; top:5px; right:5px; width:16px; height:16px; border-radius:50%;
+    background:rgba(38,34,28,.18); }
+  .photo-thumb.sel .pick { background:var(--accent); }
+  .photo-thumb.sel .pick:after { content:"✓"; color:#fff; font-size:9px; line-height:16px; text-align:center; display:block; }
+  .photo-thumb.add { background:transparent; border:2px dashed rgba(80,60,30,.22); font-size:22px; color:var(--ink-soft); }
+
+  /* 底部主按钮：随表单流，滚动到底才出现 */
+  .confirm-footer { padding: 4px 16px 30px; }
+  .footer-btn {
+    width: 100%; height: 44px; border: none; border-radius: 12px;
+    background: var(--ink); color: #fff; font-size: 15px; font-weight: 600; cursor: pointer;
+    box-shadow: 0 2px 8px rgba(38,34,28,.18);
+  }
+  .footer-btn:active { opacity: .9; }
+
+  /* 四步进度 */
+  .steps { display:flex; align-items:center; justify-content:center; gap:8px; padding:2px 16px 12px;
+    font-size:10.5px; color:var(--ink-soft); }
+  .steps i { font-style:normal; color:rgba(80,60,30,.3); }
+  .steps b { color:var(--accent); font-weight:600; }
+
+  /* ===== 拍照页 ===== */
+  #screen-camera { background:#15120E; color:#fff; }
+  .cam-top { display:flex; align-items:center; justify-content:space-between; padding:6px 16px 10px; }
+  .cam-title { font-size:15px; font-weight:600; font-family:var(--font-display); letter-spacing:.5px; }
+  .cam-view { margin:0 16px; height:400px; border-radius:20px; position:relative; display:flex;
+    flex-direction:column; align-items:center; justify-content:center; gap:12px;
+    background:radial-gradient(circle at 50% 38%, #26201A 0%, #15120E 78%); }
+  .vf { position:absolute; width:28px; height:28px; border:2.5px solid rgba(255,255,255,.6); }
+  .vf-tl{top:14px;left:14px;border-right:none;border-bottom:none;border-radius:6px 0 0 0;}
+  .vf-tr{top:14px;right:14px;border-left:none;border-bottom:none;border-radius:0 6px 0 0;}
+  .vf-bl{bottom:14px;left:14px;border-right:none;border-top:none;border-radius:0 0 0 6px;}
+  .vf-br{bottom:14px;right:14px;border-left:none;border-top:none;border-radius:0 0 6px 0;}
+  .cam-target { font-size:76px; filter:drop-shadow(0 12px 26px rgba(0,0,0,.55)); }
+  .cam-hint { text-align:center; color:rgba(255,255,255,.85); font-size:13px; line-height:1.7; }
+  .cam-hint small { color:rgba(255,255,255,.42); font-size:10px; }
+  .cam-bottom { display:flex; align-items:center; justify-content:space-around; padding:24px 30px 40px; }
+  .cam-album { position:relative; width:44px; height:44px; border-radius:10px; background:rgba(255,255,255,.1);
+    display:flex; align-items:center; justify-content:center; font-size:18px; cursor:pointer; }
+  .cam-album span { position:absolute; top:-5px; right:-5px; background:var(--accent); color:#fff; font-size:9px;
+    border-radius:999px; padding:0 5px; line-height:14px; }
+  .shutter { width:64px; height:64px; border-radius:50%; border:4px solid rgba(255,255,255,.9);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .shutter i { width:48px; height:48px; border-radius:50%; background:#fff; display:block; transition:transform .1s; }
+  .shutter:active i { transform:scale(.86); background:#F3EDE2; }
+  .cam-flip { width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,.1);
+    display:flex; align-items:center; justify-content:center; font-size:18px; cursor:pointer; }
+
+  /* ===== 上传确认页 ===== */
+  .upload-preview { margin:0 16px 14px; height:230px; border-radius:var(--radius-lg);
+    background:linear-gradient(160deg,#EFEBE2,#E2DACB); display:flex; align-items:center; justify-content:center;
+    font-size:76px; box-shadow:var(--shadow-card); }
+  .upload-tip { margin:0 16px 16px; padding:9px 12px; background:var(--accent-bg); border:1px solid var(--accent-line);
+    border-radius:10px; font-size:11px; color:#9A4E2E; display:flex; gap:6px; align-items:center; }
+
+  /* ===== AI 处理中页（冲煮动画，10s 循环） ===== */
+  #screen-processing { background:#1C1712; color:#fff; }
+  .proc-hint { text-align:center; font-size:12px; color:rgba(255,255,255,.68); margin-top:10px; min-height:16px; }
+  .proc-dots { display:flex; gap:5px; justify-content:center; margin-top:8px; }
+  .proc-dots i { width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,.4); animation:dotBlink 1.4s infinite; }
+  .proc-dots i:nth-child(2) { animation-delay:.2s; }
+  .proc-dots i:nth-child(3) { animation-delay:.4s; }
+  @keyframes dotBlink { 0%,100%{opacity:.25;transform:translateY(0)} 40%{opacity:1;transform:translateY(-3px)} }
+  .proc-skip { display:block; margin:20px 16px 34px; width:calc(100% - 32px); padding:12px; border-radius:999px;
+    background:rgba(255,255,255,.1); color:rgba(255,255,255,.85); border:1px solid rgba(255,255,255,.22); font-size:12px; cursor:pointer; }
+  .brew-stage { position:relative; width:250px; height:316px; margin:8px auto 0; }
+  .brew-scene { position:absolute; inset:0; animation:sceneFade 10s linear infinite; }
+  @keyframes sceneFade { 0%,86%{opacity:1} 93%,100%{opacity:0} }
+  .pbean { position:absolute; width:26px; height:19px; border-radius:50%/44%; background:#7A5542; opacity:0;
+    animation:beanAnim 10s infinite; --r:0deg; }
+  .pbean:after { content:""; position:absolute; left:50%; top:14%; bottom:14%; width:2.5px; margin-left:-1.25px;
+    border-radius:2px; background:rgba(255,246,236,.4); transform:rotate(14deg); }
+  .pbean.b1 { left:92px; top:8px; }
+  .pbean.b2 { left:120px; top:2px; --r:16deg; }
+  .pbean.b3 { left:146px; top:10px; --r:-12deg; }
+  @keyframes beanAnim {
+    0% { opacity:0; transform:translateY(-6px) rotate(var(--r)); }
+    3% { opacity:1; }
+    6% { transform:translateY(0) rotate(calc(var(--r) + 7deg)); }
+    10% { transform:translateY(0) rotate(calc(var(--r) - 7deg)); }
+    13% { opacity:1; transform:translateY(0) rotate(calc(var(--r) + 4deg)); }
+    16%,100% { opacity:0; transform:translateY(16px) rotate(var(--r)) scale(.5); }
+  }
+  .pp { position:absolute; top:28px; width:5px; height:5px; border-radius:50%; background:#9C7A64; opacity:0;
+    animation:ppAnim 10s infinite; }
+  @keyframes ppAnim {
+    0%,15% { opacity:0; transform:translate(0,0); }
+    17% { opacity:1; }
+    30% { opacity:1; transform:translate(var(--dx,0px),88px) scale(.9); }
+    33%,100% { opacity:0; transform:translate(var(--dx,0px),88px) scale(.9); }
+  }
+  .v60 { position:absolute; left:50%; top:112px; width:104px; height:54px; margin-left:-52px;
+    background:linear-gradient(180deg,rgba(255,255,255,.30),rgba(255,255,255,.12));
+    clip-path:polygon(0 0,100% 0,60% 100%,40% 100%); }
+  .v60:before { content:""; position:absolute; inset:0;
+    background:repeating-linear-gradient(90deg,transparent 0 12px,rgba(255,255,255,.22) 12px 14px); }
+  .kettle { position:absolute; left:133px; top:34px; width:70px; height:50px; opacity:0;
+    animation:kettleAnim 10s infinite; transform-origin:12% 80%; }
+  .kettle .body { position:absolute; left:30px; bottom:0; width:38px; height:30px; background:#4A413A; border-radius:7px 7px 11px 11px; }
+  .kettle .lid { position:absolute; left:42px; bottom:30px; width:16px; height:5px; background:#4A413A; border-radius:3px 3px 0 0; }
+  .kettle .spout { position:absolute; left:-6px; bottom:16px; width:38px; height:5px; background:#4A413A; border-radius:3px; transform:rotate(-8deg); }
+  .kettle .handle { position:absolute; right:4px; bottom:28px; width:20px; height:13px;
+    border:4px solid #4A413A; border-bottom:none; border-radius:10px 10px 0 0; }
+  @keyframes kettleAnim {
+    0%,24% { opacity:0; transform:translateX(44px) rotate(0); }
+    30% { opacity:1; transform:translateX(0) rotate(0); }
+    36% { transform:translateX(0) rotate(-12deg); }
+    56% { transform:translateX(0) rotate(-12deg); }
+    62% { transform:translateX(0) rotate(0); }
+    68% { opacity:1; transform:translateX(0) rotate(0); }
+    75%,100% { opacity:0; transform:translateX(44px) rotate(0); }
+  }
+  .wstream { position:absolute; left:121px; top:63px; width:5px; height:0; border-radius:3px;
+    background:linear-gradient(180deg,rgba(196,230,255,.95),rgba(140,200,240,.85));
+    animation:streamAnim 10s infinite; }
+  @keyframes streamAnim {
+    0%,38% { height:0; opacity:0; }
+    42% { height:49px; opacity:1; }
+    56% { height:49px; opacity:1; }
+    60%,100% { height:0; opacity:0; }
+  }
+  .drip { position:absolute; left:122px; top:166px; width:6px; height:9px; border-radius:50% 50% 60% 60%;
+    background:linear-gradient(180deg,#C9A063,#8B5A2B); opacity:0; }
+  .drip.d1 { animation:dripA 10s infinite; }
+  .drip.d2 { animation:dripB 10s infinite; }
+  .drip.d3 { animation:dripC 10s infinite; }
+  @keyframes dripA {
+    0%,45% { opacity:0; transform:translateY(0); }
+    46% { opacity:1; }
+    49% { opacity:1; transform:translateY(82px); }
+    50%,66% { opacity:0; transform:translateY(82px); }
+    67% { opacity:1; transform:translateY(0); }
+    70% { opacity:1; transform:translateY(82px); }
+    71%,100% { opacity:0; transform:translateY(82px); }
+  }
+  @keyframes dripB {
+    0%,52% { opacity:0; transform:translateY(0); }
+    53% { opacity:1; }
+    56% { opacity:1; transform:translateY(82px); }
+    57%,74% { opacity:0; transform:translateY(82px); }
+    75% { opacity:1; transform:translateY(0); }
+    78% { opacity:1; transform:translateY(82px); }
+    79%,100% { opacity:0; transform:translateY(82px); }
+  }
+  @keyframes dripC {
+    0%,59% { opacity:0; transform:translateY(0); }
+    60% { opacity:1; }
+    63% { opacity:1; transform:translateY(82px); }
+    64%,80% { opacity:0; transform:translateY(82px); }
+    81% { opacity:1; transform:translateY(0); }
+    84% { opacity:1; transform:translateY(82px); }
+    85%,100% { opacity:0; transform:translateY(82px); }
+  }
+  .carafe { position:absolute; left:81px; top:208px; width:88px; height:92px; overflow:hidden;
+    border:3px solid rgba(255,255,255,.42); border-top:none; border-radius:0 0 26px 26px/0 0 30px 30px;
+    background:rgba(255,255,255,.05); }
+  .cliquid { position:absolute; left:0; right:0; bottom:0; height:0;
+    background:linear-gradient(180deg,#B98A54,#7A4E26); animation:liquidAnim 10s infinite; }
+  @keyframes liquidAnim {
+    0%,46% { height:0; }
+    86% { height:52px; }
+    94%,100% { height:52px; }
+  }
+
+  /* ===== 详情页 ===== */
+  .detail-hero { padding: 0 16px 12px; text-align: center; }
+  .detail-photo {
+    width: 140px; height: 180px; margin: 0 auto 12px; border-radius: 12px;
+    object-fit: cover; box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    display: flex; align-items: center; justify-content: center; font-size: 50px;
+  }
+  .detail-name { font-size: 18px; font-weight: 700; color: #1A1B1C; line-height: 1.3; margin-bottom: 4px; }
+  .detail-brand { font-size: 13px; color: #6B7280; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .detail-brand .logo {
+    width: 18px; height: 18px; border-radius: 4px; background: linear-gradient(135deg,#667eea,#764ba2);
+    display: flex; align-items: center; justify-content: center; color: #fff; font-size: 9px; font-weight: 700;
+  }
+  .detail-flavor-row { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 12px 0 10px; }
+  .detail-flavor-icon { font-size: 48px; line-height: 1.15; filter: drop-shadow(0 3px 6px rgba(60,40,20,.16)); }
+  .detail-flavor-text { font-family: var(--font-display); font-style: italic; font-size: 13px; color: var(--ink-soft); margin-top: 4px; letter-spacing: .5px; }
+  .rating-section { display: flex; gap: 10px; padding: 0 16px 16px; }
+  .rating-card {
+    flex: 1; background: #fff; border-radius: 12px; padding: 12px; text-align: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .rating-label { font-size: 11px; color: #9CA3AF; margin-bottom: 4px; }
+  .rating-stars { font-size: 16px; color: #F59E0B; letter-spacing: 2px; }
+  .rating-score { font-size: 20px; font-weight: 700; color: #1A1B1C; margin-top: 2px; }
+  .attr-section-title {
+    font-size: 12px; color: var(--ink-soft); text-align: center; padding: 8px 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .attr-section-title::before, .attr-section-title::after {
+    content: ''; flex: 1; height: 1px; background: rgba(80,60,30,.14);
+  }
+  .at-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:18px 6px; padding:6px 16px 22px; align-items:start; }
+  .at-item { display:flex; flex-direction:column; align-items:center; text-align:center; gap:4px; }
+  .at-icon { width:64px; height:64px; border-radius:18px; display:flex; align-items:center; justify-content:center;
+    box-shadow:var(--shadow-card); }
+  .at-icon img { width:44px; height:44px; object-fit:contain; display:block; }
+  .at-value { font-size:12px; font-weight:700; color:var(--ink); line-height:1.25; }
+  .at-label { font-size:9.5px; color:var(--ink-soft); line-height:1; }
+  .at-c1{background:#FFE5DB;} .at-c4{background:#D7EBF7;} .at-c5{background:#F0E4DA;} .at-c6{background:#DCEEDA;}
+  .at-c7{background:#F0F3CF;} .at-c8{background:#FFE9BC;} .at-c9{background:#FBE4D2;} .at-c10{background:#E7E2F1;}
+  .detail-actions { display: flex; gap: 12px; padding: 12px 16px 24px; }
+  .action-btn {
+    flex: 1; height: 44px; padding: 0; border-radius: 12px; text-align: center;
+    font-size: 14px; font-weight: 600; cursor: pointer; border: none;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .action-btn.primary { background: var(--ink); color: #fff; }
+  .action-btn.warn { background: #FEF3C7; color: #92400E; }
+  .action-btn.gray { background: #F3F4F6; color: #6B7280; }
+  .action-btn.outline { background: #fff; color: #C2410C; border: 1px solid rgba(194,65,12,.35); }
+  .action-btn.orange { background: #FF6E20; color: #fff; }
+  .rate-row { display:flex; align-items:center; gap:12px; padding:10px 4px; }
+  .rate-who { font-size:13px; font-weight:600; width:36px; color:var(--ink); }
+  .rate-stars { flex:1; font-size:24px; letter-spacing:6px; color:#F59E0B; cursor:pointer; }
+  .rate-stars i { font-style:normal; }
+  .rate-stars i.off { color:rgba(80,60,30,.18); }
+  .rate-num { font-size:16px; font-family:var(--font-display); }
+
+  /* ===== 风味维护页 ===== */
+  .flavor-page-header { padding: 8px 16px 12px; display: flex; align-items: center; justify-content: space-between; }
+  .flavor-category { padding: 0 16px 12px; }
+  .flavor-category-title {
+    font-size: 13px; font-weight: 600; color: #6B7280; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .flavor-category-title .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .flavor-tag-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .flavor-tag-item {
+    background: #fff; border-radius: 10px; padding: 10px 4px; text-align: center;
+    cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .flavor-tag-item .icon {
+    width: 32px; height: 32px; margin: 0 auto 4px; border-radius: 50%;
+    background: #F7F5F0; display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  .flavor-tag-item .name { font-size: 10px; color: #1A1B1C; }
+  .fd-hero { text-align:center; padding:8px 16px 16px; }
+  .fd-icon { width:96px; height:96px; margin:0 auto 10px; border-radius:50%; background:var(--card);
+    box-shadow:var(--shadow-card); display:flex; align-items:center; justify-content:center; font-size:44px; }
+  .fd-name { font-family:var(--font-display); font-size:20px; font-weight:700; color:var(--ink); }
+  .fd-cat { font-size:12px; color:var(--ink-soft); margin-top:4px; }
+  .compare-row { display:flex; align-items:center; justify-content:center; gap:16px; margin:14px 0 4px; }
+  .compare-box { text-align:center; }
+  .compare-box .ic { width:64px; height:64px; border-radius:50%; background:var(--card);
+    border:1px dashed rgba(80,60,30,.2); display:flex; align-items:center; justify-content:center; font-size:28px; }
+  .compare-box small { display:block; font-size:10px; color:var(--ink-soft); margin-top:6px; }
+  .compare-arrow { font-size:18px; color:var(--ink-soft); }
+
+  /* ===== 品牌页 ===== */
+  .brand-list { padding: 0 16px 20px; }
+  .brand-item {
+    display: flex; align-items: center; gap: 12px; padding: 12px;
+    background: #fff; border-radius: 12px; margin-bottom: 8px; cursor: pointer;
+  }
+  .brand-item-logo {
+    width: 40px; height: 40px; border-radius: 10px; display: flex;
+    align-items: center; justify-content: center; color: #fff; font-size: 14px; font-weight: 700;
+  }
+  .brand-item-info { flex: 1; }
+  .brand-item-name { font-size: 14px; font-weight: 600; }
+  .brand-item-desc { font-size: 11px; color: #9CA3AF; margin-top: 2px; }
+  .brand-item-count { font-size: 11px; color: var(--accent); font-weight: 600; }
+  .filter-pop { position:absolute; top:96px; right:16px; width:190px; background:var(--card);
+    border-radius:14px; box-shadow:0 10px 34px rgba(40,30,10,.18); padding:12px; z-index:80; display:none; }
+  .filter-pop.show { display:block; }
+  .filter-title { font-size:11px; color:var(--ink-soft); margin-bottom:8px; }
+  .filter-item { display:flex; align-items:center; gap:8px; font-size:13px; padding:6px 2px; color:var(--ink); cursor:pointer; }
+  .filter-item input { accent-color:var(--accent); }
+  .filter-actions { margin-top:8px; text-align:right; font-size:11px; color:var(--accent); cursor:pointer; }
+  .pop-mask { position:absolute; inset:0; z-index:79; display:none; }
+  .pop-mask.show { display:block; }
+  .logo-up { width:96px; height:96px; border-radius:20px; border:2px dashed rgba(80,60,30,.22);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+    font-size:28px; color:var(--ink-soft); cursor:pointer; }
+
+  /* ===== 统计页 ===== */
+  .stats-head { background: var(--ink); color:#fff; margin:12px 16px; border-radius:var(--radius-lg); padding:16px; }
+  .stats-head h2 { font-family:var(--font-display); font-size:20px; letter-spacing:.5px; }
+  .stats-head h2 span { font-size:12px; opacity:.6; margin-left:6px; font-family:-apple-system,'PingFang SC',sans-serif; }
+  .stats-sum { display:flex; justify-content:space-between; margin-top:14px; text-align:center; }
+  .stats-sum b { font-size:20px; display:block; font-family:var(--font-display); }
+  .stats-sum small { font-size:10px; opacity:.65; }
+  .stats-card { background:var(--card); border-radius:var(--radius-lg); box-shadow:var(--shadow-card); margin:0 16px 12px; padding:14px; }
+  .stats-card h3 { font-size:12px; color:var(--ink-soft); font-weight:600; margin-bottom:10px; }
+  .dist { display:flex; height:10px; border-radius:5px; overflow:hidden; gap:2px; }
+  .dist i { display:block; }
+  .dist-legend { display:flex; justify-content:space-between; font-size:10px; color:var(--ink-soft); margin-top:6px; }
+  .proc-row { font-size:13px; color:var(--ink); font-family:var(--font-display); letter-spacing:.5px; }
+  .dot-map { position:relative; height:150px; border-radius:var(--radius-md);
+    background:radial-gradient(rgba(80,60,30,.22) 1.2px, transparent 1.3px) 0 0/12px 12px; }
+  .pin { position:absolute; width:10px; height:10px; border-radius:50%; background:var(--accent);
+    border:2px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.25); }
+  .map-note { font-size:10px; color:var(--ink-soft); margin-top:8px; }
+  .stats-foot { display:flex; justify-content:space-around; background:var(--card); border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-card); margin:0 16px 90px; padding:14px 0; text-align:center; }
+  .stats-foot b { font-size:18px; display:block; font-family:var(--font-display); }
+  .stats-foot small { font-size:10px; color:var(--ink-soft); }
+  .country-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .country-row:last-child { margin-bottom:0; }
+  .country-row .cname { width:92px; font-size:11px; color:var(--ink); white-space:nowrap; }
+  .country-row .cbar { flex:1; height:8px; border-radius:4px; background:rgba(80,60,30,.08); overflow:hidden; }
+  .country-row .cbar i { display:block; height:100%; border-radius:4px; background:linear-gradient(90deg,#C96F4A,#E09B6F); }
+  .country-row .cnum { font-size:11px; color:var(--ink-soft); width:22px; text-align:right; font-family:var(--font-display); }
+
+  /* 全局对话框（body 级） */
+  .g-dialog { display:none; position:fixed; inset:0; z-index:200; background:rgba(26,27,28,.45); align-items:center; justify-content:center; }
+  .g-dialog.show { display:flex; }
+  .g-dialog .box { width:300px; background:#FFFDF8; border-radius:16px; padding:22px 20px 18px; box-shadow:0 12px 40px rgba(0,0,0,.22); }
+  .g-dialog .t { font-size:16px; font-weight:700; color:#1A1B1C; text-align:center; margin-bottom:6px; }
+  .g-dialog .d { font-size:12.5px; color:#6B7280; text-align:center; margin-bottom:18px; line-height:1.6; }
+  .g-dialog button.full { width:100%; height:40px; border:none; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; margin-bottom:10px; }
+  .g-dialog button.primary { background:var(--ink); color:#fff; }
+  .g-dialog button.gray { background:#F3F4F6; color:#6B7280; }
+  .g-dialog button.danger { background:#DC2626; color:#fff; }
+  .g-dialog button.text { height:32px; background:none; border:none; font-size:13px; color:#9CA3AF; cursor:pointer; margin-bottom:0; }
+
+  .changelog { max-width: 375px; margin-top: 18px; padding: 14px 16px; background: rgba(255,255,255,.6);
+    border-radius: 12px; font-size: 12px; color: #6B7280; line-height: 1.9; }
+  .changelog b { color: #1A1B1C; }
+</style>
+</head>
+<body>
+
+<h1>☕ 咖啡豆管理小程序 · 高保真原型 V2</h1>
+<p class="subtitle">BeanBook 风格 · 单一数据源驱动 · 点击顶部标签切换页面</p>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showScreen('shelf')">🏠 货架</button>
+  <button class="tab-btn" onclick="showScreen('empty')">🕳️ 空货架</button>
+  <button class="tab-btn" onclick="showScreen('add')">➕ 添加豆子</button>
+  <button class="tab-btn" onclick="showScreen('camera')">📷 拍照</button>
+  <button class="tab-btn" onclick="showScreen('processing')">✨ 识别中</button>
+  <button class="tab-btn" onclick="openConfirm('ai')">📝 确认编辑</button>
+  <button class="tab-btn" onclick="showScreen('detail')">📋 豆子详情</button>
+  <button class="tab-btn" onclick="showScreen('stats')">📊 统计</button>
+  <button class="tab-btn" onclick="showScreen('flavor')">🏷️ 风味维护</button>
+  <button class="tab-btn" onclick="showScreen('brand')">🏢 品牌库</button>
+</div>
+
+<div class="phone">
+  <div class="phone-notch"></div>
+
+  <!-- ===== 货架页（JS 渲染） ===== -->
+  <div class="screen active" id="screen-shelf">
+    <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+    <div class="shelf-header">
+      <div class="shelf-title">我的咖啡豆 <span id="shelf-count"></span></div>
+      <div class="header-actions">
+        <div class="icon-btn" onclick="showScreen('add')" title="添加豆子">➕</div>
+        <div class="icon-btn" onclick="toggleMainMenu()" title="菜单">☰</div>
+      </div>
+    </div>
+    <div id="main-menu-mask" onclick="toggleMainMenu()" style="display:none;position:absolute;inset:0;z-index:40;background:rgba(26,27,28,.35);"></div>
+    <div id="main-menu" style="display:none;position:absolute;top:88px;right:12px;z-index:41;width:200px;background:#FFFDF8;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:8px;border:1px solid rgba(80,60,30,.08);">
+      <div style="width:12px;height:12px;background:#FFFDF8;position:absolute;top:-6px;right:16px;transform:rotate(45deg);border-top:1px solid rgba(80,60,30,.08);border-left:1px solid rgba(80,60,30,.08);"></div>
+      <div class="menu-item" onclick="toggleMainMenu();showScreen('flavor')">🏷️ 风味标签维护</div>
+      <div class="menu-item" onclick="toggleMainMenu();showScreen('brand')">🏢 品牌库</div>
+      <div class="menu-item" onclick="toggleMainMenu();showScreen('stats')">📊 豆子统计</div>
+      <div class="menu-item" onclick="toggleMainMenu()" style="color:#9CA3AF;">⚙️ 设置（待开发）</div>
+      <div class="menu-item" onclick="toggleMainMenu()" style="color:#9CA3AF;">👤 关于（待开发）</div>
+    </div>
+    <div style="padding:0 16px 12px;display:flex;gap:10px;align-items:center;position:relative;">
+      <div style="flex:1;position:relative;">
+        <input id="shelf-search-input" class="form-input" placeholder="🔍 搜索豆名 / 品牌 / 产区 / 豆种…" style="margin-bottom:0;padding-left:36px;" oninput="applyShelfFilters()">
+      </div>
+      <div id="shelf-filter-pill" onclick="toggleShelfFilter()" style="display:inline-flex;align-items:center;gap:5px;background:#1A1B1C;color:#fff;padding:9px 12px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;">
+        <span id="shelf-filter-label">全部</span><span style="font-size:10px;opacity:.7;">▾</span>
+      </div>
+      <div id="shelf-filter-mask" onclick="toggleShelfFilter()" style="display:none;position:fixed;inset:0;z-index:40;"></div>
+      <div id="shelf-filter-menu" style="display:none;position:absolute;top:46px;right:16px;z-index:41;width:176px;background:#FFFDF8;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:8px;border:1px solid rgba(80,60,30,.08);">
+        <div class="menu-item" onclick="setShelfFilter('all')">☕ 全部<span class="fcount" data-k="all"></span></div>
+        <div class="menu-item" onclick="setShelfFilter('resting')">🟡 养豆中<span class="fcount" data-k="resting"></span></div>
+        <div class="menu-item" onclick="setShelfFilter('drinking')">🟢 在喝<span class="fcount" data-k="drinking"></span></div>
+        <div class="menu-item" onclick="setShelfFilter('hurry')">🟠 抓紧喝<span class="fcount" data-k="hurry"></span></div>
+        <div class="menu-item" onclick="setShelfFilter('finished')">⚪ 喝完<span class="fcount" data-k="finished"></span></div>
+      </div>
+    </div>
+    <div class="bean-grid" id="shelf-grid"></div>
+  </div>
+
+  <!-- ===== 空货架演示 ===== -->
+  <div class="screen" id="screen-empty">
+    <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+    <div class="shelf-header">
+      <div class="shelf-title">我的咖啡豆 <span>0袋</span></div>
+      <div class="header-actions"><div class="icon-btn" onclick="showScreen('add')">➕</div></div>
+    </div>
+    <div class="empty-state">
+      <div class="empty-icon">🫙</div>
+      <div class="empty-text">货架还是空的<br>拍一张豆袋，AI 帮你自动入库</div>
+      <button class="save-btn" style="padding:10px 28px;" onclick="showScreen('camera')">📷 拍第一袋豆子</button>
+    </div>
+  </div>
+
+  <!-- ===== 添加豆子（弹窗 + 点外关闭遮罩） ===== -->
+  <div class="screen" id="screen-add">
+    <div style="position:absolute;inset:0;z-index:55;" onclick="showScreen('shelf')"></div>
+    <div class="status-bar" style="position:relative;z-index:56;"><span>9:41</span><span>🔋 100%</span></div>
+    <div class="shelf-header" style="position:relative;z-index:56;">
+      <div class="shelf-title">添加豆子</div>
+    </div>
+    <div style="position:relative;z-index:56;text-align:center;padding:60px 0 0;color:var(--ink-soft);font-size:12px;">选择一种方式开始</div>
+    <div class="add-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">添加豆子</div>
+      <div class="add-option primary" onclick="showScreen('camera')">
+        <div class="add-option-icon">📷</div>
+        <div class="add-option-text">
+          <div class="main">AI拍照识别</div>
+          <div class="sub" style="opacity:0.7;">拍豆袋包装，自动识别所有信息</div>
+        </div>
+        <div style="font-size:18px;">›</div>
+      </div>
+      <div class="add-option secondary" onclick="showScreen('upload')">
+        <div class="add-option-icon">🖼️</div>
+        <div class="add-option-text">
+          <div class="main">相册批量导入</div>
+          <div class="sub">从相册选择豆袋照片批量识别</div>
+        </div>
+        <div style="font-size:18px;color:#999;">›</div>
+      </div>
+      <div class="add-option secondary" onclick="openConfirm('manual')">
+        <div class="add-option-icon">✏️</div>
+        <div class="add-option-text">
+          <div class="main">手动录入</div>
+          <div class="sub">不用AI，自己填写所有信息</div>
+        </div>
+        <div style="font-size:18px;color:#999;">›</div>
+      </div>
+      <div class="add-option secondary" onclick="openConfirm('ai')">
+        <div class="add-option-icon">🔗</div>
+        <div class="add-option-text">
+          <div class="main">粘贴商品链接</div>
+          <div class="sub">淘宝/微店链接，AI抓取商品信息</div>
+        </div>
+        <div style="font-size:18px;color:#999;">›</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 拍照页 ===== -->
+  <div class="screen" id="screen-camera">
+    <div class="status-bar" style="color:#fff;"><span>9:41</span><span>🔋 100%</span></div>
+    <div class="cam-top">
+      <div class="icon-btn" style="color:#fff;background:rgba(255,255,255,.12);" onclick="showScreen('shelf')">✕</div>
+      <div class="cam-title">拍摄豆袋</div>
+      <div class="icon-btn" style="color:#fff;background:rgba(255,255,255,.12);" onclick="toast('演示：闪光灯')">⚡</div>
+    </div>
+    <div class="cam-view">
+      <i class="vf vf-tl"></i><i class="vf vf-tr"></i><i class="vf vf-bl"></i><i class="vf vf-br"></i>
+      <div class="cam-target">🫘</div>
+      <div class="cam-hint">可连拍：正面、标签、信息面<small>标签、烘焙日期清晰可提高识别准确度</small></div>
+    </div>
+    <div class="cam-bottom">
+      <div class="cam-album" onclick="showScreen('upload')">🖼️<span>2</span></div>
+      <div class="shutter" onclick="showScreen('upload')"><i></i></div>
+      <div class="cam-flip" onclick="toast('演示：切换前后摄像头')">🔄</div>
+    </div>
+  </div>
+
+  <!-- ===== 上传确认页（与拍照页照片数一致：2张） ===== -->
+  <div class="screen" id="screen-upload">
+    <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+    <div class="page-nav">
+      <div class="back-btn" onclick="showScreen('camera')">‹</div>
+      <div class="page-nav-title">确认照片</div>
+      <div style="width:40px;"></div>
+    </div>
+    <div class="steps">① 拍照 <i>→</i> <b>② 确认上传</b> <i>→</i> ③ AI 识别 <i>→</i> ④ 核对入库</div>
+    <div class="upload-preview">🫘</div>
+    <div class="photo-strip" style="margin:0 16px 14px;">
+      <div class="photo-thumb sel" onclick="pickCover(this)">🫘<span class="cover-tag">封面</span><span class="pick"></span></div>
+      <div class="photo-thumb" onclick="pickCover(this)">🏷️<span class="pick"></span></div>
+      <div class="photo-thumb add" onclick="toast('演示：补拍 / 相册加图')">＋</div>
+    </div>
+    <div class="upload-tip"><span>✨</span>AI 将识别品牌、豆名、产区、处理法等信息，完成后进入核对</div>
+    <div style="display:flex;gap:12px;padding:0 16px 30px;">
+      <button class="action-btn gray" onclick="showScreen('camera')">重新拍摄</button>
+      <button class="action-btn primary" style="flex:1.4;" onclick="openConfirm('ai')">✨ 确认使用</button>
+    </div>
+  </div>
+
+  <!-- ===== AI 处理中页 ===== -->
+  <div class="screen" id="screen-processing">
+    <div class="status-bar" style="color:#fff;"><span>9:41</span><span>🔋 100%</span></div>
+    <div class="page-nav">
+      <div class="back-btn" style="color:#fff;" onclick="showDialog('dlg-cancel-ai')">‹</div>
+      <div class="page-nav-title" style="color:#fff;">AI 识别中</div>
+      <div style="width:40px;"></div>
+    </div>
+    <div class="steps" style="color:rgba(255,255,255,.5);">① 拍照 <i style="color:rgba(255,255,255,.26);">→</i> ② 确认上传 <i style="color:rgba(255,255,255,.26);">→</i> <b style="color:#E89B6F;">③ AI 识别</b> <i style="color:rgba(255,255,255,.26);">→</i> ④ 核对入库</div>
+    <div class="brew-stage">
+      <div class="brew-scene">
+        <div class="pbean b1"></div>
+        <div class="pbean b2"></div>
+        <div class="pbean b3"></div>
+        <i class="pp" style="left:102px;--dx:-8px;"></i>
+        <i class="pp" style="left:112px;--dx:-4px;"></i>
+        <i class="pp" style="left:122px;--dx:0px;"></i>
+        <i class="pp" style="left:132px;--dx:3px;"></i>
+        <i class="pp" style="left:142px;--dx:6px;"></i>
+        <i class="pp" style="left:150px;--dx:9px;"></i>
+        <i class="pp" style="left:108px;--dx:-6px;"></i>
+        <i class="pp" style="left:138px;--dx:5px;"></i>
+        <div class="kettle"><i class="spout"></i><i class="body"></i><i class="lid"></i><i class="handle"></i></div>
+        <div class="wstream"></div>
+        <div class="v60"></div>
+        <i class="drip d1"></i>
+        <i class="drip d2"></i>
+        <i class="drip d3"></i>
+        <div class="carafe"><div class="cliquid"></div></div>
+      </div>
+    </div>
+    <div class="proc-hint" id="proc-hint">正在识别品牌…</div>
+    <div class="proc-dots"><i></i><i></i><i></i></div>
+    <button class="proc-skip" onclick="openConfirm('ai')">识别完成后自动进入 · 点此直接查看结果</button>
+  </div>
+
+  <!-- ===== 确认编辑页（V2 重构，三种模式复用） ===== -->
+  <div class="screen" id="screen-confirm">
+    <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+    <div class="page-nav">
+      <div class="back-btn" onclick="confirmBack()">‹</div>
+      <div class="page-nav-title" id="cv-title">确认豆子信息</div>
+    </div>
+
+    <div class="steps" id="cv-steps">① 拍照 <i>→</i> ② 确认上传 <i>→</i> ③ AI 识别 <i>→</i> <b>④ 核对入库</b></div>
+    <div class="ai-summary" id="cv-ai-summary">
+      <span class="sp">✨</span>
+      <span class="tx">AI 已识别 <b>11</b> 项并自动填充 · 已匹配品牌库<br>以下内容均可点按修改</span>
+    </div>
+
+    <div class="form-section">
+      <div class="form-label">本次照片 <span class="hint">点选任一照片设为封面</span></div>
+      <div class="photo-strip">
+        <div class="photo-thumb sel" onclick="pickCover(this)">🫘<span class="cover-tag">封面</span><span class="pick"></span></div>
+        <div class="photo-thumb" onclick="pickCover(this)">🏷️<span class="pick"></span></div>
+        <div class="photo-thumb add" onclick="toast('演示：补拍 / 相册加图')">＋</div>
+      </div>
+
+      <div class="section-title">☕ 来源</div>
+      <div class="brand-pick" id="cv-brand-pick" style="display:none;" onclick="toast('演示：打开品牌库选择')">🔍 从品牌库选择品牌（可跳过，直接填豆名）</div>
+      <div class="brand-match" id="cv-brand-match">
+        <div class="brand-logo">O</div>
+        <div class="brand-match-info">
+          <div class="brand-match-name">Onyx Coffee Lab</div>
+          <div class="brand-match-desc">美国 · 精品烘焙商 · 已匹配内置品牌库</div>
+        </div>
+        <span style="font-size:16px;color:var(--ink-soft);">›</span>
+      </div>
+
+      <div class="form-label">豆名</div>
+      <input class="form-input" id="cv-input-name" value="Ethiopia Tamiru Tadesse Alo Village">
+
+      <div class="section-title">🌍 产地</div>
+      <!-- 国家：手动输入 + 下拉联想 -->
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">国家</div>
+          <div class="combo-wrap">
+            <input class="form-input" id="cv-input-country" value="埃塞俄比亚" autocomplete="off">
+            <div class="combo-pop" id="cv-country-pop"></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="form-label">产区</div>
+          <input class="form-input" id="cv-input-origin" value="耶加雪菲">
+        </div>
+      </div>
+
+      <!-- 豆种：chip 多选（可混合，如 74110 · 74112）；处理法：chip 单选 -->
+      <div class="pair-row">
+        <div class="pair-col">
+          <div class="form-label">豆种 <span class="hint">多个用空格或逗号分隔</span></div>
+          <input class="form-input" id="cv-input-variety" value="74158">
+          <div class="chip-list" id="cv-variety-chips"></div>
+        </div>
+        <div class="pair-col">
+          <div class="form-label">处理法</div>
+          <input class="form-input" id="cv-input-process" value="水洗">
+          <div class="chip-list" id="cv-process-chips"></div>
+        </div>
+      </div>
+
+      <div class="form-label">海拔</div>
+      <div class="input-suffix">
+        <input class="form-input" id="cv-input-altitude" value="2200">
+        <span class="suffix">m</span>
+      </div>
+
+      <div class="section-title">🔥 烘焙与保存</div>
+      <div class="form-label">烘焙度</div>
+      <div class="segment" id="seg-roast">
+        <div class="segment-item active">浅烘</div>
+        <div class="segment-item">浅中烘</div>
+        <div class="segment-item">中烘</div>
+        <div class="segment-item">中深烘</div>
+        <div class="segment-item">深烘</div>
+      </div>
+      <div class="form-label">冲煮方式</div>
+      <div class="segment">
+        <div class="segment-item active">手冲</div>
+        <div class="segment-item">意式</div>
+        <div class="segment-item">通用</div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">烘焙日期</div>
+          <input class="form-input" id="cv-input-date" value="2026-08-28">
+        </div>
+        <div class="form-group">
+          <div class="form-label">克重</div>
+          <div class="input-suffix">
+            <input class="form-input" id="cv-input-weight" value="200">
+            <span class="suffix">g</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">🍓 风味</div>
+      <div class="form-label">风味标签</div>
+      <div class="flavor-tag-list" id="cv-flavor-list">
+        <div class="flavor-tag"><span class="icon">🍓</span>草莓<span class="remove">×</span></div>
+        <div class="flavor-tag"><span class="icon">🍊</span>橙子<span class="remove">×</span></div>
+        <div class="flavor-tag"><span class="icon">🍦</span>奶油<span class="remove">×</span></div>
+        <div class="flavor-tag"><span class="icon">🍯</span>白蜜<span class="remove">×</span></div>
+        <div class="add-flavor-btn" onclick="toast('演示：打开风味标签选择器')">＋ 添加</div>
+      </div>
+      <div class="form-label">烘焙商风味描述 <span class="ai-mini" id="cv-ai-btn" onclick="aiExtract()">✨ AI 提取标签</span></div>
+      <textarea class="form-input" rows="2" id="cv-input-desc" placeholder="包装上的风味描述，支持中英文（选填）">jasmine · bergamot · white honey · black tea</textarea>
+    </div>
+
+    <div class="confirm-footer">
+      <button class="footer-btn" id="cv-footer-btn" onclick="footerSave()">入库</button>
+    </div>
+  </div>
+
+  <!-- ===== 豆子详情页 ===== -->
+  <div class="screen" id="screen-detail">
+    <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+    <div class="page-nav">
+      <div class="back-btn" onclick="showScreen('shelf')">‹</div>
+      <div style="flex:1;"></div>
+      <div class="icon-btn" style="font-size:16px;font-weight:700;" onclick="toggleDetailMenu()">⋯</div>
+    </div>
+    <div id="detail-menu-mask" onclick="toggleDetailMenu()" style="display:none;position:absolute;inset:0;z-index:40;background:rgba(26,27,28,.3);"></div>
+    <div id="detail-menu" style="display:none;position:absolute;top:88px;right:12px;z-index:41;width:176px;background:#FFFDF8;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.18);padding:8px;border:1px solid rgba(80,60,30,.08);">
+      <div style="width:12px;height:12px;background:#FFFDF8;position:absolute;top:-6px;right:16px;transform:rotate(45deg);border-top:1px solid rgba(80,60,30,.08);border-left:1px solid rgba(80,60,30,.08);"></div>
+      <div class="menu-item" onclick="toggleDetailMenu();openConfirm('edit')">✏️ 编辑豆子</div>
+      <div class="menu-item" onclick="toggleDetailMenu()" style="color:#9CA3AF;">⤴ 分享（待开发）</div>
+      <div class="menu-item" onclick="delBean()" style="color:#DC2626;">🗑️ 删除豆子</div>
+    </div>
+
+    <div class="detail-hero">
+      <div class="detail-photo" style="background:linear-gradient(135deg,#2d2d2d,#4a4a4a);">☕</div>
+      <div class="detail-name" id="dt-name">Ethiopia Tamiru Tadesse<br>Alo Village</div>
+      <div class="detail-brand"><span class="logo">O</span> Onyx Coffee Lab</div>
+      <div class="detail-flavor-row" id="dt-flavorrow">
+        <div class="detail-flavor-icon">🍓</div>
+        <div class="detail-flavor-icon">🍊</div>
+        <div class="detail-flavor-icon">🍦</div>
+        <div class="detail-flavor-icon">🍯</div>
+      </div>
+      <div class="detail-flavor-text" id="dt-flavortext">草莓 · 奶油 · 橙子 · 白蜜</div>
+    </div>
+
+    <!-- 状态条（右侧只放赏味期，克重去重到属性磁贴） -->
+    <div id="dsb" style="margin:0 16px 16px;padding:10px 14px;background:#F0FDF4;border-radius:10px;display:flex;align-items:center;justify-content:space-between;transition:background .25s;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span id="dsb-dot" style="width:10px;height:10px;border-radius:50%;background:#52C41A;transition:background .25s;"></span>
+        <span id="dsb-label" style="font-size:13px;font-weight:600;color:#166534;transition:color .25s;">在喝</span>
+      </div>
+      <span id="dsb-right" style="font-size:11px;color:#6B7280;">最佳赏味第12天</span>
+    </div>
+
+    <div class="rating-section">
+      <div class="rating-card">
+        <div class="rating-label">我的评分</div>
+        <div class="rating-stars">★★★★☆</div>
+        <div class="rating-score">4.0</div>
+      </div>
+      <div class="rating-card">
+        <div class="rating-label">毛小毛评分</div>
+        <div class="rating-stars">★★★★★</div>
+        <div class="rating-score">5.0</div>
+      </div>
+    </div>
+
+    <div class="attr-section-title">豆子属性</div>
+    <div class="at-grid">
+      <div class="at-item"><div class="at-icon at-c1"><img src="../assets/icons/proposal1/roast_date.png" alt="烘焙日期"></div><div class="at-value" id="dt-roastdate">08.28</div><div class="at-label">烘焙日期</div></div>
+      <div class="at-item"><div class="at-icon at-c5"><img src="../assets/icons/proposal1/bean_variety.png" alt="豆种"></div><div class="at-value" id="dt-variety">74158</div><div class="at-label">豆种</div></div>
+      <div class="at-item"><div class="at-icon at-c4"><img src="../assets/icons/proposal1/process_method.png" alt="处理法"></div><div class="at-value" id="dt-process">水洗</div><div class="at-label">处理法</div></div>
+      <div class="at-item"><div class="at-icon at-c6"><img src="../assets/icons/proposal1/country_region.png" alt="产区"></div><div class="at-sub" id="dt-country" style="font-size:9px;color:var(--ink-soft);line-height:1;">埃塞俄比亚</div><div class="at-value" id="dt-origin">耶加雪菲</div><div class="at-label">产区</div></div>
+      <div class="at-item"><div class="at-icon at-c7"><img src="../assets/icons/proposal1/altitude.png" alt="海拔"></div><div class="at-value" id="dt-altitude">2200m</div><div class="at-label">海拔</div></div>
+      <div class="at-item"><div class="at-icon at-c8"><img src="../assets/icons/proposal1/roast_level.png" alt="烘焙度"></div><div class="at-value" id="dt-roast">浅烘</div><div class="at-label">烘焙度</div></div>
+      <div class="at-item"><div class="at-icon at-c9"><img id="dt-brew-img" src="../assets/icons/proposal1/brewing.png" alt="手冲"></div><div class="at-value" id="dt-brew">手冲</div><div class="at-label">冲煮方式</div></div>
+      <div class="at-item"><div class="at-icon at-c10"><img src="../assets/icons/proposal1/bean_weight.png" alt="重量"></div><div class="at-value" id="dt-weight">200g</div><div class="at-label">重量</div></div>
+    </div>
+
+    <div class="detail-actions">
+      <button class="action-btn orange" onclick="toggleRate()">评分</button>
+      <button class="action-btn outline" id="btn-hurry" onclick="setBeanStatus('hurry')">⏰ 抓紧喝</button>
+      <button class="action-btn warn" id="btn-status" onclick="advanceBeanStatus()">喝完</button>
+    </div>
+
+    <div class="add-sheet" id="rate-sheet" style="display:none;">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">给这袋豆子评分</div>
+      <div class="rate-row">
+        <span class="rate-who">我</span>
+        <span class="rate-stars" id="stars-me" onclick="setStars(event,'stars-me')"><i>★</i><i>★</i><i>★</i><i>★</i><i>☆</i></span>
+        <b class="rate-num" id="num-me">4.0</b>
+      </div>
+      <div style="font-size:10.5px;color:#9CA3AF;margin:2px 0 4px;">每人只能修改自己的评分 · 毛小毛的评分由她自己打</div>
+      <div class="form-label">风味感受（可选）</div>
+      <input class="form-input" placeholder="例如：莓果酸质明亮，回甘带蜜香">
+      <button class="save-btn" style="width:100%;padding:12px;" onclick="toggleRate()">保存评分</button>
+    </div>
+  </div>
+
+  <!-- ===== 风味维护页（分类命名与详情页统一） ===== -->
+  <div class="screen" id="screen-flavor">
+    <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+    <div class="flavor-page-header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="back-btn" onclick="showScreen('shelf')">‹</div>
+        <div class="page-nav-title">风味标签维护</div>
+      </div>
+      <div class="icon-btn" onclick="openFlavorDetail(true)" title="新增风味标签">➕</div>
+    </div>
+    <div style="padding:0 16px 12px;">
+      <input class="form-input" placeholder="🔍 搜索风味标签..." style="margin-bottom:0;">
+    </div>
+    <div class="flavor-category">
+      <div class="flavor-category-title"><span class="dot" style="background:#EA6668;"></span>水果类</div>
+      <div class="flavor-tag-grid">
+        <div class="flavor-tag-item" onclick="openFlavorDetail(false)"><div class="icon">🍓</div><div class="name">草莓</div></div>
+        <div class="flavor-tag-item" onclick="openFlavorDetail(false)"><div class="icon">🍊</div><div class="name">橙子</div></div>
+        <div class="flavor-tag-item" onclick="openFlavorDetail(false)"><div class="icon">🍋</div><div class="name">柠檬</div></div>
+        <div class="flavor-tag-item" onclick="openFlavorDetail(false)"><div class="icon">🫐</div><div class="name">蓝莓</div></div>
+        <div class="flavor-tag-item" onclick="openFlavorDetail(false)"><div class="icon">🍑</div><div class="name">桃子</div></div>
+        <div class="flavor-tag-item" onclick="openFlavorDetail(false)"><div class="icon">🥭</div><div class="name">芒果</div></div>
+        <div class="flavor-tag-item" onclick="openFlavorDetail(false)"><div class="icon">🍍</div><div class="name">菠萝</div></div>
+        <div class="flavor-tag-item" onclick="openFlavorDetail(false)"><div class="icon">🍇</div><div class="name">葡萄</div></div>
+      </div>
+    </div>
+    <div class="flavor-category">
+      <div class="flavor-category-title"><span class="dot" style="background:#C9A7E8;"></span>花香类</div>
+      <div class="flavor-tag-grid">
+        <div class="flavor-tag-item" onclick="openFlavorDetail(false)"><div class="icon">🌼</div><div class="name">茉莉</div></div>
+        <div class="flavor-tag-item" onclick="openFlavorDetail(false)"><div class="icon">🌹</div><div class="name">玫瑰</div></div>
+        <div class="flavor-tag-item" onclick="openFlavorDetail(false)"><div class="icon">🌺</div><div class="name">桂花</div></div>
+        <div class="flavor-tag-item" onclick="openFlavorDetail(false)"><div class="icon">💐</div><div class="name">洋甘菊</div></div>
+      </div>
+    </div>
+    <div class="flavor-category">
+      <div class="flavor-category-title"><span class="dot" style="background:#F4D48F;"></span>甜感类</div>
+      <div class="flavor-tag-grid">
+        <div class="flavor-tag-item" onclick="openFlavorDetail(false)"><div class="icon">🍯</div><div class="name">蜂蜜</div></div>
+        <div class="flavor-tag-item" onclick="openFlavorDetail(false)"><div class="icon">🍬</div><div class="name">焦糖</div></div>
+        <div class="flavor-tag-item" onclick="openFlavorDetail(false)"><div class="icon">🍦</div><div class="name">香草</div></div>
+        <div class="flavor-tag-item" onclick="openFlavorDetail(false)"><div class="icon">🍫</div><div class="name">红糖</div></div>
+      </div>
+    </div>
+    <div class="flavor-category">
+      <div class="flavor-category-title"><span class="dot" style="background:#E1B98F;"></span>坚果可可类</div>
+      <div class="flavor-tag-grid">
+        <div class="flavor-tag-item" onclick="openFlavorDetail(false)"><div class="icon">🌰</div><div class="name">榛子</div></div>
+        <div class="flavor-tag-item" onclick="openFlavorDetail(false)"><div class="icon">🥜</div><div class="name">杏仁</div></div>
+        <div class="flavor-tag-item" onclick="openFlavorDetail(false)"><div class="icon">🍫</div><div class="name">黑巧</div></div>
+        <div class="flavor-tag-item" onclick="openFlavorDetail(false)"><div class="icon">🥛</div><div class="name">牛奶巧</div></div>
+      </div>
+    </div>
+    <div style="padding:20px;text-align:center;">
+      <div style="font-size:11px;color:#9CA3AF;">共 40+ 风味标签 · 点按进入标签详情</div>
+    </div>
+  </div>
+
+  <!-- ===== 风味标签详情页 ===== -->
+  <div class="screen" id="screen-flavor-detail">
+    <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+    <div class="page-nav">
+      <div class="back-btn" onclick="showScreen('flavor')">‹</div>
+      <div class="page-nav-title" id="fd-title">风味标签</div>
+      <div style="width:40px;"></div>
+    </div>
+    <div class="fd-hero">
+      <div class="fd-icon">🍓</div>
+      <div class="fd-name">草莓</div>
+      <div class="fd-cat">水果类 · 被 3 袋豆子使用</div>
+    </div>
+    <div class="form-section" style="padding-bottom:30px;">
+      <div class="form-label">标签名称</div>
+      <input class="form-input" value="草莓">
+      <div class="form-label">分类</div>
+      <div class="segment">
+        <div class="segment-item active">水果类</div>
+        <div class="segment-item">花香类</div>
+        <div class="segment-item">甜感类</div>
+        <div class="segment-item">坚果可可类</div>
+      </div>
+      <div class="form-label">水彩风格图标 <span class="ai-badge">AI生成</span></div>
+      <div class="compare-row" id="fd-compare" style="display:none;">
+        <div class="compare-box"><div class="ic">🍓</div><small>当前图标</small></div>
+        <div class="compare-arrow">→</div>
+        <div class="compare-box"><div class="ic" style="border-style:solid;">✨</div><small>新生成</small></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="action-btn primary" style="flex:1;" onclick="toggleCompare()">重新生成图标</button>
+        <button class="action-btn gray" style="flex:0 0 100px;" onclick="showDialog('dlg-del-flavor')">删除标签</button>
+      </div>
+      <div id="fd-actions2" style="display:none;gap:8px;margin-top:8px;">
+        <button class="action-btn warn" style="flex:1;" onclick="toggleCompare()">确认替换</button>
+        <button class="action-btn gray" style="flex:1;" onclick="toggleCompare()">保留原图</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 品牌库（袋数由数据源计算） ===== -->
+  <div class="screen" id="screen-brand">
+    <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+    <div class="flavor-page-header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="back-btn" onclick="showScreen('shelf')">‹</div>
+        <div class="page-nav-title">品牌库</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <div class="icon-btn" onclick="toggleBrandFilter()" title="按国家筛选">🚩</div>
+        <div class="icon-btn" onclick="showScreen('brand-add')" title="新增品牌">➕</div>
+      </div>
+    </div>
+    <div style="padding:0 16px 12px;">
+      <input class="form-input" placeholder="🔍 搜索品牌（中英文）..." style="margin-bottom:0;">
+    </div>
+    <div class="pop-mask" id="brand-pop-mask" onclick="toggleBrandFilter()"></div>
+    <div class="filter-pop" id="country-pop">
+      <div class="filter-title">按国家筛选（可多选）</div>
+      <label class="filter-item"><input type="checkbox" value="美国" onchange="applyBrandFilter()">🇺🇸 美国</label>
+      <label class="filter-item"><input type="checkbox" value="中国" onchange="applyBrandFilter()">🇨🇳 中国</label>
+      <label class="filter-item"><input type="checkbox" value="巴拿马" onchange="applyBrandFilter()">🇵🇦 巴拿马</label>
+      <label class="filter-item"><input type="checkbox" value="日本" onchange="applyBrandFilter()">🇯🇵 日本</label>
+      <label class="filter-item"><input type="checkbox" value="埃塞俄比亚" onchange="applyBrandFilter()">🇪🇹 埃塞俄比亚</label>
+      <label class="filter-item"><input type="checkbox" value="肯尼亚" onchange="applyBrandFilter()">🇰🇪 肯尼亚</label>
+      <label class="filter-item"><input type="checkbox" value="哥伦比亚" onchange="applyBrandFilter()">🇨🇴 哥伦比亚</label>
+      <label class="filter-item"><input type="checkbox" value="危地马拉" onchange="applyBrandFilter()">🇬🇹 危地马拉</label>
+      <div class="filter-actions" onclick="clearBrandFilter()">清空筛选</div>
+    </div>
+    <div class="brand-list" id="brand-list"></div>
+    <div style="padding:14px 16px 30px;">
+      <button class="save-btn" style="width:100%;padding:12px;" onclick="showScreen('brand-add')">＋ 新增品牌</button>
+      <div style="font-size:11px;color:#9CA3AF;text-align:center;margin-top:10px;">内置品牌库 · 可自定义新增</div>
+    </div>
+  </div>
+
+  <!-- ===== 新增品牌页 ===== -->
+  <div class="screen" id="screen-brand-add">
+    <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+    <div class="page-nav">
+      <div class="back-btn" onclick="showScreen('brand')">‹</div>
+      <div class="page-nav-title">新增品牌</div>
+      <button class="save-btn" onclick="showScreen('brand')">保存</button>
+    </div>
+    <div class="form-section" style="padding-bottom:30px;">
+      <div class="form-label">品牌 Logo</div>
+      <div class="logo-up" onclick="toast('演示：上传 Logo')">🖼️<small>上传 Logo</small></div>
+      <div class="form-label">品牌名称</div>
+      <input class="form-input" placeholder="如：治光师 BEAMTIMER">
+      <div class="form-label">国家 / 地区</div>
+      <input class="form-input" id="input-brand-country" placeholder="手动输入，或点下方快捷标签">
+      <div class="chip-list" style="margin-bottom:12px;">
+        <span class="chip" data-v="中国" onclick="fillVal(this,'input-brand-country')">🇨🇳 中国</span>
+        <span class="chip" data-v="美国" onclick="fillVal(this,'input-brand-country')">🇺🇸 美国</span>
+        <span class="chip" data-v="日本" onclick="fillVal(this,'input-brand-country')">🇯🇵 日本</span>
+        <span class="chip" data-v="巴拿马" onclick="fillVal(this,'input-brand-country')">🇵🇦 巴拿马</span>
+        <span class="chip" data-v="埃塞俄比亚" onclick="fillVal(this,'input-brand-country')">🇪🇹 埃塞俄比亚</span>
+        <span class="chip" data-v="哥伦比亚" onclick="fillVal(this,'input-brand-country')">🇨🇴 哥伦比亚</span>
+        <span class="chip" data-v="巴西" onclick="fillVal(this,'input-brand-country')">🇧🇷 巴西</span>
+        <span class="chip" data-v="肯尼亚" onclick="fillVal(this,'input-brand-country')">🇰🇪 肯尼亚</span>
+      </div>
+      <div class="form-label">品牌介绍</div>
+      <textarea class="form-input" rows="3" placeholder="产地、风格、代表作等（选填）"></textarea>
+      <button class="save-btn" style="width:100%;padding:12px;margin-top:4px;" onclick="showScreen('brand')">保存品牌</button>
+    </div>
+  </div>
+
+  <!-- ===== 品牌详情页 ===== -->
+  <div class="screen" id="screen-brand-detail">
+    <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+    <div class="page-nav">
+      <div class="back-btn" onclick="showScreen('brand')">‹</div>
+      <div class="page-nav-title">品牌详情</div>
+      <div style="width:40px;"></div>
+    </div>
+    <div class="bd-hero" style="text-align:center;padding:8px 16px 14px;">
+      <div class="brand-logo" style="width:84px;height:84px;border-radius:22px;margin:0 auto 10px;font-size:32px;">O</div>
+      <div class="fd-name">Onyx Coffee Lab</div>
+      <div class="fd-cat">🇺🇸 美国 · 精品烘焙商 · 阿肯色州</div>
+      <div style="display:flex;justify-content:center;gap:28px;margin:12px 0 4px;">
+        <div><b style="display:block;font-size:18px;font-family:var(--font-display);" id="bd-count">2</b><small style="font-size:10px;color:var(--ink-soft);">在库袋数</small></div>
+        <div><b style="display:block;font-size:18px;font-family:var(--font-display);">4.5</b><small style="font-size:10px;color:var(--ink-soft);">平均评分</small></div>
+        <div><b style="display:block;font-size:18px;font-family:var(--font-display);">2026.01</b><small style="font-size:10px;color:var(--ink-soft);">首次购入</small></div>
+      </div>
+    </div>
+    <div class="attr-section-title">该品牌豆子</div>
+    <div style="padding:0 16px;" id="brand-detail-beans"></div>
+  </div>
+
+  <!-- ===== 统计页（JS 从数据源计算） ===== -->
+  <div class="screen" id="screen-stats">
+    <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+    <div class="page-nav">
+      <div class="back-btn" onclick="showScreen('shelf')">‹</div>
+      <div class="page-nav-title">豆子统计</div>
+    </div>
+    <div class="stats-head">
+      <h2>BeanStats <span>2026</span></h2>
+      <div class="stats-sum">
+        <div><b id="st-grams">-</b><small>库存克重 g</small></div>
+        <div><b id="st-drinking">-</b><small>在喝中</small></div>
+        <div><b id="st-total">-</b><small>总袋数</small></div>
+      </div>
+    </div>
+    <div class="stats-card">
+      <h3>库存状态</h3>
+      <div class="dist" id="st-dist"></div>
+      <div class="dist-legend" id="st-legend"></div>
+    </div>
+    <div class="stats-card">
+      <h3>处理法</h3>
+      <div class="proc-row" id="st-proc">-</div>
+    </div>
+    <div class="stats-card">
+      <h3>国家分布</h3>
+      <div id="st-countries"></div>
+    </div>
+    <div class="stats-card">
+      <h3>豆种分布</h3>
+      <div id="st-varieties"></div>
+    </div>
+    <div class="stats-card">
+      <h3>产区地图</h3>
+      <div class="dot-map">
+        <i class="pin" style="left:56%;top:38%" title="耶加雪菲"></i>
+        <i class="pin" style="left:60%;top:44%" title="肯尼亚"></i>
+        <i class="pin" style="left:30%;top:55%" title="哥伦比亚"></i>
+        <i class="pin" style="left:27%;top:42%" title="危地马拉"></i>
+        <i class="pin" style="left:80%;top:52%" title="巴拿马"></i>
+        <i class="pin" style="left:84%;top:30%" title="中国云南"></i>
+      </div>
+      <div class="map-note" id="st-mapnote">产区点位示意</div>
+    </div>
+    <div class="stats-foot">
+      <div><b id="st-brands">-</b><small>烘焙商</small></div>
+      <div><b id="st-bags">-</b><small>袋</small></div>
+      <div><b id="st-regions">-</b><small>产区</small></div>
+      <div><b id="st-varcount">-</b><small>豆种</small></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 全局对话框 -->
+<div class="g-dialog" id="dlg-save">
+  <div class="box">
+    <div class="t">是否保存修改？</div>
+    <div class="d">你对豆子信息做了修改，返回前请选择</div>
+    <button class="full primary" onclick="closeDialog();dialogSave();">保存</button>
+    <button class="full gray" onclick="closeDialog();dialogDiscard();">不保存</button>
+    <button class="text" onclick="closeDialog()">取消</button>
+  </div>
+</div>
+<div class="g-dialog" id="dlg-cancel-ai">
+  <div class="box">
+    <div class="t">取消本次识别？</div>
+    <div class="d">返回将丢弃当前照片，不消耗 AI 识别次数</div>
+    <button class="full primary" onclick="closeDialog()">继续识别</button>
+    <button class="full gray" onclick="closeDialog();showScreen('upload');">放弃识别</button>
+  </div>
+</div>
+<div class="g-dialog" id="dlg-del-flavor">
+  <div class="box">
+    <div class="t">删除风味标签？</div>
+    <div class="d">「草莓」正被 3 袋豆子使用，删除后这些豆子将移除该标签，不可恢复</div>
+    <button class="full danger" onclick="closeDialog();toast('已删除标签（演示）');showScreen('flavor');">确认删除</button>
+    <button class="text" onclick="closeDialog()">取消</button>
+  </div>
+</div>
+
+<p style="margin-top:16px;font-size:11px;color:#9CA3AF;">* 原型中风味图标使用emoji占位，实际使用Seedream AI生成统一水彩风格插画</p>
+
+<div class="changelog">
+  <b>本 V2 相对 prototype.html 的变更</b><br>
+  ① 确认页重构：5 组分区 / 底部固定主按钮 / AI 单条汇总（陶土橙）/ 三种模式语境正确<br>
+  ② 国家＝手动输入＋下拉联想；豆种 chip 多选支持混合（如 74110 · 74112）；AI 提取标签支持中英文描述<br>
+  ③ 烘焙度扩为 5 档（浅烘/浅中烘/中烘/中深烘/深烘）；海拔克重单位外置；封面术语统一<br>
+  ④ 单一数据源：货架、统计、品牌袋数、库存 Top chip 全部由 11 袋演示数据实时计算，数字永不打架<br>
+  ⑤ 风味分类命名统一（水果/花香/甜感/坚果可可）；拍照↔上传照片数一致（2张）；AI 识别返回需确认<br>
+  ⑥ 品牌筛选弹层/添加弹窗补点外关闭；新增空货架演示；NEW 徽标内联＋养豆进度条；详情页去掉重复克重
+</div>
+
+<script>
+// ================= 基础 =================
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  if (typeof event !== 'undefined' && event && event.target) {
+    const tb = event.target.closest('.tab-btn');
+    if (tb) tb.classList.add('active');
+  }
+  document.getElementById('screen-' + name).scrollTop = 0;
+}
+let toastTimer = null;
+function toast(msg) {
+  let t = document.getElementById('proto-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'proto-toast';
+    t.style.cssText = 'position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:rgba(26,27,28,.88);color:#fff;font-size:13px;padding:10px 18px;border-radius:999px;z-index:300;transition:opacity .25s;opacity:0;pointer-events:none;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg; t.style.opacity = '1';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.style.opacity = '0', 1600);
+}
+function showDialog(id) { document.getElementById(id).classList.add('show'); }
+function closeDialog() { document.querySelectorAll('.g-dialog').forEach(d => d.classList.remove('show')); }
+function fillVal(el, inputId) { document.getElementById(inputId).value = el.dataset.v || el.textContent; }
+
+// ================= 单一数据源：11 袋演示豆子 =================
+const BEANS = [
+  { brand:'Onyx Coffee Lab', name:'Ethiopia Tamiru Alo Village', country:'埃塞俄比亚', region:'耶加雪菲', variety:'74158', process:'水洗', roast:'浅烘', status:'drinking', left:200, emoji:'☕', bg:'linear-gradient(135deg,#2d2d2d,#4a4a4a)', flavors:['🍓','🍊','🍯'] },
+  { brand:'Onyx Coffee Lab', name:'Ethiopia Chelbesa Washed', country:'埃塞俄比亚', region:'古吉', variety:'74158', process:'水洗', roast:'浅烘', status:'drinking', left:120, emoji:'🍑', bg:'linear-gradient(135deg,#f5e6d3,#e8d4b8)', flavors:['🍑','🍊'] },
+  { brand:'少数派咖啡', name:'耶加雪菲 科契尔 水洗', country:'埃塞俄比亚', region:'科契尔', variety:'铁皮卡', process:'水洗', roast:'浅烘', status:'drinking', left:60, emoji:'🌸', bg:'linear-gradient(135deg,#e8b4b8,#d4919a)', flavors:['🍊','🌼','🍯'] },
+  { brand:'治光师 BEAMTIMER', name:'西达摩 厌氧日晒 G1', country:'埃塞俄比亚', region:'西达摩', variety:'74158', process:'厌氧', roast:'中烘', status:'resting', rest:{ left:12, total:20 }, isNew:true, emoji:'🌿', bg:'linear-gradient(135deg,#1a5c3a,#2d8a5e)', flavors:['🍓','🍯'] },
+  { brand:'翡翠庄园 Hacienda La Esmeralda', name:'蓝标水洗 瑰夏', country:'巴拿马', region:'波奎特', variety:'瑰夏', process:'水洗', roast:'浅烘', status:'drinking', hurry:true, left:40, emoji:'🌿', bg:'linear-gradient(135deg,#1a5c3a,#2d8a5e)', flavors:['🌼','🍋','🍬'] },
+  { brand:'翡翠庄园 Hacienda La Esmeralda', name:'红标日晒 瑰夏', country:'巴拿马', region:'波奎特', variety:'瑰夏', process:'日晒', roast:'浅烘', status:'resting', rest:{ left:5, total:20 }, emoji:'🌺', bg:'linear-gradient(135deg,#8B4513,#A0522D)', flavors:['🌺','🍋'] },
+  { brand:'治光师 BEAMTIMER', name:'黄色潜水艇 SOE 意式拼配', country:'中国', region:'合肥', variety:'波旁', process:'日晒', roast:'中烘', status:'resting', rest:{ left:8, total:20 }, emoji:'🫘', bg:'linear-gradient(135deg,#f5e6d3,#e8d4b8)', flavors:['🌰','🍫'] },
+  { brand:'Manner Coffee', name:'深烘意式拼配', country:'中国', region:'上海', variety:'波旁', process:'水洗', roast:'深烘', status:'drinking', left:150, emoji:'🔥', bg:'linear-gradient(135deg,#8B4513,#A0522D)', flavors:['🍫','🥜'] },
+  { brand:'安提瓜庄园', name:'安提瓜 蜜处理 波旁', country:'危地马拉', region:'安提瓜', variety:'波旁', process:'蜜处理', roast:'中深烘', status:'resting', rest:{ left:3, total:25 }, emoji:'🌋', bg:'linear-gradient(135deg,#a8c0ff,#3f2b96)', flavors:['🍯','🍊'] },
+  { brand:'慧兰庄园', name:'慧兰水洗 卡杜拉', country:'哥伦比亚', region:'慧兰', variety:'铁皮卡', process:'水洗', roast:'中烘', status:'finished', left:0, emoji:'📦', bg:'linear-gradient(135deg,#ccc,#aaa)', flavors:['🌰','🍬'] },
+  { brand:'Kenya AA 工坊', name:'涅里 AA Top 水洗', country:'肯尼亚', region:'涅里', variety:'SL28', process:'水洗', roast:'浅烘', status:'finished', left:0, emoji:'📦', bg:'linear-gradient(135deg,#ccc,#aaa)', flavors:['🫐','🍋'] },
+];
+const ROAST_MAP = { '浅烘':['浅','roast-light'], '浅中烘':['浅中','roast-light'], '中烘':['中','roast-medium'], '中深烘':['中深','roast-dark'], '深烘':['深','roast-dark'] };
+const STATUS_TEXT = { resting:'养豆中', drinking:'在喝', finished:'已喝完' };
+function countBy(field) {
+  const m = {};
+  BEANS.forEach(b => m[b[field]] = (m[b[field]] || 0) + 1);
+  return Object.entries(m).sort((a, b) => b[1] - a[1]);
+}
+
+// ================= 货架渲染 + 搜索筛选 =================
+function renderShelf() {
+  const grid = document.getElementById('shelf-grid');
+  grid.innerHTML = BEANS.map((b, i) => {
+    const [rc, cls] = ROAST_MAP[b.roast];
+    const badge = b.hurry
+      ? `<div class="hurry-flag">⏰ 抓紧喝</div>`
+      : `<div class="status-badge status-${b.status}">${b.status === 'resting' ? '还需' + b.rest.left + '天' : STATUS_TEXT[b.status]}</div>`;
+    const prog = b.status === 'resting'
+      ? `<div class="rest-progress"><i style="width:${Math.round((b.rest.total - b.rest.left) / b.rest.total * 100)}%"></i></div>` : '';
+    const dim = b.status === 'finished' ? ' style="opacity:0.5;"' : '';
+    return `<div class="bean-card"${dim} data-idx="${i}" data-status="${b.status}"${b.hurry ? ' data-hurry="1"' : ''} onclick="showScreen('detail')">
+      <div class="bean-photo" style="background:${b.bg};">${b.emoji}</div>
+      <div class="roast-badge ${cls}">${rc}</div>
+      ${badge}
+      <div class="bean-info">
+        <div class="bean-brand">${b.brand}${b.isNew ? '<span class="new-badge">NEW</span>' : ''}</div>
+        <div class="bean-name">${b.name}</div>
+        <div class="flavor-icons">${b.flavors.map(f => `<div class="flavor-icon">${f}</div>`).join('')}</div>
+        ${prog}
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('shelf-count').textContent = BEANS.length + '袋';
+  const n = k => BEANS.filter(b => k === 'all' ? true : k === 'hurry' ? b.hurry : b.status === k).length;
+  document.querySelectorAll('.fcount').forEach(el => el.textContent = `（${n(el.dataset.k)}）`);
+  applyShelfFilters();
+}
+let shelfFilter = 'all';
+function toggleShelfFilter() {
+  const m = document.getElementById('shelf-filter-menu'), k = document.getElementById('shelf-filter-mask');
+  const show = m.style.display === 'none';
+  m.style.display = show ? 'block' : 'none';
+  k.style.display = show ? 'block' : 'none';
+}
+function setShelfFilter(key) {
+  shelfFilter = key;
+  document.getElementById('shelf-filter-label').textContent =
+    { all:'全部', resting:'🟡 养豆中', drinking:'🟢 在喝', hurry:'🟠 抓紧喝', finished:'⚪ 喝完' }[key];
+  if (document.getElementById('shelf-filter-menu').style.display !== 'none') toggleShelfFilter();
+  applyShelfFilters();
+}
+function applyShelfFilters() {
+  const q = (document.getElementById('shelf-search-input')?.value || '').trim().toLowerCase();
+  document.querySelectorAll('#shelf-grid .bean-card').forEach(c => {
+    const b = BEANS[+c.dataset.idx];
+    let ok = true;
+    if (shelfFilter === 'hurry') ok = !!b.hurry;
+    else if (shelfFilter !== 'all') ok = b.status === shelfFilter;
+    const okSearch = !q || c.textContent.toLowerCase().includes(q);
+    c.style.display = (ok && okSearch) ? '' : 'none';
+  });
+}
+function toggleMainMenu() {
+  const m = document.getElementById('main-menu'), k = document.getElementById('main-menu-mask');
+  const show = m.style.display === 'none';
+  m.style.display = show ? 'block' : 'none';
+  k.style.display = show ? 'block' : 'none';
+}
+
+// ================= 统计页 / 品牌计数（同一数据源） =================
+function renderStats() {
+  const total = BEANS.length;
+  const drinking = BEANS.filter(b => b.status === 'drinking').length;
+  const resting = BEANS.filter(b => b.status === 'resting').length;
+  const finished = BEANS.filter(b => b.status === 'finished').length;
+  const grams = BEANS.reduce((s, b) => s + b.left, 0);
+  document.getElementById('st-grams').textContent = grams.toLocaleString();
+  document.getElementById('st-drinking').textContent = drinking;
+  document.getElementById('st-total').textContent = total;
+  const pct = x => Math.round(x / total * 100);
+  document.getElementById('st-dist').innerHTML =
+    `<i style="width:${pct(drinking)}%;background:var(--status-drinking)"></i>` +
+    `<i style="width:${pct(resting)}%;background:var(--status-resting)"></i>` +
+    `<i style="width:${pct(finished)}%;background:var(--status-finished)"></i>`;
+  document.getElementById('st-legend').innerHTML =
+    `<span>在喝 ${drinking}</span><span>养豆 ${resting}</span><span>喝完 ${finished}</span>`;
+  document.getElementById('st-proc').textContent = countBy('process').map(([k, v]) => `${k} ${v}`).join(' · ');
+  const bar = list => list.map(([k, v], i) => {
+    const max = list[0][1];
+    const flag = { '埃塞俄比亚':'🇪🇹', '中国':'🇨🇳', '巴拿马':'🇵🇦', '危地马拉':'🇬🇹', '哥伦比亚':'🇨🇴', '肯尼亚':'🇰🇪', '瑰夏':'🫘', '铁皮卡':'🫘', '波旁':'🫘', 'SL28':'🫘', '74158':'🫘' }[k] || '🫘';
+    return `<div class="country-row"><span class="cname">${flag} ${k}</span><div class="cbar"><i style="width:${Math.round(v / max * 100)}%"></i></div><span class="cnum">${v}</span></div>`;
+  }).join('');
+  document.getElementById('st-countries').innerHTML = bar(countBy('country'));
+  document.getElementById('st-varieties').innerHTML = bar(countBy('variety'));
+  document.getElementById('st-brands').textContent = countBy('brand').length;
+  document.getElementById('st-bags').textContent = total;
+  document.getElementById('st-regions').textContent = new Set(BEANS.map(b => b.region)).size;
+  document.getElementById('st-varcount').textContent = countBy('variety').length;
+  document.getElementById('st-mapnote').textContent = `${countBy('country').length} 个国家 · ${total} 袋 · 产区点位示意`;
+}
+const BRANDS = [
+  { n:'Onyx Coffee Lab', d:'🇺🇸 美国 · 精品烘焙商', c:'美国', g:'linear-gradient(135deg,#667eea,#764ba2)', l:'O' },
+  { n:'治光师 BEAMTIMER', d:'🇨🇳 中国 · 合肥 · 精品烘焙', c:'中国', g:'linear-gradient(135deg,#f6d365,#fda085)', l:'治' },
+  { n:'翡翠庄园 Hacienda La Esmeralda', d:'🇵🇦 巴拿马 · 瑰夏名庄', c:'巴拿马', g:'linear-gradient(135deg,#11998e,#38ef7d)', l:'翡' },
+  { n:'Manner Coffee', d:'🇨🇳 中国 · 上海 · 连锁精品', c:'中国', g:'linear-gradient(135deg,#0f2027,#2c5364)', l:'M' },
+  { n:'少数派咖啡', d:'🇨🇳 中国 · 合肥 · 精品烘焙', c:'中国', g:'linear-gradient(135deg,#ee9ca7,#ffdde1)', l:'少' },
+  { n:'安提瓜庄园', d:'🇬🇹 危地马拉 · 火山庄园', c:'危地马拉', g:'linear-gradient(135deg,#c9a227,#8a6d1a)', l:'安' },
+  { n:'慧兰庄园', d:'🇨🇴 哥伦比亚 · 庄园直供', c:'哥伦比亚', g:'linear-gradient(135deg,#4d9e6a,#2f7c4f)', l:'慧' },
+  { n:'Kenya AA 工坊', d:'🇰🇪 肯尼亚 · 精品处理站', c:'肯尼亚', g:'linear-gradient(135deg,#b74d4d,#7c2f2f)', l:'K' },
+  { n:'Blue Bottle 蓝瓶咖啡', d:'🇺🇸 美国 · 精品咖啡品牌', c:'美国', g:'linear-gradient(135deg,#a8c0ff,#3f2b96)', l:'蓝' },
+  { n:'% Arabica', d:'🇯🇵 日本 · 国际精品连锁', c:'日本', g:'linear-gradient(135deg,#f7971e,#ffd200)', l:'%' },
+  { n:'埃塞原生种合作社', d:'🇪🇹 埃塞俄比亚 · 产区直采', c:'埃塞俄比亚', g:'linear-gradient(135deg,#e8a87c,#c96f4a)', l:'原' },
+];
+function renderBrands() {
+  const counts = {};
+  BEANS.forEach(b => counts[b.brand] = (counts[b.brand] || 0) + 1);
+  document.getElementById('brand-list').innerHTML = BRANDS.map(x => `
+    <div class="brand-item" data-country="${x.c}" data-brand="${x.n}" onclick="openBrandDetail('${x.n}')">
+      <div class="brand-item-logo" style="background:${x.g};">${x.l}</div>
+      <div class="brand-item-info">
+        <div class="brand-item-name">${x.n}</div>
+        <div class="brand-item-desc">${x.d}</div>
+      </div>
+      <div class="brand-item-count">${counts[x.n] || 0}袋</div>
+    </div>`).join('');
+}
+function toggleBrandFilter() {
+  document.getElementById('country-pop').classList.toggle('show');
+  document.getElementById('brand-pop-mask').classList.toggle('show');
+}
+function applyBrandFilter() {
+  const picked = Array.from(document.querySelectorAll('#country-pop input:checked')).map(c => c.value);
+  document.querySelectorAll('#brand-list .brand-item').forEach(item => {
+    item.style.display = !picked.length || picked.includes(item.dataset.country) ? 'flex' : 'none';
+  });
+}
+function clearBrandFilter() {
+  document.querySelectorAll('#country-pop input').forEach(c => c.checked = false);
+  applyBrandFilter();
+}
+function openBrandDetail(name) {
+  const beans = BEANS.filter(b => b.brand === name);
+  const b = beans[0];
+  document.getElementById('bd-count').textContent = beans.length;
+  document.getElementById('screen-brand-detail').querySelector('.fd-name').textContent = name;
+  document.getElementById('brand-detail-beans').innerHTML = beans.map(x => `
+    <div class="bean-card" style="margin-bottom:12px;" onclick="showScreen('detail')">
+      <div class="bean-photo" style="background:${x.bg};">${x.emoji}</div>
+      <div class="status-badge status-${x.status}">${STATUS_TEXT[x.status]}</div>
+      <div class="bean-info">
+        <div class="bean-brand">${x.brand}</div>
+        <div class="bean-name">${x.name}</div>
+        <div class="flavor-icons">${x.flavors.map(f => `<div class="flavor-icon">${f}</div>`).join('')}</div>
+      </div>
+    </div>`).join('') || '<div class="empty-state"><div class="empty-icon">🫙</div><div class="empty-text">该品牌暂无在库豆子</div></div>';
+  showScreen('brand-detail');
+}
+
+// ================= 确认编辑页（三种模式复用） =================
+// ai = 入库核对（步骤条+AI条+入库）；manual = 手动录入（无AI语境）；edit = 详情编辑（保存+变更对话框）
+const CV_MODES = {
+  ai:     { title: '确认豆子信息', footer: '入库',     steps: true,  summary: true,  brandMatch: true  },
+  manual: { title: '手动录入豆子', footer: '入库',     steps: false, summary: false, brandMatch: false },
+  edit:   { title: '编辑豆子',     footer: '保存修改', steps: false, summary: false, brandMatch: true  },
+};
+let cvMode = 'ai';
+function openConfirm(mode) { setMode(mode); showScreen('confirm'); }
+function setMode(mode) {
+  cvMode = mode;
+  const m = CV_MODES[mode];
+  document.getElementById('cv-title').textContent = m.title;
+  document.getElementById('cv-footer-btn').textContent = m.footer;
+  document.getElementById('cv-steps').style.display = m.steps ? '' : 'none';
+  document.getElementById('cv-ai-summary').style.display = m.summary ? 'flex' : 'none';
+  document.getElementById('cv-brand-match').style.display = m.brandMatch ? 'flex' : 'none';
+  document.getElementById('cv-brand-pick').style.display = m.brandMatch ? 'none' : 'flex';
+  document.getElementById('screen-confirm').scrollTop = 0;
+}
+const CV_FIELDS = ['cv-input-name','cv-input-country','cv-input-origin','cv-input-variety',
+  'cv-input-process','cv-input-altitude','cv-input-date','cv-input-weight','cv-input-desc'];
+let cvSnapshot = null;
+function cvState() {
+  return {
+    inputs: CV_FIELDS.map(id => document.getElementById(id).value),
+    segments: Array.from(document.querySelectorAll('#screen-confirm .segment')).map(seg =>
+      seg.querySelector('.segment-item.active').textContent),
+    tags: Array.from(document.querySelectorAll('#cv-flavor-list .flavor-tag')).map(t => t.textContent.replace('×','').trim()),
+  };
+}
+function takeSnapshot() { cvSnapshot = cvState(); }
+function formChanged() { return cvSnapshot && JSON.stringify(cvState()) !== JSON.stringify(cvSnapshot); }
+function footerSave() {
+  if (cvMode === 'edit') { syncDetailFromForm(); takeSnapshot(); toast('修改已保存'); }
+  else toast(cvMode === 'manual' ? '已入库（演示）' : '已核对入库（演示）');
+}
+function confirmBack() {
+  if (cvMode === 'edit' && formChanged()) showDialog('dlg-save');
+  else toast('返回（演示）');
+}
+function dialogSave() { syncDetailFromForm(); takeSnapshot(); toast('修改已保存'); }
+function dialogDiscard() { restoreSnapshot(); toast('已放弃修改'); }
+function restoreSnapshot() {
+  if (!cvSnapshot) return;
+  CV_FIELDS.forEach((id, i) => document.getElementById(id).value = cvSnapshot.inputs[i]);
+  document.querySelectorAll('#screen-confirm .segment').forEach((seg, i) => {
+    seg.querySelectorAll('.segment-item').forEach(it =>
+      it.classList.toggle('active', it.textContent === cvSnapshot.segments[i]));
+  });
+  rebuildFlavorTags(cvSnapshot.tags.map(name => [name, FLAVOR_ICON[name] || '🏷️']));
+  syncVarietyChips();
+}
+// 编辑保存后，把表单值同步到详情页展示
+function syncDetailFromForm() {
+  const inputs = CV_FIELDS.map(id => document.getElementById(id).value);
+  const t = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  t('dt-name', inputs[0]);
+  t('dt-country', inputs[1]);
+  t('dt-origin', inputs[2]);
+  t('dt-variety', inputs[3]);
+  t('dt-process', inputs[4]);
+  t('dt-altitude', inputs[5] ? inputs[5] + 'm' : '');
+  const m = inputs[7].match(/(\d{4})-(\d{2})-(\d{2})/);
+  t('dt-roastdate', m ? `${m[2]}.${m[3]}` : inputs[7]);
+  t('dt-weight', inputs[6] + 'g');
+  const segText = i => {
+    const seg = document.querySelectorAll('#screen-confirm .segment')[i];
+    const a = seg.querySelector('.segment-item.active');
+    return a ? a.textContent : '';
+  };
+  t('dt-roast', segText(0));
+  const brew = segText(1);
+  t('dt-brew', brew);
+  const BREW_IMG = { '手冲':'../assets/icons/proposal1/brewing.png', '意式':'../assets/icons/proposal1/espresso_roast.png', '通用':'../assets/icons/proposal1/omni_roast.png' };
+  const img = document.getElementById('dt-brew-img');
+  if (img) img.src = BREW_IMG[brew] || BREW_IMG['手冲'];
+  const tags = Array.from(document.querySelectorAll('#cv-flavor-list .flavor-tag')).map(x => ({
+    icon: x.querySelector('.icon') ? x.querySelector('.icon').textContent : '🏷️',
+    name: x.textContent.replace('×', '').trim(),
+  }));
+  if (tags.length) {
+    document.getElementById('dt-flavorrow').innerHTML = tags.map(x => `<div class="detail-flavor-icon">${x.icon}</div>`).join('');
+    document.getElementById('dt-flavortext').textContent = tags.map(x => x.name).join(' · ');
+  }
+}
+// 库存聚合 Top chip（与数据源实时一致；豆种多选，处理法单选）
+function renderInvChips() {
+  const build = (list, inputId) => list.map(([name]) =>
+    `<span class="chip" data-v="${name}" onclick="pickChip(this,'${inputId}')">${name}</span>`).join('');
+  document.getElementById('cv-variety-chips').innerHTML = build(countBy('variety').slice(0, 4), 'cv-input-variety');
+  document.getElementById('cv-process-chips').innerHTML = build(countBy('process').slice(0, 4), 'cv-input-process');
+  syncVarietyChips();
+}
+let cvVarietySel = new Set(['74158']);
+function pickChip(el, inputId) {
+  const input = document.getElementById(inputId);
+  if (inputId === 'cv-input-variety') {
+    const v = el.dataset.v;
+    if (cvVarietySel.has(v)) cvVarietySel.delete(v); else cvVarietySel.add(v);
+    input.value = Array.from(cvVarietySel).join(' · ');
+    syncVarietyChips();
+  } else {
+    input.value = el.dataset.v;
+  }
+}
+function syncVarietyChips() {
+  const val = document.getElementById('cv-input-variety').value;
+  cvVarietySel = new Set(Array.from(cvVarietySel).filter(v => val.includes(v)));
+  document.querySelectorAll('#cv-variety-chips .chip').forEach(c =>
+    c.classList.toggle('sel', cvVarietySel.has(c.dataset.v)));
+}
+document.getElementById('cv-input-variety').addEventListener('input', syncVarietyChips);
+// 豆种多值输入：空格 / 半角逗号 / 全角逗号 / 顿号 / 分号 / 中点 均可切分，失焦自动格式化为「A · B」
+const cvVarietyInput = document.getElementById('cv-input-variety');
+function formatVarietyInput() {
+  const parts = cvVarietyInput.value.split(/[·,，、;；\s]+/).map(s => s.trim()).filter(Boolean);
+  cvVarietyInput.value = Array.from(new Set(parts)).join(' · ');
+  syncVarietyChips();
+}
+cvVarietyInput.addEventListener('blur', formatVarietyInput);
+cvVarietyInput.addEventListener('keydown', e => { if (e.key === 'Enter') cvVarietyInput.blur(); });
+
+// 国家：手动输入 + 下拉联想（不标数量）
+const COUNTRY_LIST = ['埃塞俄比亚','巴拿马','中国','危地马拉','哥伦比亚','肯尼亚','美国','日本','巴西'];
+const countryInput = document.getElementById('cv-input-country');
+const countryPop = document.getElementById('cv-country-pop');
+function renderCountryPop(q) {
+  const kw = (q || '').trim();
+  const hits = COUNTRY_LIST.filter(x => !kw || x.includes(kw));
+  let html = hits.map(x => `<div class="combo-opt" data-n="${x}">${x}</div>`).join('');
+  if (kw && !hits.includes(kw)) html = `<div class="combo-opt manual" data-n="">＋ 使用「${kw}」</div>` + html;
+  countryPop.innerHTML = html || '<div class="combo-opt" style="color:var(--ink-soft);">无匹配国家</div>';
+  countryPop.classList.add('show');
+}
+function pickCountry(el) {
+  if (el.dataset.n) countryInput.value = el.dataset.n;
+  countryPop.classList.remove('show');
+}
+countryPop.addEventListener('mousedown', e => {
+  const o = e.target.closest('.combo-opt');
+  if (o) { e.preventDefault(); pickCountry(o); }
+});
+countryInput.addEventListener('focus', () => renderCountryPop(countryInput.value));
+countryInput.addEventListener('input', () => renderCountryPop(countryInput.value));
+countryInput.addEventListener('blur', () => setTimeout(() => countryPop.classList.remove('show'), 150));
+document.addEventListener('click', e => { if (!e.target.closest('.combo-wrap')) countryPop.classList.remove('show'); });
+
+// AI 提取风味标签（支持中英文描述）
+const FLAVOR_ICON = { 草莓:'🍓', 橙子:'🍊', 奶油:'🍦', 白蜜:'🍯', 蜂蜜:'🍯', 茉莉:'🌼', 佛手柑:'🍋', 红茶:'🍵',
+  焦糖:'🍬', 巧克力:'🍫', 香草:'🍦', 柑橘:'🍋', 桃子:'🍑', 莓果:'🫐', 花香:'🌼', 血橙:'🍊', 榛子:'🌰', 杏仁:'🥜' };
+const FLAVOR_MAP = {
+  'white honey': ['白蜜','🍯'], 'black tea': ['红茶','🍵'], 'blood orange': ['血橙','🍊'],
+  'strawberry': ['草莓','🍓'], 'cream': ['奶油','🍦'], 'orange': ['橙子','🍊'],
+  'jasmine': ['茉莉','🌼'], 'bergamot': ['佛手柑','🍋'], 'honey': ['蜂蜜','🍯'],
+  'caramel': ['焦糖','🍬'], 'chocolate': ['巧克力','🍫'], 'vanilla': ['香草','🍦'],
+  'citrus': ['柑橘','🍋'], 'peach': ['桃子','🍑'], 'berry': ['莓果','🫐'], 'floral': ['花香','🌼'],
+  '茉莉': ['茉莉','🌼'], '蜂蜜': ['蜂蜜','🍯'], '红茶': ['红茶','🍵'], '白蜜': ['白蜜','🍯'],
+  '草莓': ['草莓','🍓'], '奶油': ['奶油','🍦'], '橙子': ['橙子','🍊'], '焦糖': ['焦糖','🍬'],
+  '巧克力': ['巧克力','🍫'], '香草': ['香草','🍦'], '柑橘': ['柑橘','🍋'], '桃子': ['桃子','🍑'],
+  '莓果': ['莓果','🫐'], '花香': ['花香','🌼'], '佛手柑': ['佛手柑','🍋'],
+};
+function parseFlavors(str) {
+  let rest = (str || '').toLowerCase();
+  const found = []; const seen = new Set();
+  const push = (n, i) => { if (n && !seen.has(n)) { seen.add(n); found.push([n, i]); } };
+  for (const [k, v] of Object.entries(FLAVOR_MAP))
+    if (k.includes(' ') && rest.includes(k)) { push(v[0], v[1]); rest = rest.split(k).join(' '); }
+  rest.split(/[^a-z\u4e00-\u9fa5]+/).forEach(tok => {
+    if (tok && FLAVOR_MAP[tok]) push(FLAVOR_MAP[tok][0], FLAVOR_MAP[tok][1]);
+  });
+  return found;
+}
+function aiExtract() {
+  const btn = document.getElementById('cv-ai-btn');
+  if (btn.classList.contains('busy')) return;
+  btn.classList.add('busy'); btn.textContent = '✨ 识别中…';
+  setTimeout(() => {
+    const tags = parseFlavors(document.getElementById('cv-input-desc').value);
+    if (tags.length) rebuildFlavorTags(tags);
+    btn.classList.remove('busy'); btn.textContent = '✨ AI 提取标签';
+    toast(tags.length ? `已根据描述更新 ${tags.length} 个风味标签` : '未从描述中提取到已知风味词');
+  }, 900);
+}
+function rebuildFlavorTags(tags) {
+  const list = document.getElementById('cv-flavor-list');
+  list.querySelectorAll('.flavor-tag').forEach(t => t.remove());
+  const addBtn = list.querySelector('.add-flavor-btn');
+  tags.forEach(([name, icon]) => {
+    const tag = document.createElement('div');
+    tag.className = 'flavor-tag';
+    tag.innerHTML = `<span class="icon">${icon}</span>${name}<span class="remove">×</span>`;
+    list.insertBefore(tag, addBtn);
+  });
+}
+
+// 通用交互
+function pickCover(el) {
+  const strip = el.parentElement;
+  strip.querySelectorAll('.photo-thumb').forEach(t => {
+    t.classList.remove('sel');
+    const tag = t.querySelector('.cover-tag');
+    if (tag && t !== el && !t.classList.contains('add')) tag.remove();
+  });
+  el.classList.add('sel');
+  if (!el.querySelector('.cover-tag')) {
+    const tag = document.createElement('span');
+    tag.className = 'cover-tag';
+    tag.textContent = '封面';
+    el.appendChild(tag);
+  }
+}
+document.querySelectorAll('#screen-confirm .segment').forEach(seg =>
+  seg.querySelectorAll('.segment-item').forEach(it =>
+    it.addEventListener('click', () => {
+      seg.querySelectorAll('.segment-item').forEach(x => x.classList.remove('active'));
+      it.classList.add('active');
+    })));
+document.addEventListener('click', e => {
+  if (e.target.classList && e.target.classList.contains('remove')) e.target.parentElement.remove();
+});
+
+// ================= 详情页 =================
+let beanStatus = 'drinking';
+const BEAN_ST = {
+  resting:  { dot:'#FAAD14', bar:'#FFF8E6', txt:'#B45309', label:'养豆中', right:'养豆期20天',           btn:'开喝',     cls:'primary' },
+  drinking: { dot:'#52C41A', bar:'#F0FDF4', txt:'#166534', label:'在喝',   right:'最佳赏味第12天',        btn:'喝完',     cls:'warn' },
+  hurry:    { dot:'#F97316', bar:'#FFF4EC', txt:'#C2410C', label:'抓紧喝', right:'风味衰退期 · 尽快饮用',  btn:'喝完',     cls:'warn' },
+  finished: { dot:'#9CA3AF', bar:'#F3F4F6', txt:'#4B5563', label:'喝完',   right:'本袋已喝完',            btn:'重新养豆', cls:'gray' },
+};
+function renderBeanStatus() {
+  const m = BEAN_ST[beanStatus];
+  document.getElementById('dsb').style.background = m.bar;
+  document.getElementById('dsb-dot').style.background = m.dot;
+  const lb = document.getElementById('dsb-label');
+  lb.textContent = m.label; lb.style.color = m.txt;
+  document.getElementById('dsb-right').textContent = m.right;
+  const btn = document.getElementById('btn-status');
+  btn.textContent = m.btn; btn.className = 'action-btn ' + m.cls;
+  document.getElementById('btn-hurry').style.display = (beanStatus === 'drinking') ? '' : 'none';
+}
+function advanceBeanStatus() {
+  beanStatus = { resting:'drinking', drinking:'finished', hurry:'finished', finished:'resting' }[beanStatus];
+  renderBeanStatus();
+}
+function setBeanStatus(s) { beanStatus = s; renderBeanStatus(); }
+function toggleDetailMenu() {
+  const m = document.getElementById('detail-menu'), k = document.getElementById('detail-menu-mask');
+  const show = m.style.display === 'none';
+  m.style.display = show ? 'block' : 'none';
+  k.style.display = show ? 'block' : 'none';
+}
+function delBean() {
+  if (confirm('确定删除这袋豆子吗？删除后不可恢复。')) { toggleDetailMenu(); showScreen('shelf'); }
+}
+function toggleRate() {
+  const sheet = document.getElementById('rate-sheet');
+  sheet.style.display = sheet.style.display === 'none' ? 'block' : 'none';
+}
+function setStars(e, rowId) {
+  if (e.target.tagName !== 'I') return;
+  const stars = Array.from(document.getElementById(rowId).children);
+  const n = stars.indexOf(e.target) + 1;
+  stars.forEach((s, i) => s.classList.toggle('off', i >= n));
+  document.getElementById('num-me').textContent = n.toFixed(1);
+}
+
+// ================= 拍照 / 识别中 / 风味详情 =================
+const procHints = ['正在识别品牌…','正在提取豆名与豆种…','正在识别产区与处理法…','正在匹配风味标签…','整理识别结果，即将完成…'];
+let phi = 0;
+setInterval(() => {
+  const el = document.getElementById('proc-hint');
+  if (el && document.getElementById('screen-processing').classList.contains('active'))
+    el.textContent = procHints[phi = (phi + 1) % procHints.length];
+}, 1800);
+function openFlavorDetail(isNew) {
+  document.getElementById('fd-title').textContent = isNew ? '新增风味标签' : '风味标签';
+  showScreen('flavor-detail');
+}
+function toggleCompare() {
+  const row = document.getElementById('fd-compare');
+  const show = row.style.display === 'none';
+  row.style.display = show ? 'flex' : 'none';
+  document.getElementById('fd-actions2').style.display = show ? 'flex' : 'none';
+}
+
+// ================= 初始化 =================
+renderShelf();
+renderStats();
+renderBrands();
+setMode('ai');
+takeSnapshot();
+renderInvChips();
+</script>
+</body>
+</html>

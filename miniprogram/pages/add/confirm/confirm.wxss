@@ -1,29 +1,50 @@
-/* 确认编辑页——样式从 docs/prototype.html screen-confirm (894–1010) + save-dialog (1472–1490) 搬运 ×2 换算 rpx */
+/* 确认编辑页 V2 —— 基于 prototype-v2-confirm.html，rpx = 原型 px × 2 */
 .confirm { min-height: 100vh; }
-/* 顶栏（自定义导航，含状态栏间距） */
+/* 顶栏（自定义导航，sticky 钉在顶部；padding-top/行高由 JS 按 status bar+胶囊动态下发） */
 .page-nav {
+  position: sticky; top: 0; z-index: 90;
+  background: var(--bg-paper);
   display: flex; align-items: center; gap: 24rpx;
-  padding: calc(env(safe-area-inset-top) + 16rpx) 32rpx 24rpx;
+  padding: 0 32rpx 24rpx;
 }
 .back-btn { font-size: 40rpx; width: 64rpx; color: var(--ink); }
 .page-nav-title {
   flex: 1; font-size: 34rpx; font-weight: 700;
   font-family: var(--font-display); letter-spacing: 1rpx;
 }
-.save-btn {
-  background: var(--ink); color: #fff; padding: 14rpx 36rpx; border-radius: 999rpx;
-  font-size: 26rpx; font-weight: 600;
-}
+/* 右侧占位：避开微信胶囊（••• ⊙），防止标题被遮挡/截断 */
+.nav-spacer { width: 180rpx; flex-shrink: 0; }
 /* 步骤条 */
 .steps {
   display: flex; align-items: center; justify-content: center; gap: 16rpx;
-  padding: 20rpx 32rpx 28rpx; font-size: 21rpx; color: var(--ink-2);
+  padding: 0 32rpx 28rpx; font-size: 21rpx; color: var(--ink-2);
 }
 .steps .arr { color: rgba(80,60,30,.3); }
 .steps .cur { color: var(--accent); font-weight: 600; }
+
+/* AI 汇总条（唯一 AI 线索，陶土橙系） */
+.ai-summary {
+  display: flex; align-items: center; gap: 16rpx;
+  background: rgba(201,111,74,.08); border: 2rpx solid rgba(201,111,74,.2);
+  border-radius: 20rpx; margin: 0 32rpx 24rpx; padding: 16rpx 24rpx;
+}
+.ai-summary .sp { font-size: 28rpx; }
+.ai-summary .tx { flex: 1; font-size: 23rpx; color: var(--ink-2); line-height: 1.5; }
+.ai-summary .b { color: var(--accent); font-weight: 700; margin: 0 4rpx; }
+.ai-summary .br { display: inline-block; }
+
 /* 表单 */
-.form-section { padding: 0 32rpx 32rpx; }
+.form-section { padding: 0 32rpx; }
+.section-title {
+  display: flex; align-items: center; gap: 12rpx;
+  font-size: 25rpx; font-weight: 700; color: var(--ink);
+  font-family: var(--font-display); margin: 36rpx 0 20rpx;
+}
+.section-title::after {
+  content: ''; flex: 1; height: 2rpx; background: rgba(80,60,30,.12); margin-left: 16rpx;
+}
 .form-label { font-size: 24rpx; color: var(--ink-2); margin-bottom: 12rpx; font-weight: 500; }
+.form-label .hint { font-size: 19rpx; color: var(--ink-3); font-weight: 400; margin-left: 10rpx; }
 .form-input {
   box-sizing: border-box; width: 100%; height: 72rpx; line-height: 72rpx; padding: 0 24rpx;
   border: 2rpx solid rgba(80,60,30,.14); border-radius: 20rpx;
@@ -37,36 +58,84 @@
   border: 2rpx solid rgba(80,60,30,.14); border-radius: 20rpx;
   font-size: 26rpx; background: var(--card); color: var(--ink); margin-bottom: 24rpx;
 }
-/* segment 分段选择：选中白底墨字+阴影（原型 183-190） */
+/* segment 分段选择 */
 .segment {
   display: flex; background: rgba(80,60,30,.08); border-radius: 20rpx; padding: 6rpx; margin-bottom: 24rpx;
 }
 .segment-item {
-  flex: 1; text-align: center; padding: 14rpx 0; font-size: 24rpx; border-radius: 16rpx;
-  color: var(--ink-2);
+  flex: 1; text-align: center; padding: 14rpx 0; font-size: 24rpx; border-radius: 16rpx; color: var(--ink-2);
 }
 .segment-item.active {
   background: var(--card); color: var(--ink); font-weight: 600;
   box-shadow: 0 2rpx 6rpx rgba(0,0,0,0.08);
 }
-/* AI 提示条 */
-.ai-hint {
-  display: flex; align-items: center; gap: 16rpx; padding: 16rpx 24rpx;
-  background: #F0FDF4; border-radius: 20rpx; margin-bottom: 28rpx; border: 2rpx solid #BBF7D0;
+
+/* 品牌匹配卡 */
+.brand-match {
+  display: flex; align-items: center; gap: 16rpx;
+  background: var(--card); border: 2rpx solid rgba(201,111,74,.18); border-radius: 20rpx;
+  padding: 16rpx 20rpx; margin-bottom: 24rpx;
 }
-.ai-hint-icon { font-size: 28rpx; }
-.ai-hint-text { font-size: 24rpx; color: #166534; }
-.ai-tag { font-size: 18rpx; background: #07C160; color: #fff; padding: 4rpx 12rpx; border-radius: 12rpx; }
-/* 照片条 */
-.strip-wrap { margin-bottom: 28rpx; }
-/* 联想 chips */
-.sug-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12rpx; margin: -12rpx 0 24rpx; }
-.sug-cap { font-size: 20rpx; color: var(--ink-2); width: 68rpx; }
-.sug-pill {
-  font-size: 22rpx; padding: 6rpx 20rpx; border-radius: 999rpx; background: var(--card);
+.brand-logo {
+  width: 56rpx; height: 56rpx; border-radius: 14rpx; background: var(--accent); color: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 28rpx; font-weight: 700;
+  flex-shrink: 0; overflow: hidden;
+}
+.brand-logo-img { width: 56rpx; height: 56rpx; border-radius: 14rpx; flex-shrink: 0; }
+.brand-match-info { flex: 1; }
+.brand-match-name { font-size: 26rpx; font-weight: 600; color: var(--ink); }
+.brand-match-desc { font-size: 20rpx; color: var(--ink-3); margin-top: 4rpx; }
+.brand-match .arrow { font-size: 34rpx; color: var(--ink-3); }
+/* 手动录入品牌占位卡 */
+.brand-pick {
+  box-sizing: border-box; padding: 0 24rpx; height: 72rpx; line-height: 72rpx;
+  border: 2rpx dashed rgba(80,60,30,.2); border-radius: 20rpx;
+  font-size: 25rpx; color: var(--ink-2); margin-bottom: 24rpx;
+}
+
+/* 国家联想下拉 */
+.combo-wrap { position: relative; }
+.combo-input { margin-bottom: 0; }
+.combo-pop {
+  position: absolute; top: 78rpx; left: 0; right: 0; z-index: 40;
+  background: #fff; border: 2rpx solid rgba(80,60,30,.14); border-radius: 16rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0,0,0,.1); max-height: 420rpx; overflow-y: auto;
+}
+.combo-opt {
+  padding: 18rpx 24rpx; font-size: 26rpx; color: var(--ink); border-bottom: 1rpx solid rgba(80,60,30,.06);
+}
+.combo-opt:last-child { border-bottom: none; }
+.combo-opt.manual { color: var(--accent); }
+.combo-opt.empty { color: var(--ink-3); text-align: center; }
+
+/* 豆种/处理法 chip */
+.chip-list { display: flex; flex-wrap: wrap; gap: 12rpx; margin: -8rpx 0 24rpx; }
+.chip {
+  font-size: 22rpx; padding: 8rpx 20rpx; border-radius: 999rpx; background: var(--card);
   border: 2rpx solid rgba(80,60,30,.14); color: var(--ink-2);
 }
-.sug-pill:active { background: rgba(201,111,74,.12); color: var(--accent); border-color: var(--accent); }
+.chip.sel {
+  background: rgba(201,111,74,.1); border-color: var(--accent); color: var(--accent); font-weight: 600;
+}
+
+/* 输入框后缀单位 */
+.input-suffix { position: relative; }
+.input-suffix .form-input { padding-right: 72rpx; }
+.input-suffix .suffix {
+  position: absolute; right: 24rpx; top: 0; height: 72rpx; line-height: 72rpx;
+  font-size: 26rpx; color: var(--ink-3); pointer-events: none;
+}
+
+/* AI 提取标签小按钮 */
+.ai-mini {
+  font-size: 21rpx; color: #fff; background: var(--accent);
+  padding: 6rpx 16rpx; border-radius: 20rpx; margin-left: 16rpx;
+}
+.ai-mini.busy { opacity: .6; }
+
+/* 照片条 */
+.strip-wrap { margin-bottom: 20rpx; }
+
 /* 风味标签行 */
 .flavor-tag-list { display: flex; flex-wrap: wrap; gap: 12rpx; margin-bottom: 24rpx; }
 .flavor-tag {
@@ -76,25 +145,41 @@
 .flavor-tag .icon { font-size: 26rpx; }
 .flavor-tag .icon-img { width: 32rpx; height: 32rpx; }
 .flavor-tag .remove { color: var(--ink-3); font-size: 28rpx; margin-left: 4rpx; }
+/* 「＋添加」chip：与按钮同高 76rpx，视觉保持轻盈 */
 .add-flavor-btn {
-  padding: 10rpx 20rpx; background: #F7F5F0; border-radius: 28rpx; font-size: 24rpx;
+  box-sizing: border-box; min-height: var(--btn-h); min-width: var(--btn-h);
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 24rpx; background: #F7F5F0; border-radius: 28rpx; font-size: 24rpx;
   color: var(--ink-2); border: 2rpx dashed #ddd;
 }
-/* footer 主按钮 */
-.footer-bar { padding: 24rpx 32rpx calc(env(safe-area-inset-bottom) + 40rpx); }
-/* 保存确认对话框（原型 save-dialog ×2） */
+
+/* footer 主按钮：随表单流，滚到底才出现；submitting 禁用态；宽屏钳制不溢出 */
+.footer-bar {
+  padding: 32rpx 32rpx calc(env(safe-area-inset-bottom) + 48rpx);
+  display: flex; justify-content: center;
+}
+.submit-btn { width: 100%; max-width: 600px; box-sizing: border-box; }
+.submit-btn.is-submitting { opacity: .6; pointer-events: none; }
+/* 宽屏（iPad 横屏/桌面）下 rpx 放大，用定值钳制与 76rpx(38px) 视觉一致 */
+@media (min-width: 768px) {
+  .submit-btn { width: 600px; height: 40px; line-height: 40px; font-size: 15px; border-radius: 10px; }
+}
+
+/* 保存确认对话框 */
 .dialog-mask {
   position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 200;
   background: rgba(26,27,28,.45); display: flex; align-items: center; justify-content: center;
 }
 .dialog {
-  width: 600rpx; background: #FFFDF8; border-radius: 32rpx; padding: 44rpx 40rpx 36rpx;
+  box-sizing: border-box; width: 600rpx; background: #FFFDF8; border-radius: 32rpx; padding: 44rpx 40rpx 36rpx;
   box-shadow: 0 24rpx 80rpx rgba(0,0,0,.22);
 }
 .dialog-title { font-size: 32rpx; font-weight: 700; color: var(--ink); text-align: center; margin-bottom: 12rpx; }
 .dialog-desc { font-size: 25rpx; color: var(--ink-2); text-align: center; margin-bottom: 36rpx; }
-.dialog-actions { display: flex; flex-direction: column; gap: 24rpx; }
-.dialog-cancel { height: 72rpx; line-height: 72rpx; text-align: center; font-size: 26rpx; color: var(--ink-3); }
+.dialog-actions { display: flex; flex-direction: column; gap: 16rpx; }
+/* 取消：与保存/不保存同高 76rpx，文字弱化 */
+.dialog-cancel { height: var(--btn-h); line-height: var(--btn-h); text-align: center; font-size: 26rpx; color: var(--ink-3); }
+
 /* 风味标签浮层 */
 .picker-mask {
   position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 150; background: rgba(26,27,28,.35);
@@ -117,3 +202,19 @@
 .flavor-emoji { font-size: 32rpx; line-height: 1.15; }
 .flavor-cell-img { width: 40rpx; height: 40rpx; }
 .flavor-name { font-size: 20rpx; color: var(--ink); }
+
+/* 品牌选择浮层 */
+.brand-search { margin-bottom: 16rpx; }
+.brand-opt {
+  display: flex; align-items: center; gap: 16rpx;
+  padding: 16rpx 8rpx; border-bottom: 1rpx solid rgba(80,60,30,.06);
+}
+.brand-opt-logo {
+  width: 64rpx; height: 64rpx; border-radius: 16rpx; color: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 26rpx; font-weight: 700;
+}
+.brand-opt-info { flex: 1; min-width: 0; }
+.brand-opt-name { font-size: 26rpx; font-weight: 600; color: var(--ink); }
+.brand-opt-desc { font-size: 20rpx; color: var(--ink-3); margin-top: 4rpx; }
+.brand-opt-check { color: var(--accent); font-size: 30rpx; font-weight: 700; }
+.brand-opt-empty { padding: 40rpx 0; text-align: center; font-size: 24rpx; color: var(--ink-3); }

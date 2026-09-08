@@ -22,7 +22,22 @@
 }
 .form-input.picker { display: flex; align-items: center; justify-content: space-between; }
 .form-input .caret { color: var(--ink-3); font-size: 22rpx; }
-.ai-tag { font-size: 18rpx; background: var(--green); color: #fff; padding: 4rpx 12rpx; border-radius: 12rpx; }
+.ai-tag { font-size: 18rpx; background: var(--accent); color: #fff; padding: 4rpx 12rpx; border-radius: 12rpx; }
+
+/* 图标对比（重新生成后出现） */
+.icon-compare {
+  display: flex; align-items: center; justify-content: center; gap: 32rpx;
+  margin: 24rpx 0;
+}
+.compare-box { display: flex; flex-direction: column; align-items: center; gap: 8rpx; }
+.compare-thumb {
+  width: 120rpx; height: 120rpx; border-radius: 50%; background: var(--card);
+  display: flex; align-items: center; justify-content: center; font-size: 56rpx;
+  border: 2rpx solid rgba(80,60,30,.1); overflow: hidden;
+}
+.compare-thumb img { width: 100%; height: 100%; }
+.compare-label { font-size: 20rpx; color: var(--ink-3); }
+.compare-vs { font-size: 28rpx; color: var(--ink-3); }
 
 /* 按钮行 */
 .btn-row { display: flex; gap: 16rpx; margin-top: 8rpx; }
@@ -30,7 +45,7 @@
 .flex1 { flex: 1; }
 .btn-ink { background: var(--ink); color: #fff; }
 .pill {
-  height: 88rpx; line-height: 84rpx; border-radius: 999rpx;
+  height: var(--btn-h); line-height: 72rpx; border-radius: 999rpx;
   font-size: 26rpx; text-align: center; padding: 0 24rpx; box-sizing: border-box;
 }
 .pill.dark { background: var(--ink); color: #fff; }

@@ -3,13 +3,15 @@ page { background: #1C1712; color: #fff; }
 .processing { min-height: 100vh; }
 /* 顶栏 */
 .proc-header {
-  text-align: center;
-  padding: calc(env(safe-area-inset-top) + 16rpx) 32rpx 24rpx;
+  display: flex; align-items: center; gap: 24rpx;
+  padding: 0 32rpx 24rpx;
 }
 .proc-title {
-  font-size: 34rpx; font-weight: 700; color: #fff;
-  font-family: var(--font-display); letter-spacing: 1rpx;
+  flex: 1; font-size: 34rpx; font-weight: 700; color: #fff;
+  font-family: var(--font-display); letter-spacing: 1rpx; text-align: center;
 }
+.back-btn { font-size: 40rpx; width: 64rpx; color: #fff; flex-shrink: 0; }
+.nav-spacer { width: 180rpx; flex-shrink: 0; }
 /* 步骤条 */
 .proc-steps {
   display: flex; align-items: center; justify-content: center; gap: 16rpx;

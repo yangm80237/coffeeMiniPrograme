@@ -27,10 +27,10 @@ test('手动覆盖 hurry/finished/drinking/resting', () => {
 test('statusOverride=null 等价自动计算', () => {
   assert.equal(computeStatus({ roastDate: '2026-09-01', statusOverride: null }, d('2026-09-03')).status, 'resting');
 });
-test('状态条文案（规格书3.4）', () => {
+test('状态条文案（规格书3.4；克重移至属性磁贴，状态条不再重复）', () => {
   const now = d('2026-09-07');
   assert.equal(statusBarText({ roastDate: '2026-08-28', weight: 200 }, now), '还需10天 · 养豆期20天');
-  assert.equal(statusBarText({ roastDate: '2026-08-28', weight: 200, statusOverride: 'drinking' }, now), '200g · 最佳赏味第11天');
-  assert.equal(statusBarText({ roastDate: '2026-08-28', weight: 200, statusOverride: 'hurry' }, now), '200g · 风味衰退期 · 尽快饮用');
-  assert.equal(statusBarText({ roastDate: '2026-08-28', weight: 200, statusOverride: 'finished' }, now), '200g · 本袋已喝完');
+  assert.equal(statusBarText({ roastDate: '2026-08-28', weight: 200, statusOverride: 'drinking' }, now), '最佳赏味第11天');
+  assert.equal(statusBarText({ roastDate: '2026-08-28', weight: 200, statusOverride: 'hurry' }, now), '风味衰退期 · 尽快饮用');
+  assert.equal(statusBarText({ roastDate: '2026-08-28', weight: 200, statusOverride: 'finished' }, now), '本袋已喝完');
 });

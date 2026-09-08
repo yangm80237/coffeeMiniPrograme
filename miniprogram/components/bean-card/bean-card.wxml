@@ -6,10 +6,17 @@
     <view class="pill" style="background: {{bean.statusInfo.status === 'resting' ? 'var(--status-resting)' : bean.statusInfo.status === 'drinking' ? 'var(--status-drinking)' : bean.statusInfo.status === 'hurry' ? 'var(--status-hurry)' : 'var(--status-finished)'}}">
       {{bean.statusInfo.status === 'resting' ? '还需' + bean.statusInfo.daysLeft + '天' : bean.statusInfo.status === 'finished' ? '喝完' : '在喝'}}</view>
     <view wx:if="{{bean.statusInfo.status === 'hurry'}}" class="hurry">⏰ 抓紧喝</view>
-    <view wx:if="{{bean.isNew}}" class="new">NEW</view>
+  </view>
+  <!-- 养豆进度条（仅养豆中） -->
+  <view wx:if="{{bean.statusInfo.status === 'resting'}}" class="rest-bar">
+    <view class="rest-progress"><view class="rest-fill" style="width: {{restPct}}%"></view></view>
+    <text class="rest-text">{{bean.statusInfo.daysLeft}}天后开喝</text>
   </view>
   <view class="info">
-    <view class="brand">{{bean.brand}}</view>
+    <view class="brand-row">
+      <view class="brand">{{bean.brand}}</view>
+      <view wx:if="{{bean.isNew}}" class="new">NEW</view>
+    </view>
     <view class="name">{{bean.name}}</view>
     <view class="meta">
       <view class="flavors">

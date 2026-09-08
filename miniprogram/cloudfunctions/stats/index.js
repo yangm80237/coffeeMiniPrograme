@@ -26,7 +26,12 @@ function aggregate(beans) {
     if (s.status !== 'finished') totalWeight += b.weight || 0; // 喝完不计
     if (b.process) processDist[b.process] = (processDist[b.process] || 0) + 1;
     if (b.country) countryMap[b.country] = (countryMap[b.country] || 0) + 1;
-    if (b.variety) varietyMap[b.variety] = (varietyMap[b.variety] || 0) + 1;
+    if (b.variety) {
+      // String() 兜底非字符串（数组/数字），与 api/stats.js 同口径
+      String(b.variety).split(/[·,，、;；\s]+/).filter(Boolean).forEach((v) => {
+        varietyMap[v] = (varietyMap[v] || 0) + 1;
+      });
+    }
   }
   const countryDist = Object.entries(countryMap)
     .map(([name, count]) => ({ name, flag: getFlag(name), count }))
