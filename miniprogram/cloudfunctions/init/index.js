@@ -35,7 +35,7 @@ exports.main = async (event) => {
   const ark = await db.collection('config').doc('ark').get().catch(() => null);
   if (!ark || !ark.data) {
     await db.collection('config').add({
-      data: { _id: 'ark', modelVision: 'doubao-seed-1.6', modelImage: 'doubao-seedream-4.0' },
+      data: { _id: 'ark', modelVision: 'doubao-seed-2-0-lite-260428', modelImage: 'doubao-seedream-5-0-260128' },
     });
   }
   return { brandsInserted, flavorsInserted };
