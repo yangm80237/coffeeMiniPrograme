@@ -24,4 +24,20 @@
       <switch checked="{{autoIcon}}" bindchange="onAutoIcon" color="#c96f4a" />
     </view>
   </view>
+
+  <!-- 品牌库重初始化：全清重建 + AI 补资料，logo 留空手传；45s 预算断点续跑 -->
+  <view class="card panel reinit">
+    <view class="panel-title">品牌库重初始化</view>
+    <view class="form-label">每行一条：「品牌名,国家」（中英文逗号均可）</view>
+    <textarea class="reinit-input" value="{{reinitLines}}" bindinput="onReinitLines"
+      placeholder="Blue Bottle,美国&#10;Fuglen,挪威" maxlength="-1" />
+    <view class="btn-row">
+      <view class="btn btn-danger flex1 {{reinitRunning ? 'is-busy' : ''}}" bindtap="startReinit">开始重建</view>
+      <view wx:if="{{reinitRemaining > 0}}" class="btn btn-gray flex1 {{reinitRunning ? 'is-busy' : ''}}" bindtap="continueReinit">继续（剩 {{reinitRemaining}}）</view>
+    </view>
+    <view wx:if="{{reinitProcessed || reinitRemaining}}" class="note">
+      本轮已处理 {{reinitProcessed}} · 剩余 {{reinitRemaining}}{{reinitNext ? ' · 下一个：' + reinitNext : ''}}
+    </view>
+    <view class="note danger">⚠️ 重建将清空现有全部品牌（含自建），老豆子的品牌关联会变空；logo 请重建后手动上传</view>
+  </view>
 </view>

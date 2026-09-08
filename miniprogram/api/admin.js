@@ -16,4 +16,9 @@ function updateModelConfig(patch) {
   CONFIG = { ...CONFIG, ...patch, source: 'admin' };
   return Promise.resolve({ ...CONFIG });
 }
-module.exports = { getModelConfig, updateModelConfig, isOwner };
+// 品牌全量重初始化（仅云开发模式；mock 分支无对应实现）
+function reinitBrands(lines) {
+  if (enabled()) return call('admin', { action: 'reinitBrands', lines });
+  return Promise.reject(new Error('仅云开发模式可用'));
+}
+module.exports = { getModelConfig, updateModelConfig, reinitBrands, isOwner };

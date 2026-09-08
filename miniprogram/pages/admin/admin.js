@@ -2,7 +2,11 @@
 const adminApi = require('../../api/admin');
 
 Page({
-  data: { modelVision: '', modelImage: '', autoIcon: true, source: '', sourceLabel: '' },
+  data: {
+    modelVision: '', modelImage: '', autoIcon: true, source: '', sourceLabel: '',
+    reinitLines: '', reinitRunning: false,
+    reinitProcessed: 0, reinitRemaining: 0, reinitNext: '',
+  },
   onShow() { this.refresh(); },
   refresh() {
     return adminApi.getModelConfig().then((c) => {

@@ -34,3 +34,14 @@
 .switch-info { flex: 1; }
 .switch-title { font-size: 26rpx; font-weight: 600; color: var(--ink); }
 .switch-desc { font-size: 22rpx; color: var(--ink-3); margin-top: 6rpx; line-height: 1.5; }
+
+/* 品牌库重初始化卡片（页面底部，沿用卡片+btn 模式） */
+.reinit { margin-top: 24rpx; }
+.reinit-input {
+  width: 100%; height: 240rpx; padding: 20rpx 24rpx; box-sizing: border-box;
+  border: 2rpx solid rgba(80, 60, 30, .14); border-radius: 16rpx;
+  font-size: 24rpx; background: #fff; color: var(--ink); margin-bottom: 24rpx;
+}
+.btn-danger { background: #e64340; color: #fff; }
+.is-busy { opacity: .6; pointer-events: none; }
+.note.danger { color: #e64340; }
