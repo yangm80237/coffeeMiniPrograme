@@ -9,9 +9,13 @@ const db = cloud.database();
 const _ = db.command;
 
 const DEFAULT_MODEL = 'doubao-seed-2-0-lite-260428';
+const { agValueToRoast } = require('./utils/agRoast'); // Ag值/色值数字 → 烘焙度五档（自动判断）
+const { resolveVisionConfig } = require('./utils/visionConfig'); // 视觉服务商：火山方舟 volc / DeepSeek deepseek
 
-// ===== PROMPT v2：分层结构（任务 / 领域知识库 / 翻译规则 / 输出 schema / 质量标准）=====
+// ===== PROMPT v3：分层结构 + 品牌识别规则 + 处理法/豆种原文优先 =====
 // 适配 lite 档模型：词表全部内嵌进提示词（不依赖模型自身知识），逐字段说明输出要求
+// v3 变更：① process 从封闭词表改为原文优先（新工艺保留完整描述）② variety 词表外严格保留原文
+//          ③ 新增品牌识别规则（多品牌时选烘焙商名）+ brandCandidates 候选列表
 const PROMPT = `你是专业的咖啡豆包装标签识别助手。请从图片中提取结构化信息，严格只输出一个 JSON 对象，不要输出任何解释文字、注释或代码块标记。
 
 【任务】识别包装上的品牌、豆名、产地、处理法、豆种、烘焙度、克重、烘焙日期与风味描述，按下述规则归一后输出。
@@ -23,34 +27,44 @@ const PROMPT = `你是专业的咖啡豆包装标签识别助手。请从图片�
 - 中：一爆与二爆之间中段，酸甜均衡，常见标注 Medium / City+
 - 中深：二爆初期，豆表少量出油，苦甜均衡偏苦，常见标注 Medium-Dark / Full City
 - 深：二爆密集后，豆表明显出油，苦味主导，常见标注 Dark / French / Italian / 深烘
-2. 处理法标准词表（process 必须输出以下标准词之一，无法判断给空字符串）：
+2. 处理法参考词表（process 优先输出包装原文；属于以下标准法的可输出标准词；发酵变体/新工艺保留完整原文，如"冷泉发酵水洗""暗房发酵日晒"）：
 - 水洗（Washed / Fully washed / 水洗处理）
 - 日晒（Natural / Sun dried / Dry process / 日晒处理）
 - 蜜处理（Honey，含黄蜜 Yellow / 红蜜 Red / 黑蜜 Black honey）
 - 厌氧日晒（Anaerobic / Anaerobic natural / 厌氧发酵 / 双重厌氧 / 二氧化碳浸渍 Carbonic）
 - 湿剥法（Wet hulled / Giling basah / Semi-washed，印尼苏门答腊常见）
 - 半水洗（Pulped natural / Semi-washed 处理）
-3. 常见产地国中英对照（country 输出中文标准名）：埃塞俄比亚 Ethiopia、肯尼亚 Kenya、巴拿马 Panama、哥伦比亚 Colombia、危地马拉 Guatemala、巴西 Brazil、印度尼西亚 Indonesia（苏门答腊/爪哇）、卢旺达 Rwanda、洪都拉斯 Honduras、哥斯达黎加 Costa Rica、也门 Yemen、中国 China（云南）、美国 USA（夏威夷）、日本 Japan、德国 Germany、丹麦 Denmark、挪威 Norway、韩国 Korea
-4. 常见豆种词表（variety 优先匹配词表写法；词表外保留原文，有对应中文优先输出中文）：瑰夏 Geisha/Gesha、铁皮卡 Typica、波旁 Bourbon、SL28、SL34、SL09、Batian、Ruiru11、卡杜拉 Caturra、卡杜艾 Catuai/Catuai pb、卡帝姆 Catimor、Heirloom、Wolisho/Wolisbo、Dega、aji、Typica Americana、purple caturra、曼德拉、拼配、74110、74112、74158
+3. 常见产地国中英对照（country 输出中文标准名）：埃塞俄比亚 Ethiopia、肯尼亚 Kenya、巴拿马 Panama、哥伦比亚 Colombia、危地马拉 Guatemala、巴西 Brazil、印度尼西亚 Indonesia（苏门答腊/爪哇）、卢旺达 Rwanda、洪都拉斯 Honduras、哥斯达黎加 Costa Rica、也门 Yemen、中国 China（云南）、美国 USA（夏威夷）、日本 Japan、德国 Germany、丹麦 Denmark、挪威 Norway、韩国 Korea、厄瓜多尔 Ecuador
+4. 常见豆种词表（variety：词表内有对应中文的用词表名；词表外严格保留包装原文，不留空、不猜测、不套用词表）：瑰夏 Geisha/Gesha、铁皮卡 Typica、波旁 Bourbon、SL28、SL34、SL09、Batian、Ruiru11、卡杜拉 Caturra、卡杜艾 Catuai/Catuai pb、卡帝姆 Catimor、Heirloom、Wolisho/Wolisbo、Dega、aji、Typica Americana、purple caturra、曼德拉、拼配、74110、74112、74158
 5. 常见风味词参考（flavorDesc 与 flavors 用中文）：柑橘、柠檬、莓果、蓝莓、草莓、热带水果、芒果、菠萝、百香果、花香、茉莉、玫瑰、桂花、焦糖、蜂蜜、红糖、香草、巧克力、黑巧、坚果、榛子、杏仁、香料、肉桂、发酵、酒香、茶感、奶油、麦芽、草本
+
+【品牌识别规则】
+- 包装上可能同时出现多个名称：烘焙商品牌、系列名、联名名、处理厂名等。
+- brand 字段只输出**烘焙商品牌名**，判断优先级：
+  1. 包含 "COFFEE ROASTERS" / "ROASTERS" / "COFFEE" / "咖啡" / "烘焙" 等烘焙厂标识的名称，优先作为品牌
+  2. 若无此类标识，选择字体最大、最显著（通常在包装正面居中或顶部）的名称
+  3. 系列名、子品牌名、联名合作方名、处理厂名不算品牌
+- brandCandidates：把包装上出现的所有疑似品牌/系列名列出来（去重，保留原文），供用户确认
 
 【翻译规则】
 - brand 与 name：保留包装原文，拉丁字母/日文/韩文一律不翻译、不转写
 - country：输出中文标准名（对照知识库 3）
-- process：输出处理法标准词（对照知识库 2）
-- variety：优先匹配知识库 4 词表写法，词表内有对应中文用词表名，词表外保留原文
+- process：优先输出包装原文；已知标准法可用标准词；新工艺/发酵变体保留完整原文
+- variety：词表内用词表名，词表外严格保留原文
 - flavorDesc：翻译为中文
 - flavors：每项为一个独立中文风味词（参考知识库 5），从风味描述拆分
 
 【输出 JSON schema（逐字段说明）】
 {
-  "brand": "品牌名，保留原文，无法识别给空字符串",
+  "brand": "烘焙商品牌名，保留原文，按品牌识别规则选择，无法识别给空字符串",
+  "brandCandidates": ["包装上所有疑似品牌/系列名，保留原文；无则 []"],
   "name": "咖啡豆名，保留原文，无法识别给空字符串",
   "country": "国家，中文标准名，无法识别给空字符串",
   "origin": "产区/庄园/处理厂名，无法识别给空字符串",
-  "variety": "豆种，按翻译规则输出，无法识别给空字符串",
-  "process": "处理法标准词，无法识别给空字符串",
+  "variety": "豆种，词表内用词表名，词表外保留原文，无法识别给空字符串",
+  "process": "处理法，优先原文/标准词，新工艺保留完整原文，无法识别给空字符串",
   "altitude": "海拔，如 2200m，无法识别给空字符串",
+  "agValue": "Agtron/色值烘焙标注，如 Agtron 55 或 Ag2 或 色值 60，取数字或档号原文，无标注给空字符串",
   "weight": "净含量克重数字，如 200，无法识别给 null",
   "roastLevel": "浅|中浅|中|中深|深 五档之一，无法判断给空字符串",
   "roastDate": "烘焙日期，格式 YYYY-MM-DD，无法识别给空字符串",
@@ -61,7 +75,7 @@ flavors 说明：从包装风味栏/flavorDesc 拆出的独立风味词数组，
 
 【质量标准】
 - 只依据图片可见信息，禁止编造或推测缺失字段
-- 无法识别的字符串字段给空字符串，数字给 null，flavors 给 []
+- 无法识别的字符串字段给空字符串，数字给 null，flavors 给 []，brandCandidates 给 []
 - 同一包装重复识别时同一字段输出一致（选最直接的读数）
 - 只输出一个 JSON 对象，第一个字符必须是 {`;
 
@@ -110,27 +124,24 @@ async function requireFamily(openid) {
 const builtinOrMine = (familyId) => _.or([{ familyId }, { familyId: _.exists(false) }, { familyId: null }]);
 const escapeReg = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-function postChat(key, model, b64) {
+// 多图视觉识别（正/背面合并）：b64s 数组 → content 多个 image_url，最后追加文本 PROMPT
+function postChat(vc, b64s) {
   return new Promise((resolve, reject) => {
+    const content = (b64s || []).map((b) => ({ type: 'image_url', image_url: { url: 'data:image/jpeg;base64,' + b } }));
+    content.push({ type: 'text', text: PROMPT });
     const payload = JSON.stringify({
-      model,
-      messages: [{
-        role: 'user',
-        content: [
-          { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,' + b64 } },
-          { type: 'text', text: PROMPT },
-        ],
-      }],
+      model: vc.model,
+      messages: [{ role: 'user', content }],
       temperature: 0.2,
     });
     const req = https.request({
-      hostname: 'ark.cn-beijing.volces.com',
-      path: '/api/v3/chat/completions',
+      hostname: vc.hostname,
+      path: vc.path,
       method: 'POST',
       timeout: 50000,
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${key}`,
+        Authorization: `Bearer ${vc.key}`,
         'Content-Length': Buffer.byteLength(payload),
       },
     }, (res) => {
@@ -139,11 +150,11 @@ function postChat(key, model, b64) {
       res.on('end', () => {
         let j = {};
         try { j = JSON.parse(buf || '{}'); } catch (e) { /* keep empty */ }
-        if (res.statusCode >= 400) return reject(new Error(`ARK_${res.statusCode}: ${buf.slice(0, 300)}`));
+        if (res.statusCode >= 400) return reject(new Error(`${vc.provider === 'deepseek' ? 'DS' : 'ARK'}_${res.statusCode}: ${buf.slice(0, 300)}`));
         resolve(j);
       });
     });
-    req.on('timeout', () => req.destroy(new Error('ARK_REQUEST_TIMEOUT')));
+    req.on('timeout', () => req.destroy(new Error('VISION_REQUEST_TIMEOUT')));
     req.on('error', reject);
     req.write(payload);
     req.end();
@@ -215,21 +226,13 @@ function normalizeCountry(v, map) {
   return s;
 }
 
-// process：精确命中 → 英文包含匹配（长 key 优先）→ 中文标准词包含 → 原样返回
+// process：精确同义词映射；新工艺/发酵变体（如"冷泉发酵水洗"）保留完整原文，不截断
 function normalizeProcess(v, map) {
   const s = cleanStr(v);
   if (!s) return '';
   const low = s.toLowerCase().replace(/[\s_-]+/g, ' ').trim();
   if (map[s]) return map[s];
   if (map[low]) return map[low];
-  const keys = Object.keys(map).sort((a, b) => b.length - a.length);
-  for (const k of keys) {
-    if (/[a-z]/.test(k) && low.includes(k)) return map[k];
-  }
-  for (const k of keys) {
-    if (!/[a-z]/.test(k) && s.includes(k)) return map[k];
-  }
-  if (/厌氧|二氧化碳浸渍|carbonic/.test(s + low)) return '厌氧日晒';
   return s;
 }
 
@@ -259,11 +262,13 @@ function normalize(raw, dict) {
   return {
     name: cleanStr(r.name),
     brandName: cleanStr(r.brand),
+    brandCandidates: Array.isArray(r.brandCandidates) ? r.brandCandidates.map(cleanStr).filter(Boolean) : [],
     country: normalizeCountry(r.country, d.country),
     origin: cleanStr(r.origin),
     variety: normalizeVariety(r.variety, d.variety),
     process: normalizeProcess(r.process, d.process),
     altitude: cleanStr(r.altitude),
+    agValue: cleanStr(r.agValue),
     weight: Number.isFinite(weight) && weight > 0 ? weight : '',
     roastLevel: normalizeRoast(r.roastLevel),
     roastDate: normalizeDate(r.roastDate),
@@ -272,44 +277,56 @@ function normalize(raw, dict) {
   };
 }
 
-async function writeLog(openid, familyId, model, started, ok, error) {
+async function writeLog(openid, familyId, model, provider, started, ok, error) {
   try {
     await db.collection('ai_logs').add({ data: {
-      action: 'recognize', openid, familyId: familyId || null, model,
+      action: 'recognize', openid, familyId: familyId || null, model, provider: provider || 'volc',
       ms: Date.now() - started, ok, error: error ? String(error).slice(0, 200) : '',
       createdAt: db.serverDate(),
     } });
   } catch (e) { /* 日志失败不影响主流程 */ }
 }
 
-exports.main = async (event) => {
+const main = async (event) => {
   const { OPENID } = cloud.getWXContext();
   const started = Date.now();
-  const key = process.env.ARK_API_KEY;
   let familyId = null;
   let model = '';
+  let provider = '';
   try {
     ({ familyId } = await requireFamily(OPENID));
-    if (!key) throw new Error('NO_ARK_KEY: 请在函数配置里设置环境变量 ARK_API_KEY');
-    const fileID = event.fileID;
-    if (!fileID) throw new Error('NO_FILE');
+    // 多图：event.fileIDs（数组，优先）或 event.fileID（单图兼容）→ 全部参与识别（正/背面合并）
+    const fileIDs = Array.isArray(event.fileIDs) && event.fileIDs.length
+      ? event.fileIDs
+      : (event.fileID ? [event.fileID] : []);
+    if (!fileIDs.length) throw new Error('NO_FILE');
 
-    // 1. 云存储临时链接
-    const t = await cloud.getTempFileURL({ fileList: [fileID] });
-    const url = t.fileList && t.fileList[0] && t.fileList[0].tempFileURL;
-    if (!url) throw new Error('TEMP_URL_FAIL');
+    // 1. 云存储临时链接（批量）
+    const t = await cloud.getTempFileURL({ fileList: fileIDs });
+    const urls = (t.fileList || []).map((x) => x && x.tempFileURL).filter(Boolean);
+    if (!urls.length) throw new Error('TEMP_URL_FAIL');
+    console.log('[recognize] tempURL ok,', urls.length, '张');
 
-    // 2. 下载图片 → base64
-    const buf = await fetchBuffer(url);
-    const b64 = buf.toString('base64');
+    // 2. 并发下载全部图片 → base64（识别链路已走前端压缩图，体积小、耗时可控）
+    const b64s = await Promise.all(urls.map(async (u) => (await fetchBuffer(u)).toString('base64')));
+    console.log('[recognize] downloaded + base64,', (b64s.join('').length / 1024).toFixed(0) + 'KB,', b64s.length, '张');
 
-    // 3. 模型配置：config.ark.modelVision → 环境变量 → 默认
+    // 3. 模型配置：config.ark（visionProvider + modelVision）→ 环境变量 → 默认（火山 volc / DeepSeek deepseek 可选）
     const ark = await db.collection('config').doc('ark').get().catch(() => null);
-    model = (ark && ark.data && ark.data.modelVision)
-      || process.env.ARK_MODEL_VISION || DEFAULT_MODEL;
+    const vc = resolveVisionConfig((ark && ark.data) || null, process.env);
+    provider = vc.provider;
+    model = vc.model;
+    if (!vc.key) {
+      throw new Error(provider === 'deepseek'
+        ? 'NO_DS_KEY: 请在函数配置里设置环境变量 DEEPSEEK_API_KEY'
+        : 'NO_ARK_KEY: 请在函数配置里设置环境变量 ARK_API_KEY');
+    }
 
-    // 4. 方舟视觉模型
-    const j = await postChat(key, model, b64);
+    // 4. 视觉识别（火山方舟 / DeepSeek，OpenAI 兼容请求体；多图合并）
+    const reqStart = Date.now();
+    console.log('[recognize] request sent ->', vc.provider, vc.model, '等待模型响应…');
+    const j = await postChat(vc, b64s);
+    console.log('[recognize] model response in', Date.now() - reqStart + 'ms');
     const content = j && j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
     if (!content) throw new Error('AI_PARSE_FAIL');
 
@@ -327,19 +344,23 @@ exports.main = async (event) => {
       process: norm.process,
       altitude: norm.altitude,
       weight: norm.weight,
-      roastLevel: norm.roastLevel,
+      // Ag 值/色值数字 → 烘焙度自动判断（优先于模型直判；无标注则用模型 roastLevel）
+      roastLevel: agValueToRoast(norm.agValue) || norm.roastLevel,
       roastDate: norm.roastDate,
       brewMethod: '',
       flavorTagIds: [],
       flavorDesc: norm.flavorDesc,
     };
 
-    // 7. 品牌匹配：品牌名与识别 brandName 互相 contains
+    // 7. 品牌匹配：name + nameEn + aliases 别名池双向 contains
     if (form.brandName) {
       const br = await db.collection('brands').where(builtinOrMine(familyId)).limit(1000).get();
       const re = new RegExp(escapeReg(form.brandName), 'i');
-      const hit = br.data.find((b) => b.name
-        && (re.test(b.name) || new RegExp(escapeReg(b.name), 'i').test(form.brandName)));
+      const hit = br.data.find((b) => {
+        const pool = [b.name, b.nameEn, ...(b.aliases || [])].filter(Boolean);
+        return pool.some((alias) =>
+          re.test(alias) || new RegExp(escapeReg(alias), 'i').test(form.brandName));
+      });
       if (hit) { form.brandId = hit._id; form.brandName = hit.name; }
     }
 
@@ -356,10 +377,10 @@ exports.main = async (event) => {
     const known = new Set(fr.data.map((f) => f.name));
     const newFlavors = norm.flavors.filter((n) => !known.has(n));
 
-    await writeLog(OPENID, familyId, model, started, true, '');
-    return { form, newFlavors };
+    await writeLog(OPENID, familyId, model, provider, started, true, '');
+    return { form, newFlavors, brandCandidates: norm.brandCandidates };
   } catch (e) {
-    await writeLog(OPENID, familyId, model || 'unknown', started, false, e && e.message);
+    await writeLog(OPENID, familyId, model || 'unknown', provider, started, false, e && e.message);
     throw e;
   }
 };

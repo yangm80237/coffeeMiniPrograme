@@ -6,7 +6,7 @@ const CATEGORIES = ['水果类', '花香类', '甜感类', '坚果可可类', '�
 
 Page({
   data: { mode: 'edit', categories: CATEGORIES, catIndex: 0,
-    name: '', emoji: '', iconUrl: '', usage: 0, regenerated: false },
+    name: '', emoji: '', iconUrl: '', usage: 0, regenerated: false, saving: false },
   onLoad(options) {
     if (options.mode === 'new') { this.setData({ mode: 'new' }); return; }
     this.id = options.id;
@@ -44,19 +44,21 @@ Page({
     this.setData({ regenerated: false });
   },
   save() {
+    if (this.data.saving) return; // 防重复提交
     const name = (this.data.name || '').trim();
     if (!name) return wx.showToast({ title: '请填写名称', icon: 'none' });
     const category = CATEGORIES[this.data.catIndex];
+    this.setData({ saving: true });
+    const done = () => {
+      this.setData({ saving: false });
+      wx.showToast({ title: this.data.mode === 'new' ? '已新增' : '已保存' });
+      setTimeout(() => wx.navigateBack(), 600);
+    };
+    const fail = () => { this.setData({ saving: false }); wx.showToast({ title: '保存失败', icon: 'none' }); };
     if (this.data.mode === 'new') {
-      flavorApi.createFlavor({ name, category }).then(() => {
-        wx.showToast({ title: '已新增' });
-        setTimeout(() => wx.navigateBack(), 600);
-      });
+      flavorApi.createFlavor({ name, category }).then(done).catch(fail);
     } else {
-      flavorApi.updateFlavor(this.id, { name, category }).then(() => {
-        wx.showToast({ title: '已保存' });
-        setTimeout(() => wx.navigateBack(), 600);
-      });
+      flavorApi.updateFlavor(this.id, { name, category }).then(done).catch(fail);
     }
   },
   remove() {

@@ -72,6 +72,7 @@ exports.main = async (event) => {
       const doc = {
         name: event.name || '',
         nameEn: event.nameEn || '',
+        aliases: Array.isArray(event.aliases) ? event.aliases : [],
         logo: event.logo || '',
         country: event.country || '',
         description: event.description || '',
@@ -81,6 +82,44 @@ exports.main = async (event) => {
       };
       const r = await db.collection('brands').add({ data: doc });
       return { ...doc, _id: r._id, flag: getFlag(doc.country) };
+    }
+    case 'update': {
+      // 编辑品牌：patch 白名单字段（name/nameEn/aliases/logo/country/description）
+      const { familyId } = await requireFamily(OPENID);
+      const r = await db.collection('brands').doc(event.id).get().catch(() => null);
+      const brand = r && r.data;
+      if (!brand) throw new Error('NOT_FOUND');
+      if (!(brand.familyId === undefined || brand.familyId === null || brand.familyId === familyId)) {
+        throw new Error('NOT_FOUND');
+      }
+      const p = event.patch || {};
+      const data = {};
+      if (p.name !== undefined) data.name = String(p.name || '').trim();
+      if (p.nameEn !== undefined) data.nameEn = String(p.nameEn || '').trim();
+      if (p.aliases !== undefined) {
+        data.aliases = Array.isArray(p.aliases)
+          ? p.aliases.map((a) => String(a || '').trim()).filter(Boolean)
+          : [];
+      }
+      if (p.logo !== undefined) data.logo = p.logo || '';
+      if (p.country !== undefined) data.country = String(p.country || '').trim();
+      if (p.description !== undefined) data.description = String(p.description || '').trim();
+      await db.collection('brands').doc(event.id).update({ data });
+      return { ...brand, ...data, flag: getFlag(data.country !== undefined ? data.country : brand.country) };
+    }
+    case 'delete': {
+      // 仅本家庭自建品牌可删；内置品牌受保护；关联豆子的 brandId 清空（悬空品牌）
+      const { familyId } = await requireFamily(OPENID);
+      const r = await db.collection('brands').doc(event.id).get().catch(() => null);
+      const brand = r && r.data;
+      if (!brand) throw new Error('NOT_FOUND');
+      if (brand.isBuiltin) throw new Error('BUILTIN_PROTECTED');
+      if (brand.familyId !== familyId) throw new Error('NOT_FOUND');
+      await Promise.all([
+        db.collection('brands').doc(event.id).remove(),
+        db.collection('beans').where({ familyId, brandId: event.id }).update({ data: { brandId: '' } }),
+      ]);
+      return { ok: true };
     }
     default:
       throw new Error('UNKNOWN_ACTION');

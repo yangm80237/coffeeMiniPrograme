@@ -7,6 +7,11 @@ const BRANDS = require('../mock/brands');
 const FLAVORS = require('../mock/flavors');
 const clone = (x) => JSON.parse(JSON.stringify(x));
 
+// 豆子写操作后失效品牌列表缓存（beanCount 联动更新；key 与 api/brand.js 一致）
+const invalidateBrandCache = () => {
+  try { wx.removeStorageSync('brandListCache_v1'); } catch (e) {}
+};
+
 function decorate(b) {
   const brand = BRANDS.find((x) => x._id === b.brandId) || {};
   const v = clone(b);
@@ -36,7 +41,7 @@ function getBean(id) {
   return b ? Promise.resolve(decorate(b)) : Promise.reject(new Error('NOT_FOUND'));
 }
 function createBean(data) {
-  if (enabled()) return call('bean', { action: 'create', data });
+  if (enabled()) return call('bean', { action: 'create', data }).then((r) => { invalidateBrandCache(); return r; });
   const bean = { ...clone(data), _id: 'bean' + Date.now(), isNew: true, myRating: null, wifeRating: null,
     myNotes: '', wifeNotes: '', inDate: data.inDate || new Date().toISOString().slice(0, 10) };
   MOCK.unshift(bean);

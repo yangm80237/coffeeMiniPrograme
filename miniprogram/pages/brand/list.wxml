@@ -23,7 +23,8 @@
   <!-- 品牌列表 -->
   <view class="brand-list">
     <view wx:for="{{brands}}" wx:key="_id" class="brand-item"
-      data-id="{{item._id}}" bindtap="goDetail">
+      data-id="{{item._id}}" data-name="{{item.name}}" data-builtin="{{item.isBuiltin}}"
+      bindtap="goDetail" bindlongpress="onLongPress">
       <image wx:if="{{item.logo}}" class="brand-item-logo img" src="{{item.logo}}" mode="aspectFill" />
       <view wx:else class="brand-item-logo" style="background:{{item.grad}};">{{item.first}}</view>
       <view class="brand-item-info">

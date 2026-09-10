@@ -15,9 +15,19 @@
   </view>
 
   <!-- AI 汇总条：唯一 AI 线索，陶土橙；仅 ai 形态 -->
-  <view wx:if="{{mode === 'ai'}}" class="ai-summary">
+  <view wx:if="{{mode === 'ai' && !aiError}}" class="ai-summary">
     <text class="sp">✨</text>
     <view class="tx">AI 已识别 <text class="b">11</text> 项并自动填充 · 已匹配品牌库<text class="br" />以下内容均可点按修改</view>
+  </view>
+
+  <!-- AI 识别失败提示条：processing 页透传失败原因（云函数未部署/缺 Key/超时等），避免静默空表单 -->
+  <view wx:if="{{mode === 'ai' && aiError}}" class="ai-error-bar" bindtap="clearAiError">
+    <text class="sp">⚠️</text>
+    <view class="tx">
+      <text class="t">AI 识别失败，已进入手动填写：</text>
+      <text class="d">{{aiError}}</text>
+      <text class="br" />点击此处可关闭提示
+    </view>
   </view>
 
   <view class="form-section">
@@ -33,7 +43,7 @@
     <!-- 照片：三种形态都展示（编辑态可查看/补拍） -->
     <view class="form-label">{{isEdit ? '照片' : '本次照片'}} <text class="hint">点选任一照片设为封面</text></view>
     <view class="strip-wrap">
-      <photo-strip photos="{{photos}}" current="{{coverIndex}}" badge-label="封面" bind:select="pickCover" bind:add="addPhoto" />
+      <photo-strip photos="{{photos}}" current="{{coverIndex}}" badge-label="封面" bind:select="pickCover" bind:add="addPhoto" bind:zoom="zoomPhoto" />
     </view>
 
     <!-- ☕ 来源 -->
@@ -50,6 +60,13 @@
         <view class="brand-match-desc">{{brandDesc || '从内置品牌库选择，或直接填写豆名'}}</view>
       </view>
       <text class="arrow">›</text>
+    </view>
+    <!-- AI 识别到品牌但未匹配库：展示候选名，点击可快速新建 -->
+    <view wx:if="{{mode === 'ai' && form.brandName && !form.brandId && brandCands.length}}" class="brand-cands-box">
+      <view class="brand-cands-hint">未匹配到品牌库，可点击候选名快速新建：</view>
+      <view class="chip-list">
+        <text wx:for="{{brandCands}}" wx:key="*this" class="chip" data-name="{{item}}" bindtap="createBrandFromCandidate">{{item}}</text>
+      </view>
     </view>
 
     <view class="form-label">豆名</view>
@@ -218,5 +235,10 @@
       </view>
       <view wx:if="{{!brandOptions.length}}" class="brand-opt-empty">无匹配品牌 · 可直接填写豆名</view>
     </scroll-view>
+    <!-- AI 识别到品牌名但未匹配时，提供一键新建 -->
+    <view wx:if="{{form.brandName && !form.brandId}}" class="brand-create-row" data-name="{{form.brandName}}" bindtap="createBrandFromCandidate">
+      <text class="brand-create-plus">＋</text>
+      <text>用「{{form.brandName}}」新建品牌</text>
+    </view>
   </view>
 </view>

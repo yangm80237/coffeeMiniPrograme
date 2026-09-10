@@ -28,11 +28,26 @@ async function getFamily(familyId) {
   return r && r.data ? r.data : null;
 }
 
+// users 文档全量合并写（set）：规避微信云开发 update 的 __evName bug（Cannot create field）
+// 保留既有字段，只覆盖 patch 中出现的字段
+function mergeUserDoc(me, patch) {
+  return {
+    _openid: me._openid,
+    nickname: me.nickname || '',
+    avatarUrl: me.avatarUrl || '',
+    familyId: me.familyId || null,
+    role: me.role || 'member',
+    createdAt: me.createdAt,
+    ...patch,
+  };
+}
+
 async function upsertUser(openid, patch) {
   const me = await getMe(openid);
   if (me) {
-    await db.collection('users').doc(me._id).update({ data: patch });
-    return { ...me, ...patch };
+    const merged = mergeUserDoc(me, patch);
+    await db.collection('users').doc(me._id).set({ data: merged });
+    return merged;
   }
   const doc = { _openid: openid, nickname: '', avatarUrl: '', ...patch, createdAt: db.serverDate() };
   const r = await db.collection('users').add({ data: doc });
@@ -72,7 +87,7 @@ exports.main = async (event) => {
       const patch = {};
       if (event.nickname !== undefined) patch.nickname = event.nickname;
       if (event.avatarUrl !== undefined) patch.avatarUrl = event.avatarUrl;
-      await db.collection('users').doc(me._id).update({ data: patch });
+      await db.collection('users').doc(me._id).set({ data: mergeUserDoc(me, patch) });
       return { ...me, ...patch };
     }
     case 'setInviteEnabled': {

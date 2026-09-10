@@ -14,6 +14,11 @@
   font-size: 24rpx; color: var(--ink-2); margin-top: 8rpx;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+.bd-edit {
+  display: inline-block; margin-top: 16rpx; padding: 8rpx 28rpx;
+  font-size: 24rpx; color: #c96f4a; border: 1rpx solid rgba(201, 111, 74, .5);
+  border-radius: 999rpx; background: rgba(201, 111, 74, .08);
+}
 .bd-stats { display: flex; justify-content: center; gap: 56rpx; margin: 24rpx 0 8rpx; }
 .bd-stats view { display: flex; flex-direction: column; text-align: center; }
 .bd-stats .b { font-size: 36rpx; font-family: var(--font-display); }

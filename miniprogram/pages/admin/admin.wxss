@@ -13,6 +13,10 @@
 }
 
 .form-label { font-size: 24rpx; color: var(--ink-2); margin-bottom: 12rpx; font-weight: 500; }
+.hint { font-size: 20rpx; color: var(--ink-3); font-weight: 400; }
+.hint-warn { margin: -4rpx 0 16rpx; font-size: 20rpx; color: #d97706; line-height: 1.5; }
+.picker-box { display: flex; align-items: center; justify-content: space-between; color: var(--ink); }
+.picker-box .arrow { color: var(--ink-3); font-size: 24rpx; }
 .form-input {
   width: 100%; height: 72rpx; line-height: 72rpx; padding: 0 24rpx; box-sizing: border-box;
   border: 2rpx solid rgba(80, 60, 30, .14); border-radius: 16rpx;

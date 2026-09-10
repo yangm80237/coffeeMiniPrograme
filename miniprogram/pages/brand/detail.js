@@ -17,4 +17,5 @@ Page({
     });
   },
   openBean(e) { wx.navigateTo({ url: '/pages/bean/detail?id=' + e.currentTarget.dataset.id }); },
+  goEdit() { wx.navigateTo({ url: '/pages/brand/add?id=' + this.id }); },
 });

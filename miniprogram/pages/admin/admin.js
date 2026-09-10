@@ -4,6 +4,13 @@ const adminApi = require('../../api/admin');
 Page({
   data: {
     modelVision: '', modelImage: '', autoIcon: true, source: '', sourceLabel: '',
+    modelHint: '', // 模型 ID 与当前服务商不匹配提示
+    // 识别服务商：volc=火山方舟 / deepseek=DeepSeek（视觉模型 deepseek-v4-flash-vision-exp）
+    providerNames: [
+      { value: 'volc', label: '火山方舟', ph: '如：doubao-seed-2-0-lite-260428' },
+      { value: 'deepseek', label: 'DeepSeek', ph: '如：deepseek-v4-flash-vision-exp' },
+    ],
+    providerIndex: 0, visionProvider: 'volc',
     reinitLines: '', reinitRunning: false,
     reinitProcessed: 0, reinitRemaining: 0, reinitNext: '',
   },
@@ -14,11 +21,36 @@ Page({
       this.setData({
         modelVision: c.modelVision || '', modelImage: c.modelImage || '',
         autoIcon: c.autoIcon !== false, // 缺省 true
+        visionProvider: c.visionProvider === 'deepseek' ? 'deepseek' : 'volc',
+        providerIndex: c.visionProvider === 'deepseek' ? 1 : 0,
+        modelHint: this.computeModelHint(c.modelVision, c.visionProvider === 'deepseek' ? 'deepseek' : 'volc'),
         source: c.source, sourceLabel: c.source === 'env' ? '环境变量回退' : 'config 集合',
       });
     });
   },
-  onVision(e) { this.setData({ modelVision: e.detail.value }); },
+  onProvider(e) {
+    const i = Number(e.detail.value) || 0;
+    const patch = { providerIndex: i, visionProvider: this.data.providerNames[i].value };
+    patch.modelHint = this.computeModelHint(this.data.modelVision, patch.visionProvider);
+    this.setData(patch);
+  },
+  // 模型 ID 与当前服务商不匹配时提示（不自动清空，保留用户填写的值）
+  computeModelHint(model, provider) {
+    const m = String(model || '').trim();
+    if (!m) return '';
+    const isVolcModel = /^(doubao-|ep-)/.test(m);
+    const isDsModel = m.startsWith('deepseek-');
+    if ((provider === 'deepseek' && isVolcModel) || (provider === 'volc' && isDsModel)) {
+      return '该模型 ID 属于另一服务商，识别将回退使用当前服务商的默认模型';
+    }
+    return '';
+  },
+  onVision(e) {
+    this.setData({
+      modelVision: e.detail.value,
+      modelHint: this.computeModelHint(e.detail.value, this.data.visionProvider),
+    });
+  },
   onImage(e) { this.setData({ modelImage: e.detail.value }); },
   // 新风味自动生图开关：即时落库，失败回滚
   onAutoIcon(e) {
@@ -31,15 +63,21 @@ Page({
     });
   },
   save() {
+    if (this.data.saving) return; // 防重复提交（两张卡共用）
+    this.setData({ saving: true });
     adminApi.updateModelConfig({
       modelVision: (this.data.modelVision || '').trim(),
       modelImage: (this.data.modelImage || '').trim(),
+      visionProvider: this.data.visionProvider === 'deepseek' ? 'deepseek' : 'volc',
     }).then((c) => {
-      this.setData({ source: c.source, sourceLabel: c.source === 'env' ? '环境变量回退' : 'config 集合' });
+      this.setData({ saving: false, source: c.source, sourceLabel: c.source === 'env' ? '环境变量回退' : 'config 集合' });
       wx.showToast({ title: '已保存' });
-    }).catch((e) => wx.showToast({
-      title: e.message === 'FORBIDDEN' ? '仅家庭创建者可修改' : '保存失败', icon: 'none',
-    }));
+    }).catch((e) => {
+      this.setData({ saving: false });
+      wx.showToast({
+        title: e.message === 'FORBIDDEN' ? '仅家庭创建者可修改' : '保存失败', icon: 'none',
+      });
+    });
   },
   testConn() { wx.showToast({ title: '阶段④开放', icon: 'none' }); },
   // 品牌重初始化——textarea 输入捕获
