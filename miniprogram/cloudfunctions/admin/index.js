@@ -153,12 +153,14 @@ exports.main = async (event) => {
         return {
           modelVision: ark.modelVision || '', modelImage: ark.modelImage || '',
           autoIcon: ark.autoIcon !== false, source: 'config', // 缺省 true
+          visionProvider: ark.visionProvider || 'volc', // 识别服务商：volc=火山方舟 / deepseek
         };
       }
       return { // 无 config 文档回退云函数环境变量
         modelVision: process.env.ARK_MODEL_VISION || '',
         modelImage: process.env.ARK_MODEL_IMAGE || '',
         autoIcon: true,
+        visionProvider: 'volc',
         source: 'fallback',
       };
     }
@@ -170,6 +172,7 @@ exports.main = async (event) => {
       if (patch.modelVision !== undefined) data.modelVision = patch.modelVision;
       if (patch.modelImage !== undefined) data.modelImage = patch.modelImage;
       if (patch.autoIcon !== undefined) data.autoIcon = !!patch.autoIcon;
+      if (patch.visionProvider !== undefined) data.visionProvider = patch.visionProvider === 'deepseek' ? 'deepseek' : 'volc';
       const ark = await readArk();
       if (ark) await db.collection('config').doc('ark').update({ data });
       else await db.collection('config').add({ data: { _id: 'ark', ...data } });
@@ -177,6 +180,7 @@ exports.main = async (event) => {
       return {
         modelVision: saved.modelVision || '', modelImage: saved.modelImage || '',
         autoIcon: saved.autoIcon !== false, source: 'config',
+        visionProvider: saved.visionProvider || 'volc',
       };
     }
     case 'reinitBrands': {

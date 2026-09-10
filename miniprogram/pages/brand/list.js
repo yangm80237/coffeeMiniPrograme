@@ -20,22 +20,21 @@ const gradOf = (name) => {
 
 Page({
   data: { brands: [], countries: [], flags: {}, picked: {}, filterOpen: false, keyword: '' },
-  onLoad() {
-    brandApi.listBrands({}).then((all) => {
-      const countries = [...new Set(all.map((b) => b.country))].sort();
-      const flags = {};
-      countries.forEach((c) => { flags[c] = getFlag(c); });
-      this.setData({ all, countries, flags });
-    });
-  },
   onShow() { this.refresh(); },
   refresh() {
-    const cs = Object.keys(this.data.picked).filter((k) => this.data.picked[k]);
-    return brandApi.listBrands({ countries: cs }).then((brands) => {
-      const kw = (this.data.keyword || '').trim().toLowerCase();
-      if (kw) {
-        brands = brands.filter((b) => ((b.name || '') + (b.nameEn || '')).toLowerCase().includes(kw));
+    // 全量走 api 层 TTL 缓存（5min），筛选/搜索在本地做，秒开且不发重复云请求
+    return brandApi.listBrands({}).then((all) => {
+      if (!this.data.countries.length) {
+        const countries = [...new Set(all.map((b) => b.country))].sort();
+        const flags = {};
+        countries.forEach((c) => { flags[c] = getFlag(c); });
+        this.setData({ countries, flags });
       }
+      const cs = Object.keys(this.data.picked).filter((k) => this.data.picked[k]);
+      const kw = (this.data.keyword || '').trim().toLowerCase();
+      let brands = all;
+      if (cs.length) brands = brands.filter((b) => cs.includes(b.country));
+      if (kw) brands = brands.filter((b) => ((b.name || '') + (b.nameEn || '')).toLowerCase().includes(kw));
       this.setData({
         brands: brands.map((b) => ({
           ...b, flag: b.flag || getFlag(b.country), first: firstChar(b.name), grad: gradOf(b.name),
@@ -52,4 +51,20 @@ Page({
   onKeyword(e) { this.setData({ keyword: e.detail.value }, () => this.refresh()); },
   goAdd() { wx.navigateTo({ url: '/pages/brand/add' }); },
   goDetail(e) { wx.navigateTo({ url: '/pages/brand/detail?id=' + e.currentTarget.dataset.id }); },
+  onLongPress(e) {
+    const { id, name, builtin } = e.currentTarget.dataset;
+    if (builtin) return wx.showToast({ title: '内置品牌不可删除', icon: 'none' });
+    wx.showModal({
+      title: '删除品牌',
+      content: '确定删除「' + name + '」吗？关联的豆子将变为「未关联品牌」。',
+      confirmColor: '#E5484D',
+      success: (r) => {
+        if (!r.confirm) return;
+        brandApi.deleteBrand(id).then(() => {
+          wx.showToast({ title: '已删除', icon: 'success' });
+          this.refresh();
+        });
+      },
+    });
+  },
 });

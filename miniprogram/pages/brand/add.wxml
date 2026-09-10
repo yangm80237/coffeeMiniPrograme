@@ -9,6 +9,12 @@
   <view class="form-label">品牌名称</view>
   <input class="form-input" placeholder="如：治光师 BEAMTIMER" value="{{name}}" bindinput="onName" />
 
+  <view class="form-label">英文名（选填）</view>
+  <input class="form-input" placeholder="包装上的英文品牌名，如 MOBYDICK COFFEE ROASTERS" value="{{nameEn}}" bindinput="onNameEn" />
+
+  <view class="form-label">别名（选填，逗号分隔）</view>
+  <input class="form-input" placeholder="子品牌/简称，如 YELEI LAB, MOBYDICK，识别时自动匹配" value="{{aliasesText}}" bindinput="onAliases" />
+
   <view class="form-label">国家 / 地区</view>
   <input class="form-input" placeholder="点击下方快捷标签填入" value="{{country}}" bindinput="onCountry" />
   <view class="sug-row">
@@ -20,5 +26,6 @@
   <textarea class="form-input ta" rows="3" placeholder="产地、风格、代表作等（选填）"
     value="{{description}}" bindinput="onDesc" />
 
-  <view class="btn btn-ink w save" bindtap="save">保存品牌</view>
+  <view wx:if="{{editing}}" class="btn btn-danger w save" bindtap="onDelete">删除品牌</view>
+  <view class="btn btn-ink w save {{saving ? 'is-submitting' : ''}}" bindtap="save">{{editing ? '保存修改' : '保存品牌'}}</view>
 </view>

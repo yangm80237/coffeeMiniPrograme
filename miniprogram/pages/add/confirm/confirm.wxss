@@ -33,6 +33,18 @@
 .ai-summary .b { color: var(--accent); font-weight: 700; margin: 0 4rpx; }
 .ai-summary .br { display: inline-block; }
 
+/* AI 识别失败提示条（红系，点击可关闭） */
+.ai-error-bar {
+  display: flex; align-items: flex-start; gap: 16rpx;
+  background: rgba(229,72,77,.08); border: 2rpx solid rgba(229,72,77,.25);
+  border-radius: 20rpx; margin: 0 32rpx 24rpx; padding: 16rpx 24rpx;
+}
+.ai-error-bar .sp { font-size: 28rpx; }
+.ai-error-bar .tx { flex: 1; font-size: 23rpx; color: var(--ink-2); line-height: 1.5; word-break: break-all; }
+.ai-error-bar .t { color: #c0392b; font-weight: 600; }
+.ai-error-bar .d { color: #e5484d; font-family: monospace; font-size: 21rpx; }
+.ai-error-bar .br { display: inline-block; }
+
 /* 表单 */
 .form-section { padding: 0 32rpx; }
 .section-title {
@@ -86,6 +98,17 @@
 .brand-match-name { font-size: 26rpx; font-weight: 600; color: var(--ink); }
 .brand-match-desc { font-size: 20rpx; color: var(--ink-3); margin-top: 4rpx; }
 .brand-match .arrow { font-size: 34rpx; color: var(--ink-3); }
+/* AI 品牌未匹配提示 + 候选 chips */
+.brand-cands-box { margin: -8rpx 0 24rpx; padding: 16rpx 20rpx; background: rgba(229,72,77,.06); border-radius: 16rpx; }
+.brand-cands-hint { font-size: 22rpx; color: var(--ink-2); margin-bottom: 12rpx; }
+.brand-cands-box .chip { background: #fff; border: 1rpx solid rgba(229,72,77,.3); color: #c0392b; }
+/* 品牌浮层新建入口 */
+.brand-create-row {
+  display: flex; align-items: center; gap: 12rpx;
+  padding: 24rpx; border-top: 1rpx solid var(--line);
+  font-size: 26rpx; color: var(--accent); font-weight: 500;
+}
+.brand-create-plus { font-size: 32rpx; line-height: 1; }
 /* 手动录入品牌占位卡 */
 .brand-pick {
   box-sizing: border-box; padding: 0 24rpx; height: 72rpx; line-height: 72rpx;

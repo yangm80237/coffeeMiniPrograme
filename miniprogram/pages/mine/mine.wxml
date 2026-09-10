@@ -12,7 +12,7 @@
         value="{{nickname}}" bindblur="onNickname" bindchange="onNickname" />
       <view class="role-tag">{{user.role === 'owner' ? '家庭创建者' : '家庭成员'}}</view>
     </view>
-    <view class="save-mini" bindtap="saveProfile">保存</view>
+    <view class="save-mini {{saving ? 'is-submitting' : ''}}" bindtap="saveProfile">保存</view>
   </view>
 
   <!-- 家庭卡 -->

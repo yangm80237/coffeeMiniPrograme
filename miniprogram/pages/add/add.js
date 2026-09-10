@@ -14,6 +14,7 @@ Page({
     });
   },
   goManual() {
+    getApp().globalData.pendingPhotos = null; // 手动录入不带照片；processing 失败转手动时保留照片
     wx.navigateTo({ url: '/pages/add/confirm/confirm?mode=manual' });
   },
   toastSoon() {

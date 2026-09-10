@@ -62,16 +62,23 @@ Page({
   },
   tryDraw() { if (this.ready && this.data.loaded) this.drawMap(); },
   // canvas 2d 点阵地图：固定种子伪随机点阵底图 + 经纬锚点产区标注
-  drawMap() {
+  // node 未就绪/尺寸为 0 时重试最多 5 次（底部 canvas 首次布局偶发拿不到）
+  drawMap(attempt) {
+    const n = attempt || 1;
     wx.createSelectorQuery().in(this).select('#map').fields({ node: true, size: true }).exec((res) => {
       const r = res && res[0];
-      if (!r || !r.node) return;
+      if (!r || !r.node || !r.width || !r.height) {
+        console.warn('[stats] 地图 canvas 未就绪', r, '第' + n + '次');
+        if (n < 5) setTimeout(() => this.drawMap(n + 1), 150);
+        return;
+      }
       const { node, width, height } = r;
       const dpr = (wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()).pixelRatio || 2;
       node.width = width * dpr; node.height = height * dpr;
       const ctx = node.getContext('2d');
       ctx.scale(dpr, dpr);
       const W = width, H = height;
+      ctx.clearRect(0, 0, W, H);
       // 点阵底图：暖灰 #D8CDBB，固定种子伪随机撒点
       const rand = mulberry32(2026);
       ctx.fillStyle = '#D8CDBB';

@@ -7,13 +7,14 @@ const { COUNTRIES } = require('../../../api/flags');
 const upload = require('../../../api/upload');
 const { firstChar } = require('../../../utils/format');
 const { navMetrics } = require('../../../utils/nav');
+const { resolvePreviewUrls } = require('../../../utils/image');
+const { SIMILAR_THRESHOLD, bestMatch } = require('../../../utils/similarity');
 const EMPTY = { name:'', brandId:'', brandName:'', country:'', origin:'', variety:'', process:'',
   altitude:'', weight:'', roastLevel:'中', brewMethod:'手冲', roastDate:'', flavorTagIds:[], flavorDesc:'' };
 const ROAST = ['浅','中浅','中','中深','深']; const BREW = ['手冲','意式','通用'];
 
-// 品牌清单本地缓存：v1 为版本号（结构/口径变更时升级强制失效），TTL 24h
-const BRAND_CACHE_KEY = 'brand_cache_v1';
-const BRAND_CACHE_TTL = 24 * 3600 * 1000;
+// 品牌清单不再独立缓存：统一走 api/brand 层（TTL 5min + 品牌/豆子写操作自动失效），
+// 避免 reinitBrands / 新增品牌后本页仍显示 24h 旧缓存
 
 // 品牌 logo 首字色块渐变池（与品牌库列表同色系）
 const GRADS = [
@@ -52,6 +53,9 @@ Page({
     flavorGroups: [], pickedFlavors: [], pickedIds: {},
     dialogOpen: false, flavorPickerOpen: false,
     brandPickerOpen: false, brandOptions: [], brandKw: '', brandDesc: '', brandInfo: null,
+    brandCands: [], // AI 识别到的品牌候选名列表
+    newFlavorCands: [], // AI 识别到的库外新风味候选（非 AI 模式为空数组）
+    aiError: '', // 识别失败原因（processing 页透传），顶部红色提示条
     submitting: false,
     aiExtracting: false,
   },
@@ -61,7 +65,8 @@ Page({
     this.setData(navMetrics());
     // 库存聚合：豆种/处理法 Top4（与统计页同源）
     const varietyChips = this.topField('variety', 4);
-    const processChips = this.topField('process', 4);
+    // 处理法 chips：库存 Top4 + 标准处理法保底（新工艺可在 input 自由输入）
+    const processChips = Array.from(new Set([...this.topField('process', 4), '水洗', '日晒', '蜜处理', '厌氧日晒', '湿剥法']));
     this.setData({ varietyChips, processChips });
 
     flavorApi.listFlavors().then((flavorGroups) => this.applyFlavorGroups(flavorGroups));
@@ -82,14 +87,19 @@ Page({
       const mode = options.mode || 'ai';
       const navTitle = mode === 'manual' ? '手动录入豆子' : '确认豆子信息';
       this._initialPhotos = [];
-      if (mode === 'manual') { g.pendingPhotos = null; this.setData({ photos: [] }); }
+      // manual：add 页入口已清空 pendingPhotos；processing 页失败转手动时保留已拍照片
+      if (mode === 'manual') { this.setData({ photos: g.pendingPhotos || [] }); }
       this.snapshot = JSON.stringify({ ...EMPTY });
       this.setData({ mode, navTitle, photos: g.pendingPhotos || [], coverIndex: g.mainIndex || 0 });
       // ai 模式：消费 processing 写入 globalData.aiResult 的识别结果（form 字段对象），合并预填
       if (mode === 'ai') {
         const ai = g.aiResult;
         const aiNewFlavors = g.aiNewFlavors || []; // 库外新风味候选（识别云函数返回），消费即清
+        const aiBrandCands = g.aiBrandCands || []; // 品牌候选列表
+        const aiError = g.aiError || ''; // 识别失败原因（processing 页透传），显示后即清
         g.aiNewFlavors = [];
+        g.aiBrandCands = [];
+        g.aiError = '';
         if (ai) {
           const merged = { ...this.data.form };
           Object.keys(ai).forEach((k) => { if (ai[k] !== '' && ai[k] !== null && ai[k] !== undefined) merged[k] = ai[k]; });
@@ -98,7 +108,12 @@ Page({
           g.aiResult = null; // 消费即置空，避免返回重复预填
         }
         // 库外新风味候选区：默认全选，入库时创建为「其他」分类标签
-        this.setData({ newFlavorCands: aiNewFlavors.map((n) => ({ name: n, checked: true })) });
+        // 品牌候选 + 识别失败提示：消费即清
+        this.setData({
+          newFlavorCands: aiNewFlavors.map((n) => ({ name: n, checked: true })),
+          brandCands: aiBrandCands,
+          aiError,
+        });
       }
       this.syncVarietySelFromForm();
     }
@@ -205,14 +220,26 @@ Page({
     this.setData({ [`newFlavorCands[${i}].checked`]: !this.data.newFlavorCands[i].checked });
   },
   // 逐个创建勾选的新风味（返回 [{name, _id}]；单个失败跳过不阻塞入库）
+  // 相似度优化：候选名与风味库相似度 ≥ 阈值 → 映射到已有风味（不重复创建）；< 阈值 → 自动创建
   createCheckedNewFlavors() {
     const cands = this.data.newFlavorCands.filter((c) => c.checked);
-    const created = [];
-    return cands.reduce((chain, c) => chain.then(() =>
-      flavorApi.createFlavor({ name: c.name, category: '其他' })
-        .then((f) => created.push({ name: c.name, _id: f._id }))
-        .catch(() => {})
-    ), Promise.resolve()).then(() => created);
+    const all = (this.data.flavorGroups || []).flatMap((g) => g.items);
+    const existing = all.map((f) => f.name);
+    const resolved = []; // 全部 _id（含映射命中 + 新建）
+    const created = []; // 仅新建（用于触发生图）
+    return cands.reduce((chain, c) => chain.then(() => {
+      const match = bestMatch(c.name, existing);
+      if (match.score >= SIMILAR_THRESHOLD) {
+        // 库内已有相似风味（如「青葡萄」→「葡萄」）：自动合并，不新建
+        const f = all.find((x) => x.name === match.name);
+        if (f) resolved.push(f._id);
+        return undefined;
+      }
+      // 库外新风味：自动创建，无需人工干预
+      return flavorApi.createFlavor({ name: c.name, category: '其他' })
+        .then((f) => { resolved.push(f._id); created.push({ name: c.name, _id: f._id }); })
+        .catch(() => {});
+    }), Promise.resolve()).then(() => ({ resolved, created }));
   },
   // 新风味自动生图（config.autoIcon 开关控制，缺省开）：fire-and-forget，不阻塞跳转
   triggerIconGen(created) {
@@ -225,6 +252,20 @@ Page({
   openFlavorPicker() { this.setData({ flavorPickerOpen: true }); },
   closeFlavorPicker() { this.setData({ flavorPickerOpen: false }); },
   pickCover(e) { this.setData({ coverIndex: e.detail.index }); },
+  // photo-strip「🔍」/长按：点击图片放大查看（cloud:// 先转临时链接；wx.previewImage 原生支持双指缩放/平移）
+  zoomPhoto(e) {
+    const photos = this.data.photos || [];
+    const idx = e.detail.index;
+    const url = photos[idx];
+    if (!url) return;
+    wx.showLoading({ title: '加载中', mask: true });
+    resolvePreviewUrls(photos)
+      .then((urls) => {
+        wx.hideLoading();
+        wx.previewImage({ current: urls[idx] || url, urls });
+      })
+      .catch(() => { wx.hideLoading(); wx.showToast({ title: '图片加载失败', icon: 'none' }); });
+  },
   // photo-strip「＋」：补拍/加图
   addPhoto() {
     wx.chooseMedia({
@@ -238,48 +279,38 @@ Page({
   // ===== 品牌选择浮层 =====
   openBrandPicker() {
     this.setData({ brandPickerOpen: true });
-    // 缓存优先：本地缓存即时反显（<300ms），过期或缺失时后台请求刷新（stale-while-revalidate）
-    try {
-      const c = wx.getStorageSync(BRAND_CACHE_KEY);
-      if (c && c.list && c.list.length) {
-        this._allBrands = c.list.map((b) => ({ ...b, first: firstChar(b.name), grad: gradOf(b.name) }));
-        this.filterBrands();
-        if (Date.now() - c.ts > BRAND_CACHE_TTL) this.fetchBrands();
-      } else {
-        this.fetchBrands();
-      }
-    } catch (e) { this.fetchBrands(); }
+    // 统一走 api/brand 缓存（TTL 5min + 写操作失效），命中秒开、失效即刷新
+    if (this._allBrands && this._allBrands.length) {
+      this.filterBrands();
+    } else {
+      this.fetchBrands();
+    }
   },
   fetchBrands() {
     brandApi.listBrands({}).then((list) => {
       this._allBrands = list.map((b) => ({ ...b, first: firstChar(b.name), grad: gradOf(b.name) }));
       this.filterBrands(); // 刷新浮层列表（服务端更新即实时同步）
-      try { wx.setStorageSync(BRAND_CACHE_KEY, { ts: Date.now(), list }); } catch (e) { /* 存储失败忽略 */ }
     });
   },
-  // 编辑态：按 brandId 从缓存/接口反显品牌完整信息（logo、首字色块、国家）
+  // 编辑态：按 brandId 从 api 层缓存反显品牌完整信息（logo、首字色块、国家）
   reflectBrand(brandId) {
     if (!brandId) return;
-    const apply = (list) => {
+    brandApi.listBrands({}).then((list) => {
       const b = (list || []).find((x) => x._id === brandId);
       if (!b) return;
       this.setData({ brandInfo: { logo: b.logo || '', first: firstChar(b.name), grad: gradOf(b.name) },
         brandDesc: (b.flag || '') + ' ' + (b.country || '') + ' · 当前品牌' });
-    };
-    try {
-      const c = wx.getStorageSync(BRAND_CACHE_KEY);
-      if (c && c.list && c.list.length) { apply(c.list); return; }
-    } catch (e) { /* 读缓存失败走接口 */ }
-    brandApi.listBrands({}).then(apply);
+    });
   },
   closeBrandPicker() { this.setData({ brandPickerOpen: false }); },
   filterBrands() {
     const kw = (this.data.brandKw || '').trim().toLowerCase();
     let list = this._allBrands || [];
-    if (kw) list = list.filter((b) => ((b.name || '') + (b.nameEn || '')).toLowerCase().includes(kw));
+    if (kw) list = list.filter((b) => ((b.name || '') + (b.nameEn || '') + ((b.aliases || []).join(' '))).toLowerCase().includes(kw));
     this.setData({ brandOptions: list });
   },
   onBrandKw(e) { this.setData({ brandKw: e.detail.value }, () => this.filterBrands()); },
+  clearAiError() { this.setData({ aiError: '' }); },
   pickBrand(e) {
     const { id, name } = e.currentTarget.dataset;
     const b = (this._allBrands || []).find((x) => x._id === id) || {};
@@ -288,6 +319,30 @@ Page({
       brandInfo: { logo: b.logo || '', first: firstChar(b.name), grad: b.grad || gradOf(b.name) },
       brandDesc: (b.flag || '') + ' ' + (b.country || '') + ' · 已从品牌库选择',
       brandPickerOpen: false });
+  },
+  // AI 识别到品牌但未匹配库时，用候选名快速新建品牌（其他候选名作为别名）
+  createBrandFromCandidate(e) {
+    const name = e.currentTarget.dataset.name || this.data.form.brandName;
+    if (!name) return;
+    // 把 brandCands 里除当前名外的其他候选作为别名传入
+    const aliases = (this.data.brandCands || []).filter((c) => c !== name);
+    wx.showModal({
+      title: '新建品牌',
+      content: `将「${name}」添加到品牌库？`,
+      success: (r) => {
+        if (!r.confirm) return;
+        brandApi.createBrand({ name, aliases }).then((b) => {
+          this.setData({
+            'form.brandId': b._id, 'form.brandName': b.name,
+            brandInfo: { logo: b.logo || '', first: firstChar(b.name), grad: gradOf(b.name) },
+            brandDesc: (b.flag || '') + ' ' + (b.country || '') + ' · 新建品牌',
+            brandPickerOpen: false,
+          });
+          // 新品牌已入 api 层缓存（createBrand 写操作自动失效），下次打开浮层即见
+          wx.showToast({ title: '已添加品牌', icon: 'success' });
+        }).catch(() => wx.showToast({ title: '添加失败', icon: 'none' }));
+      },
+    });
   },
   noop() {},
 
@@ -341,11 +396,11 @@ Page({
     if (!f.roastDate) return wx.showToast({ title: '请选择烘焙日期', icon: 'none' });
     this.setData({ submitting: true });
     wx.showLoading({ title: this.data.isEdit ? '保存中…' : '入库中…', mask: true });
-    // 勾选的库外新风味先建档（「其他」分类），用返回 _id 补进 flavorTagIds 再入库
-    const prep = this.createCheckedNewFlavors().then((created) => {
-      if (created.length) {
+    // 勾选的库外新风味先建档（相似度去重后自动创建/合并），用返回 _id 补进 flavorTagIds 再入库
+    const prep = this.createCheckedNewFlavors().then(({ resolved, created }) => {
+      if (resolved.length) {
         this.setData({ 'form.flavorTagIds':
-          [...this.data.form.flavorTagIds, ...created.map((x) => x._id)] });
+          Array.from(new Set([...this.data.form.flavorTagIds, ...resolved])) });
       }
       return created;
     });

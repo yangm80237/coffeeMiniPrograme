@@ -52,6 +52,6 @@
   </block>
 
   <view wx:else class="btn-row">
-    <view class="btn btn-ink w" bindtap="save">创建标签</view>
+    <view class="btn btn-ink w {{saving ? 'is-submitting' : ''}}" bindtap="save">创建标签</view>
   </view>
 </view>

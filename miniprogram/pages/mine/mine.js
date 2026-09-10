@@ -13,14 +13,38 @@ Page({
       });
     });
   },
-  // 头像昵称填写区：chooseavatar 事件取 avatarUrl；nickname 输入 blur/change 取值
-  onChooseAvatar(e) { this.setData({ avatarUrl: e.detail.avatarUrl }); },
+  // 头像昵称填写区：chooseavatar 事件取临时路径 → 云存储持久化（fileID），避免临时路径过期/模拟器 CORS
+  onChooseAvatar(e) {
+    const temp = e.detail.avatarUrl;
+    const env = require('../../config/env');
+    const setAndSave = (url) => {
+      this.setData({ avatarUrl: url });
+      this.saveProfile(url);
+    };
+    if (env.USE_CLOUD && wx.cloud && temp) {
+      const ext = temp.indexOf('.png') > -1 ? '.png' : '.jpg';
+      const cloudPath = `avatars/${Date.now()}-${Math.floor(Math.random() * 10000)}${ext}`;
+      wx.cloud.uploadFile({ cloudPath, filePath: temp })
+        .then((r) => setAndSave(r.fileID))
+        .catch(() => setAndSave(temp)); // 上传失败降级临时路径，仍可展示本次会话
+    } else {
+      setAndSave(temp);
+    }
+  },
   onNickname(e) { this.setData({ nickname: e.detail.value }); },
-  saveProfile() {
-    const { nickname, avatarUrl } = this.data;
-    userApi.updateProfile({ nickname: (nickname || '').trim(), avatarUrl }).then((u) => {
-      this.setData({ user: u });
+  saveProfile(avatarUrl) {
+    if (this.data.saving) return; // 防重复提交（头像选择后立即保存，防连点）
+    const { nickname } = this.data;
+    this.setData({ saving: true });
+    userApi.updateProfile({
+      nickname: (nickname || '').trim(),
+      avatarUrl: avatarUrl || this.data.avatarUrl || '',
+    }).then((u) => {
+      this.setData({ user: u, saving: false });
       wx.showToast({ title: '已保存' });
+    }).catch(() => {
+      this.setData({ saving: false });
+      wx.showToast({ title: '保存失败', icon: 'none' });
     });
   },
   // 家庭卡：邀请码大字 + 复制 / 启用开关 / 重新生成

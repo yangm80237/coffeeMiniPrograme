@@ -1,19 +1,31 @@
 <!-- 管理页（新增页无原型，沿用 tokens 与卡片+btn 模式；规格书 3.9） -->
 <view class="admin">
+  <!-- 卡片① 豆袋识别：服务商可选（火山方舟 / DeepSeek） -->
   <view class="card panel">
-    <view class="panel-title">AI 模型配置 <text class="source-tag">{{sourceLabel}}</text></view>
+    <view class="panel-title">AI 识别（豆袋） <text class="source-tag">{{sourceLabel}}</text></view>
+
+    <view class="form-label">识别服务商 <text class="hint">识别豆袋用的视觉模型</text></view>
+    <picker mode="selector" range="{{providerNames}}" range-key="label" value="{{providerIndex}}" bindchange="onProvider">
+      <view class="form-input picker-box">{{providerNames[providerIndex].label}}<text class="arrow">▾</text></view>
+    </picker>
 
     <view class="form-label">视觉识别模型 ID</view>
-    <input class="form-input" placeholder="如：ep-vision-xxx" value="{{modelVision}}" bindinput="onVision" />
-
-    <view class="form-label">生图模型 ID</view>
-    <input class="form-input" placeholder="如：ep-image-xxx" value="{{modelImage}}" bindinput="onImage" />
+    <input class="form-input" placeholder="{{providerNames[providerIndex].ph}}" value="{{modelVision}}" bindinput="onVision" />
+    <view wx:if="{{modelHint}}" class="hint-warn">{{modelHint}}</view>
 
     <view class="btn-row">
-      <view class="btn btn-ink flex1" bindtap="save">保存</view>
+      <view class="btn btn-ink flex1 {{saving ? 'is-submitting' : ''}}" bindtap="save">保存</view>
       <view class="btn btn-gray test" bindtap="testConn">测试连接</view>
     </view>
-    <view class="note">仅家庭创建者可修改；修改后影响 AI 识别与风味图标生成</view>
+    <view class="note">仅家庭创建者可修改；修改后影响 AI 识别（豆袋拍照识别）</view>
+  </view>
+
+  <!-- 卡片② 风味图标生成：生图固定火山方舟（豆包），不支持切换服务商 -->
+  <view class="card panel">
+    <view class="panel-title">风味图标生成（生图）</view>
+
+    <view class="form-label">生图模型 ID <text class="hint">固定使用火山方舟（豆包），不支持切换</text></view>
+    <input class="form-input" placeholder="如：doubao-seedream-5-0-260128" value="{{modelImage}}" bindinput="onImage" />
 
     <!-- ⚙️ 新风味自动生图开关（config.autoIcon，缺省开） -->
     <view class="switch-row">
@@ -23,6 +35,11 @@
       </view>
       <switch checked="{{autoIcon}}" bindchange="onAutoIcon" color="#c96f4a" />
     </view>
+
+    <view class="btn-row">
+      <view class="btn btn-ink flex1 {{saving ? 'is-submitting' : ''}}" bindtap="save">保存</view>
+    </view>
+    <view class="note">仅家庭创建者可修改；生图模型走火山方舟，与识别服务商相互独立</view>
   </view>
 
   <!-- 品牌库重初始化：全清重建 + AI 补资料，logo 留空手传；45s 预算断点续跑 -->

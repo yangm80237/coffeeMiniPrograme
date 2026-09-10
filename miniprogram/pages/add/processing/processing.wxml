@@ -12,14 +12,26 @@
     <text class="cur">③ AI 识别</text><text class="arr">→</text>
     <text>④ 核对入库</text>
   </view>
-  <!-- 冲煮动画 -->
-  <brew-animation />
-  <!-- 文案轮播 -->
-  <view class="proc-hint">{{tip}}</view>
-  <!-- 闪点 -->
-  <view class="proc-dots">
-    <view class="dot"></view><view class="dot"></view><view class="dot"></view>
+  <!-- 识别失败：原地吐错，不静默跳空表单 -->
+  <view wx:if="{{error}}" class="proc-error">
+    <view class="proc-error-icon">⚠️</view>
+    <view class="proc-error-title">AI 识别失败</view>
+    <view class="proc-error-msg">{{error}}</view>
+    <button class="proc-error-btn primary" bindtap="retry" disabled="{{retrying}}">{{retrying ? '重试中…' : '重新识别'}}</button>
+    <button class="proc-error-btn ghost" bindtap="goManual">转为手动填写</button>
   </view>
-  <!-- 跳过 -->
-  <view class="proc-skip" bindtap="skip">识别完成后自动进入 · 点此直接查看结果</view>
+  <!-- 识别中：动画 + 文案轮播 + 跳过 -->
+  <block wx:else>
+    <!-- 冲煮动画 -->
+    <brew-animation />
+    <!-- 阶段文案（真实进度）+ 已等待计时 -->
+    <view class="proc-hint">{{tip}}{{elapsed > 0 ? ' · ' + elapsed + ' 秒' : ''}}</view>
+    <view wx:if="{{phase === 'recognizing' && elapsed > 15}}" class="proc-note">模型识别可能较慢，首次/网络繁忙时约需 20-60 秒，请耐心等待</view>
+    <!-- 闪点 -->
+    <view class="proc-dots">
+      <view class="dot"></view><view class="dot"></view><view class="dot"></view>
+    </view>
+    <!-- 跳过 -->
+    <view class="proc-skip" bindtap="skip">识别完成后自动进入 · 点此直接查看结果</view>
+  </block>
 </view>

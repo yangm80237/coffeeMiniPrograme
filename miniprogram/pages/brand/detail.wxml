@@ -5,6 +5,7 @@
     <view wx:else class="bd-logo">{{first}}</view>
     <view class="bd-name">{{brand.name}}</view>
     <view class="bd-desc">{{brand.flag}} {{brand.country}}<text wx:if="{{brand.description}}"> · {{brand.description}}</text></view>
+    <view class="bd-edit" bindtap="goEdit">✏️ 编辑品牌</view>
     <view class="bd-stats">
       <view><text class="b">{{beans.length}}</text><text class="small">在库袋数</text></view>
       <view><text class="b">{{avgScore || '—'}}</text><text class="small">平均评分</text></view>
